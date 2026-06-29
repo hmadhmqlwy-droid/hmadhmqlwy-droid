@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import { useAppStore } from '@/store/app-store'
-import { Building2, Users, Calendar, TrendingUp, TrendingDown, DollarSign, Activity, Shield, ArrowUpLeft, ArrowDownLeft, Eye } from 'lucide-react'
+import { Building2, Users, Calendar, TrendingUp, TrendingDown, DollarSign, Activity, Shield, ArrowUpLeft, ArrowDownLeft, Eye, Download } from 'lucide-react'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, AreaChart, Area } from 'recharts'
 
 interface DashboardStats {
@@ -108,6 +108,10 @@ export function DashboardPage() {
               <Shield className="w-4 h-4" />
               آمن
             </div>
+            <button onClick={() => window.open('/api/export?type=associations&format=csv', '_blank')} className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 text-sm font-medium hover:bg-emerald-500/20 transition-colors">
+              <Download className="w-4 h-4" />
+              تصدير
+            </button>
           </div>
         </div>
       </motion.div>

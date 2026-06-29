@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
 import { useAppStore } from '@/store/app-store'
-import { Building2, Mail, Lock, User, Eye, EyeOff, Shield, ArrowLeft, Fingerprint, AlertCircle } from 'lucide-react'
+import { Building2, Mail, Lock, User, Eye, EyeOff, Shield, ArrowLeft, Fingerprint, AlertCircle, Info, CheckCircle } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
@@ -11,11 +11,10 @@ import { Checkbox } from '@/components/ui/checkbox'
 
 export function AuthPage() {
   const { setCurrentPage, login } = useAppStore()
-  const [mode, setMode] = useState<'login' | 'register' | '2fa'>('login')
+  const [mode, setMode] = useState<'login' | 'register'>('login')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [twoFactorCode, setTwoFactorCode] = useState('')
   
   // Login form
   const [loginEmail, setLoginEmail] = useState('')
@@ -80,15 +79,19 @@ export function AuthPage() {
     }
   }
 
-  const handleDemoLogin = () => {
-    login({
-      id: 'demo-1',
-      name: 'أحمد محمد',
-      email: 'admin@jamaat.pro',
-      role: 'admin',
-      twoFactorEnabled: false,
-    })
+  // Password strength calculation
+  const getPasswordStrength = (pass: string) => {
+    let score = 0
+    if (pass.length >= 8) score++
+    if (/[A-Z]/.test(pass)) score++
+    if (/[a-z]/.test(pass)) score++
+    if (/\d/.test(pass)) score++
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(pass)) score++
+    return score
   }
+
+  const strengthLabels = ['', 'ضعيفة جداً', 'ضعيفة', 'متوسطة', 'قوية', 'قوية جداً']
+  const strengthColors = ['', 'bg-red-500', 'bg-red-400', 'bg-amber-500', 'bg-emerald-400', 'bg-emerald-500']
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden" dir="rtl">
@@ -163,7 +166,7 @@ export function AuthPage() {
                       <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
                         type="email"
-                        placeholder="example@email.com"
+                        placeholder="admin@jamaat.pro"
                         value={loginEmail}
                         onChange={(e) => setLoginEmail(e.target.value)}
                         className="pr-10 bg-background/50 border-border/50 focus:border-emerald-500"
@@ -181,6 +184,7 @@ export function AuthPage() {
                         placeholder="••••••••"
                         value={loginPassword}
                         onChange={(e) => setLoginPassword(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
                         className="pr-10 pl-10 bg-background/50 border-border/50 focus:border-emerald-500"
                         dir="ltr"
                       />
@@ -220,23 +224,19 @@ export function AuthPage() {
                     )}
                   </Button>
 
-                  <div className="relative my-4">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-border/50"></div>
-                    </div>
-                    <div className="relative flex justify-center text-xs">
-                      <span className="px-3 bg-card text-muted-foreground">أو</span>
+                  {/* Admin credentials hint */}
+                  <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
+                    <div className="flex items-start gap-2">
+                      <Info className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                      <div className="text-xs text-muted-foreground">
+                        <span className="text-emerald-500 font-bold">بيانات الأدمن الافتراضية:</span>
+                        <br />
+                        البريد: <span className="font-mono text-foreground" dir="ltr">admin@jamaat.pro</span>
+                        <br />
+                        كلمة المرور: <span className="font-mono text-foreground" dir="ltr">Admin@2026</span>
+                      </div>
                     </div>
                   </div>
-
-                  <Button
-                    onClick={handleDemoLogin}
-                    variant="outline"
-                    className="w-full py-3 border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10 font-bold rounded-xl"
-                  >
-                    <Fingerprint className="w-4 h-4 ml-2" />
-                    دخول تجريبي
-                  </Button>
 
                   <p className="text-center text-sm text-muted-foreground">
                     ليس لديك حساب؟{' '}
@@ -305,7 +305,7 @@ export function AuthPage() {
                       <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
                         type={showPassword ? 'text' : 'password'}
-                        placeholder="8 أحرف على الأقل"
+                        placeholder="8 أحرف على الأقل (أحرف كبيرة وصغيرة وأرقام ورموز)"
                         value={regPassword}
                         onChange={(e) => setRegPassword(e.target.value)}
                         className="pr-10 pl-10 bg-background/50 border-border/50 focus:border-emerald-500"
@@ -318,17 +318,24 @@ export function AuthPage() {
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </button>
                     </div>
-                    {/* Password strength */}
-                    <div className="mt-2 flex gap-1">
-                      {[1, 2, 3, 4].map(i => (
-                        <div
-                          key={i}
-                          className={`h-1 flex-1 rounded-full transition-colors ${
-                            regPassword.length >= i * 2 ? 'bg-emerald-500' : 'bg-border'
-                          }`}
-                        />
-                      ))}
-                    </div>
+                    {/* Password strength indicator */}
+                    {regPassword && (
+                      <div className="mt-2">
+                        <div className="flex gap-1">
+                          {[1, 2, 3, 4, 5].map(i => (
+                            <div
+                              key={i}
+                              className={`h-1.5 flex-1 rounded-full transition-colors ${
+                                getPasswordStrength(regPassword) >= i ? strengthColors[getPasswordStrength(regPassword)] : 'bg-border'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <p className={`text-[10px] mt-1 ${getPasswordStrength(regPassword) >= 4 ? 'text-emerald-500' : getPasswordStrength(regPassword) >= 3 ? 'text-amber-500' : 'text-red-500'}`}>
+                          {strengthLabels[getPasswordStrength(regPassword)]}
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   <div>
@@ -343,6 +350,9 @@ export function AuthPage() {
                         className="pr-10 bg-background/50 border-border/50 focus:border-emerald-500"
                         dir="ltr"
                       />
+                      {regConfirm && regPassword === regConfirm && (
+                        <CheckCircle className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-500" />
+                      )}
                     </div>
                   </div>
 

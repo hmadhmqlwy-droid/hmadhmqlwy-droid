@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { useAppStore } from '@/store/app-store'
+import { useAppStore, translations } from '@/store/app-store'
 import { LandingPage } from '@/components/sections/landing'
 import { AuthPage } from '@/components/sections/auth'
 import { DashboardPage } from '@/components/sections/dashboard'
@@ -10,25 +10,119 @@ import { MembersPage } from '@/components/sections/members'
 import { EventsPage } from '@/components/sections/events'
 import { FinancePage } from '@/components/sections/finance'
 import { SecurityPage } from '@/components/sections/security'
+import { AdminPage } from '@/components/sections/admin'
 import {
   Building2, LayoutDashboard, Users, Calendar, DollarSign, Shield, LogOut, Menu, X,
-  Moon, Sun, ChevronLeft, Settings, HelpCircle, Bell
+  Moon, Sun, ChevronLeft, Settings, Bell, Crown, Globe, Download, Check, XCircle, Info, AlertTriangle
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
-const navItems = [
-  { id: 'dashboard' as const, label: 'لوحة التحكم', icon: LayoutDashboard },
-  { id: 'associations' as const, label: 'الجمعيات', icon: Building2 },
-  { id: 'members' as const, label: 'الأعضاء', icon: Users },
-  { id: 'events' as const, label: 'الفعاليات', icon: Calendar },
-  { id: 'finance' as const, label: 'المالية', icon: DollarSign },
-  { id: 'security' as const, label: 'الأمان', icon: Shield },
-]
+// Notification Panel Component
+function NotificationPanel() {
+  const { notifications, unreadCount, markAllRead } = useAppStore()
+  const [open, setOpen] = useState(false)
+  const panelRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) setOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  const notifIcons: Record<string, any> = {
+    info: Info,
+    warning: AlertTriangle,
+    success: Check,
+    error: XCircle,
+  }
+
+  const notifColors: Record<string, string> = {
+    info: 'text-cyan-500 bg-cyan-500/10',
+    warning: 'text-amber-500 bg-amber-500/10',
+    success: 'text-emerald-500 bg-emerald-500/10',
+    error: 'text-red-500 bg-red-500/10',
+  }
+
+  return (
+    <div className="relative" ref={panelRef}>
+      <button
+        onClick={() => { setOpen(!open); if (!open && unreadCount > 0) markAllRead() }}
+        className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors"
+      >
+        <Bell className="w-5 h-5" />
+        {unreadCount > 0 && (
+          <motion.span
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full text-[10px] text-white font-bold flex items-center justify-center"
+          >
+            {unreadCount > 9 ? '9+' : unreadCount}
+          </motion.span>
+        )}
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
+            className="absolute left-0 top-full mt-2 w-80 glass-dark rounded-xl border border-border/30 shadow-xl overflow-hidden z-50"
+            dir="rtl"
+          >
+            <div className="p-3 border-b border-border/20 flex items-center justify-between">
+              <span className="font-bold text-foreground text-sm">الإشعارات</span>
+              {unreadCount > 0 && (
+                <Badge className="bg-red-500/10 text-red-500 text-[10px]">{unreadCount} جديد</Badge>
+              )}
+            </div>
+            <div className="max-h-80 overflow-y-auto">
+              {notifications.length > 0 ? notifications.map((n) => {
+                const Icon = notifIcons[n.type] || Info
+                return (
+                  <div key={n.id} className={`p-3 border-b border-border/10 hover:bg-white/5 transition-colors ${!n.read ? 'bg-emerald-500/5' : ''}`}>
+                    <div className="flex items-start gap-2">
+                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${notifColors[n.type] || notifColors.info}`}>
+                        <Icon className="w-3.5 h-3.5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-bold text-foreground">{n.title}</div>
+                        <div className="text-[10px] text-muted-foreground line-clamp-2">{n.message}</div>
+                      </div>
+                    </div>
+                  </div>
+                )
+              }) : (
+                <div className="p-8 text-center">
+                  <Bell className="w-8 h-8 mx-auto mb-2 text-muted-foreground/30" />
+                  <p className="text-xs text-muted-foreground">لا توجد إشعارات</p>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
 
 function Sidebar() {
-  const { currentPage, setCurrentPage, sidebarOpen, setSidebarOpen, user, logout, theme, toggleTheme } = useAppStore()
+  const { currentPage, setCurrentPage, sidebarOpen, setSidebarOpen, user, logout, theme, toggleTheme, lang, setLang, t } = useAppStore()
+
+  const navItems = [
+    { id: 'dashboard' as const, label: t('dashboard'), icon: LayoutDashboard },
+    { id: 'associations' as const, label: t('associations'), icon: Building2 },
+    { id: 'members' as const, label: t('members'), icon: Users },
+    { id: 'events' as const, label: t('events'), icon: Calendar },
+    { id: 'finance' as const, label: t('finance'), icon: DollarSign },
+    { id: 'security' as const, label: t('security'), icon: Shield },
+    ...(user?.role === 'admin' ? [{ id: 'admin' as const, label: t('admin'), icon: Crown }] : []),
+  ]
 
   return (
     <motion.aside
@@ -78,7 +172,7 @@ function Sidebar() {
                 onClick={() => setCurrentPage(item.id)}
                 whileHover={{ x: -4 }}
                 whileTap={{ scale: 0.97 }}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-medium ${
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-medium relative ${
                   isActive
                     ? 'bg-emerald-500/10 text-emerald-500 shadow-sm'
                     : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
@@ -129,14 +223,23 @@ function Sidebar() {
         <div className="flex items-center gap-1">
           <button
             onClick={toggleTheme}
-            className="flex-1 flex items-center justify-center gap-2 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors text-xs"
+            className="flex-1 flex items-center justify-center gap-1 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors text-xs"
+            title={theme === 'dark' ? 'الوضع الفاتح' : 'الوضع الداكن'}
           >
             {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             {sidebarOpen && <span>{theme === 'dark' ? 'فاتح' : 'داكن'}</span>}
           </button>
           <button
+            onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
+            className="flex-1 flex items-center justify-center gap-1 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors text-xs"
+            title={lang === 'ar' ? 'English' : 'عربي'}
+          >
+            <Globe className="w-4 h-4" />
+            {sidebarOpen && <span>{lang === 'ar' ? 'EN' : 'عربي'}</span>}
+          </button>
+          <button
             onClick={logout}
-            className="flex-1 flex items-center justify-center gap-2 p-2 rounded-lg text-red-400 hover:text-red-500 hover:bg-red-500/5 transition-colors text-xs"
+            className="flex-1 flex items-center justify-center gap-1 p-2 rounded-lg text-red-400 hover:text-red-500 hover:bg-red-500/5 transition-colors text-xs"
           >
             <LogOut className="w-4 h-4" />
             {sidebarOpen && <span>خروج</span>}
@@ -148,15 +251,16 @@ function Sidebar() {
 }
 
 function TopBar() {
-  const { currentPage, sidebarOpen, setSidebarOpen } = useAppStore()
-  
+  const { currentPage, sidebarOpen, setSidebarOpen, t } = useAppStore()
+
   const pageLabels: Record<string, string> = {
-    dashboard: 'لوحة التحكم',
-    associations: 'إدارة الجمعيات',
-    members: 'إدارة الأعضاء',
-    events: 'إدارة الفعاليات',
-    finance: 'الإدارة المالية',
-    security: 'مركز الأمان',
+    dashboard: t('dashboard'),
+    associations: t('associations'),
+    members: t('members'),
+    events: t('events'),
+    finance: t('finance'),
+    security: t('security'),
+    admin: t('admin'),
   }
 
   return (
@@ -168,10 +272,7 @@ function TopBar() {
         <h2 className="text-lg font-bold text-foreground">{pageLabels[currentPage] || ''}</h2>
       </div>
       <div className="flex items-center gap-2">
-        <button className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors">
-          <Bell className="w-5 h-5" />
-          <span className="absolute top-1 right-1 w-2 h-2 bg-emerald-500 rounded-full" />
-        </button>
+        <NotificationPanel />
       </div>
     </header>
   )
@@ -183,7 +284,29 @@ export default function Home() {
   // Set dark theme by default
   useEffect(() => {
     document.documentElement.classList.add('dark')
+    document.documentElement.dir = 'rtl'
+    document.documentElement.lang = 'ar'
+
+    // Seed admin user on first load
+    fetch('/api/seed', { method: 'POST' }).catch(() => {})
   }, [])
+
+  // Fetch notifications periodically
+  useEffect(() => {
+    if (!isAuthenticated) return
+    const fetchNotifs = async () => {
+      try {
+        const res = await fetch('/api/notifications')
+        if (res.ok) {
+          const data = await res.json()
+          useAppStore.getState().setNotifications(data.notifications)
+        }
+      } catch {}
+    }
+    fetchNotifs()
+    const interval = setInterval(fetchNotifs, 30000) // every 30s
+    return () => clearInterval(interval)
+  }, [isAuthenticated])
 
   // Auth pages
   if (!isAuthenticated) {
@@ -202,6 +325,7 @@ export default function Home() {
       case 'events': return <EventsPage />
       case 'finance': return <FinancePage />
       case 'security': return <SecurityPage />
+      case 'admin': return <AdminPage />
       default: return <DashboardPage />
     }
   }

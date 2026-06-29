@@ -14,9 +14,10 @@ function seededRandom(seed: number) {
 // Particle component for 3D background
 function Particles() {
   const [mounted, setMounted] = useState(false)
-  
+
   useEffect(() => {
-    setMounted(true)
+    // Using requestAnimationFrame to avoid synchronous setState in effect
+    requestAnimationFrame(() => setMounted(true))
   }, [])
 
   // Use useState with lazy init to avoid hydration mismatch

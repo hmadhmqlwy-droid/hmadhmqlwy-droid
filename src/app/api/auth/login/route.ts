@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { verifyPassword } from '@/lib/auth'
 import { v4 as uuidv4 } from 'uuid'
 
 export async function POST(request: NextRequest) {
@@ -13,20 +14,24 @@ export async function POST(request: NextRequest) {
 
     const user = await db.user.findUnique({ where: { email } })
 
-    if (!user || user.password !== password) {
+    if (!user) {
+      return NextResponse.json({ error: 'بيانات الدخول غير صحيحة' }, { status: 401 })
+    }
+
+    // Verify password with bcrypt
+    const isValid = await verifyPassword(password, user.password)
+    if (!isValid) {
       // Log failed attempt
-      if (user) {
-        await db.securityLog.create({
-          data: {
-            userId: user.id,
-            action: 'login_failed',
-            details: 'محاولة تسجيل دخول فاشلة',
-            ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-            userAgent: request.headers.get('user-agent') || 'unknown',
-            severity: 'warning',
-          }
-        })
-      }
+      await db.securityLog.create({
+        data: {
+          userId: user.id,
+          action: 'login_failed',
+          details: 'محاولة تسجيل دخول فاشلة - كلمة مرور خاطئة',
+          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+          userAgent: request.headers.get('user-agent') || 'unknown',
+          severity: 'warning',
+        }
+      })
       return NextResponse.json({ error: 'بيانات الدخول غير صحيحة' }, { status: 401 })
     }
 

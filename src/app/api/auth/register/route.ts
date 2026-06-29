@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { hashPassword } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,16 +15,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'كلمة المرور يجب أن تكون 8 أحرف على الأقل' }, { status: 400 })
     }
 
+    // Password strength check
+    const hasUpperCase = /[A-Z]/.test(password)
+    const hasLowerCase = /[a-z]/.test(password)
+    const hasNumbers = /\d/.test(password)
+    const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    const strengthCount = [hasUpperCase, hasLowerCase, hasNumbers, hasSpecialChar].filter(Boolean).length
+
+    if (strengthCount < 3) {
+      return NextResponse.json({ 
+        error: 'كلمة المرور ضعيفة. يجب أن تحتوي على أحرف كبيرة وصغيرة وأرقام ورموز' 
+      }, { status: 400 })
+    }
+
     const existing = await db.user.findUnique({ where: { email } })
     if (existing) {
       return NextResponse.json({ error: 'البريد الإلكتروني مسجل مسبقاً' }, { status: 409 })
     }
 
+    // Hash password with bcrypt
+    const hashedPassword = await hashPassword(password)
+
     const user = await db.user.create({
       data: {
         name,
         email,
-        password, // In production, hash with bcrypt
+        password: hashedPassword,
         role: 'user',
       }
     })
