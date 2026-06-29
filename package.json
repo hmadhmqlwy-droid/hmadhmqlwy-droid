@@ -1,7 +1,9 @@
 {
-  "name": "nextjs_tailwind_shadcn_ts",
-  "version": "0.2.0",
+  "name": "jamiat-pro",
+  "version": "1.0.0",
   "private": true,
+  "author": "زعيم الدمار",
+  "description": "منصة جمعياتبرو - منصة متكاملة لإدارة وتنظيم الجمعيات مع نظام حماية احترافي وتصميم ثلاثي الأبعاد",
   "scripts": {
     "dev": "next dev -p 3000 2>&1 | tee dev.log",
     "build": "next build && cp -r .next/static .next/standalone/.next/ && cp -r public .next/standalone/",

@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   title: "جمعياتبرو - منصة تنظيم الجمعيات الذكية",
   description: "منصة متكاملة لإدارة وتنظيم الجمعيات مع نظام حماية احترافي وتصميم ثلاثي الأبعاد",
   keywords: ["جمعيات", "إدارة", "تنظيم", "حماية", "أعضاء", "فعاليات"],
-  authors: [{ name: "جمعياتبرو" }],
+  authors: [{ name: "زعيم الدمار" }],
   icons: {
     icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
   },

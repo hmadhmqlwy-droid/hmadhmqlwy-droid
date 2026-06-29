@@ -456,7 +456,7 @@ export function LandingPage() {
       <footer className="relative z-10 py-8 border-t border-border/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-sm text-muted-foreground">
-            © 2026 جمعياتبرو - جميع الحقوق محفوظة
+            © 2026 جمعياتبرو - جميع الحقوق محفوظة | تطوير: <span className="text-cyan-400 font-bold">زعيم الدمار</span>
           </p>
         </div>
       </footer>
