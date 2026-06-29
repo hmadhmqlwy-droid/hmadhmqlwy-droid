@@ -1,0 +1,145 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  name            String
+  password        String
+  avatar          String?
+  role            String   @default("user") // admin, manager, user
+  twoFactorSecret String?
+  twoFactorEnabled Boolean @default(false)
+  isActive        Boolean  @default(true)
+  lastLogin       DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  sessions        Session[]
+  securityLogs    SecurityLog[]
+  associations    Member[]
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token        String   @unique
+  ipAddress    String?
+  userAgent    String?
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+}
+
+model Association {
+  id          String   @id @default(cuid())
+  name        String
+  nameEn      String?
+  description String
+  category    String   // خيري, تعليمي, اجتماعي, ثقافي, رياضي, ديني, مهني, أخرى
+  logo        String?
+  coverImage  String?
+  phone       String?
+  email       String?
+  website     String?
+  address     String?
+  city        String?
+  country     String   @default("السعودية")
+  licenseNumber String?
+  taxId       String?
+  foundedDate DateTime?
+  status      String   @default("active") // active, inactive, suspended, pending
+  members     Member[]
+  events      Event[]
+  transactions Transaction[]
+  documents   Document[]
+  createdBy   String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Member {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  associationId String
+  association   Association @relation(fields: [associationId], references: [id], onDelete: Cascade)
+  role          String   @default("member") // president, vice_president, secretary, treasurer, member
+  status        String   @default("active") // active, inactive, suspended
+  joinedAt      DateTime @default(now())
+  leftAt        DateTime?
+}
+
+model Event {
+  id            String   @id @default(cuid())
+  associationId String
+  association   Association @relation(fields: [associationId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
+  location      String?
+  startDate     DateTime
+  endDate       DateTime?
+  status        String   @default("upcoming") // upcoming, ongoing, completed, cancelled
+  maxAttendees  Int?
+  budget        Float?
+  category      String?  // مؤتمر, ندوة, ورشة عمل, معرض, حملة, أخرى
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Transaction {
+  id            String   @id @default(cuid())
+  associationId String
+  association   Association @relation(fields: [associationId], references: [id], onDelete: Cascade)
+  type          String   // income, expense
+  category      String   // اشتراكات, تبرعات, منح, رواتب, إيجار, صيانة, أخرى
+  amount        Float
+  description   String?
+  date          DateTime
+  reference     String?
+  approvedBy    String?
+  status        String   @default("pending") // pending, approved, rejected
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Document {
+  id            String   @id @default(cuid())
+  associationId String
+  association   Association @relation(fields: [associationId], references: [id], onDelete: Cascade)
+  title         String
+  type          String   // عقد, تقرير, محضر, قرار, سياسة, أخرى
+  fileUrl       String?
+  description   String?
+  uploadedBy    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model SecurityLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  action    String   // login, logout, password_change, 2fa_enable, 2fa_disable, role_change, data_export, suspicious_activity
+  details   String?
+  ipAddress String?
+  userAgent String?
+  severity  String   @default("info") // info, warning, critical
+  createdAt DateTime @default(now())
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  action     String
+  resource   String
+  resourceId String?
+  details    String?
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+}
