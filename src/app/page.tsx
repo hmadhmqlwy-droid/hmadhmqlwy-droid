@@ -13,13 +13,225 @@ import { SecurityPage } from '@/components/sections/security'
 import { AdminPage } from '@/components/sections/admin'
 import {
   Building2, LayoutDashboard, Users, Calendar, DollarSign, Shield, LogOut, Menu, X,
-  Moon, Sun, ChevronLeft, Settings, Bell, Crown, Globe, Download, Check, XCircle, Info, AlertTriangle
+  Moon, Sun, ChevronLeft, Settings, Bell, Crown, Globe, Download, Check, XCircle, Info, AlertTriangle,
+  Mail, Phone, Facebook, Twitter, Instagram, Youtube, MessageCircle, Sparkles, Search, User
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
 import { useEffect, useRef, useState, useCallback } from 'react'
 
-// Toast Component
+// ============================================
+// TOP INFO BAR (Like Gama Systems)
+// ============================================
+function TopInfoBar() {
+  const [isVisible, setIsVisible] = useState(true)
+  
+  if (!isVisible) return null
+
+  return (
+    <div className="bg-[#0a1628] text-white text-xs relative z-50" dir="rtl">
+      <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-9">
+        {/* Right side - Social icons */}
+        <div className="flex items-center gap-3">
+          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-emerald-400 transition-colors">
+            <Twitter className="w-3.5 h-3.5" />
+          </a>
+          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-emerald-400 transition-colors">
+            <Instagram className="w-3.5 h-3.5" />
+          </a>
+          <a href="https://wa.me/966500000000" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-emerald-400 transition-colors">
+            <MessageCircle className="w-3.5 h-3.5" />
+          </a>
+          <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-emerald-400 transition-colors">
+            <Youtube className="w-3.5 h-3.5" />
+          </a>
+          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-emerald-400 transition-colors">
+            <Facebook className="w-3.5 h-3.5" />
+          </a>
+        </div>
+
+        {/* Center - Promo text */}
+        <div className="hidden md:flex items-center gap-1">
+          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+          <span className="text-amber-400 font-bold">سجّل الآن واحصل على خصم 20% على جميع الخدمات</span>
+        </div>
+
+        {/* Left side - Contact info */}
+        <div className="flex items-center gap-4">
+          <div className="hidden sm:flex items-center gap-1.5 text-white/70">
+            <Phone className="w-3.5 h-3.5" />
+            <span dir="ltr">+966 50 000 0000</span>
+          </div>
+          <div className="hidden sm:flex items-center gap-1.5 text-white/70">
+            <Mail className="w-3.5 h-3.5" />
+            <span>info@jamiat-pro.com</span>
+          </div>
+          <button 
+            onClick={() => setIsVisible(false)}
+            className="text-white/40 hover:text-white transition-colors p-0.5"
+          >
+            <X className="w-3 h-3" />
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ============================================
+// MAIN NAVBAR (Below top info bar)
+// ============================================
+function MainNavbar({ onMenuClick }: { onMenuClick: () => void }) {
+  const { user, setCurrentPage, logout } = useAppStore()
+  const [searchOpen, setSearchOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [profileOpen, setProfileOpen] = useState(false)
+  const profileRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (profileRef.current && !profileRef.current.contains(e.target as Node)) setProfileOpen(false)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  return (
+    <header className="sticky top-0 z-40 bg-[#0f1d2e]/95 backdrop-blur-xl border-b border-border/20" dir="rtl">
+      <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
+        {/* Right - Logo + Menu */}
+        <div className="flex items-center gap-3">
+          <button onClick={onMenuClick} className="text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-lg hover:bg-white/5">
+            <Menu className="w-5 h-5" />
+          </button>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+              <Building2 className="w-4 h-4 text-white" />
+            </div>
+            <span className="text-lg font-black text-foreground hidden sm:block">جمعيات<span className="text-emerald-500">برو</span></span>
+          </div>
+        </div>
+
+        {/* Center - Search */}
+        <div className="flex-1 max-w-md hidden md:block">
+          <div className="relative">
+            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="ابحث في المنصة..."
+              className="pr-10 pl-4 h-9 bg-white/5 border-border/30 rounded-xl text-sm focus:border-emerald-500/50"
+            />
+          </div>
+        </div>
+
+        {/* Left - Actions */}
+        <div className="flex items-center gap-2">
+          {/* Mobile search toggle */}
+          <button 
+            onClick={() => setSearchOpen(!searchOpen)}
+            className="md:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors"
+          >
+            <Search className="w-4 h-4" />
+          </button>
+
+          {/* Notifications */}
+          <NotificationPanel />
+
+          {/* Profile */}
+          <div className="relative" ref={profileRef}>
+            <button
+              onClick={() => setProfileOpen(!profileOpen)}
+              className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-white/5 transition-colors"
+            >
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-emerald-500/20">
+                {user?.name?.charAt(0) || 'م'}
+              </div>
+              <span className="hidden sm:block text-sm font-bold text-foreground max-w-[120px] truncate">{user?.name || 'المستخدم'}</span>
+            </button>
+
+            <AnimatePresence>
+              {profileOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: -5, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -5, scale: 0.95 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute left-0 top-full mt-2 w-64 glass-dark rounded-xl border border-border/30 shadow-xl overflow-hidden z-50"
+                  dir="rtl"
+                >
+                  {/* User info */}
+                  <div className="p-4 border-b border-border/20">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold shadow-lg">
+                        {user?.name?.charAt(0) || 'م'}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-bold text-foreground truncate">{user?.name || 'المستخدم'}</div>
+                        <div className="text-xs text-muted-foreground truncate">{user?.email || ''}</div>
+                      </div>
+                    </div>
+                    <div className="mt-2">
+                      <Badge className={`${user?.role === 'admin' ? 'bg-amber-500/10 text-amber-500' : user?.role === 'manager' ? 'bg-purple-500/10 text-purple-500' : 'bg-emerald-500/10 text-emerald-500'} text-[10px]`}>
+                        {user?.role === 'admin' ? 'مدير النظام' : user?.role === 'manager' ? 'مشرف' : 'مستخدم'}
+                      </Badge>
+                    </div>
+                  </div>
+                  
+                  {/* Actions */}
+                  <div className="p-2">
+                    <button
+                      onClick={() => { setCurrentPage('security'); setProfileOpen(false) }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors"
+                    >
+                      <Shield className="w-4 h-4" />
+                      مركز الأمان
+                    </button>
+                    <button
+                      onClick={() => { logout(); setProfileOpen(false) }}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-400 hover:text-red-500 hover:bg-red-500/5 transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      تسجيل الخروج
+                    </button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile search bar */}
+      <AnimatePresence>
+        {searchOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="md:hidden px-4 pb-3 border-t border-border/10"
+          >
+            <div className="relative mt-2">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="ابحث في المنصة..."
+                className="pr-10 pl-4 h-9 bg-white/5 border-border/30 rounded-xl text-sm focus:border-emerald-500/50"
+                autoFocus
+              />
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </header>
+  )
+}
+
+// ============================================
+// TOAST COMPONENT
+// ============================================
 function Toast() {
   const { toast, clearToast } = useAppStore()
   
@@ -62,7 +274,9 @@ function Toast() {
   )
 }
 
-// Notification Panel Component
+// ============================================
+// NOTIFICATION PANEL
+// ============================================
 function NotificationPanel() {
   const { notifications, unreadCount, markAllRead } = useAppStore()
   const [open, setOpen] = useState(false)
@@ -96,7 +310,7 @@ function NotificationPanel() {
         onClick={() => { setOpen(!open); if (!open && unreadCount > 0) markAllRead() }}
         className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors"
       >
-        <Bell className="w-5 h-5" />
+        <Bell className="w-4 h-4" />
         {unreadCount > 0 && (
           <motion.span
             initial={{ scale: 0 }}
@@ -154,6 +368,9 @@ function NotificationPanel() {
   )
 }
 
+// ============================================
+// SIDEBAR (Fixed on right, no hover weirdness)
+// ============================================
 function Sidebar() {
   const { currentPage, setCurrentPage, sidebarOpen, setSidebarOpen, user, logout, theme, toggleTheme, lang, setLang, t } = useAppStore()
 
@@ -168,161 +385,149 @@ function Sidebar() {
   ]
 
   return (
-    <motion.aside
-      initial={false}
-      animate={{ width: sidebarOpen ? 260 : 72 }}
-      transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-      className="fixed right-0 top-0 bottom-0 z-40 glass-dark border-l border-border/30 flex flex-col"
-    >
-      {/* Logo */}
-      <div className="h-16 flex items-center justify-between px-4 border-b border-border/20">
-        <AnimatePresence mode="wait">
-          {sidebarOpen && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="flex items-center gap-2"
-            >
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-                <Building2 className="w-4 h-4 text-white" />
-              </div>
-              <span className="text-lg font-black text-foreground">جمعيات<span className="text-emerald-500">برو</span></span>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        {!sidebarOpen && (
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto">
-            <Building2 className="w-4 h-4 text-white" />
-          </div>
-        )}
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="text-muted-foreground hover:text-foreground transition-colors p-1"
-        >
-          {sidebarOpen ? <ChevronLeft className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
-        </button>
-      </div>
+    <>
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+        />
+      )}
 
-      {/* Navigation */}
-      <nav className="flex-1 py-4 px-2 overflow-y-auto">
-        <div className="space-y-1">
-          {navItems.map((item) => {
-            const isActive = currentPage === item.id
-            return (
-              <motion.button
-                key={item.id}
-                onClick={() => setCurrentPage(item.id)}
-                whileHover={{ x: -4 }}
-                whileTap={{ scale: 0.97 }}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-medium relative ${
-                  isActive
-                    ? 'bg-emerald-500/10 text-emerald-500 shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
-                }`}
+      <motion.aside
+        initial={false}
+        animate={{ 
+          width: sidebarOpen ? 260 : 72,
+          x: 0
+        }}
+        transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+        className={`fixed right-0 top-0 bottom-0 z-50 bg-[#0a1628]/98 backdrop-blur-xl border-l border-border/20 flex flex-col ${
+          !sidebarOpen ? 'lg:translate-x-0' : ''
+        }`}
+      >
+        {/* Logo */}
+        <div className="h-14 flex items-center justify-between px-3 border-b border-border/20">
+          <AnimatePresence mode="wait">
+            {sidebarOpen && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex items-center gap-2"
               >
-                <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-emerald-500' : ''}`} />
-                <AnimatePresence>
-                  {sidebarOpen && (
-                    <motion.span
-                      initial={{ opacity: 0, width: 0 }}
-                      animate={{ opacity: 1, width: 'auto' }}
-                      exit={{ opacity: 0, width: 0 }}
-                      className="whitespace-nowrap overflow-hidden"
-                    >
-                      {item.label}
-                    </motion.span>
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                  <Building2 className="w-4 h-4 text-white" />
+                </div>
+                <span className="text-lg font-black text-foreground">جمعيات<span className="text-emerald-500">برو</span></span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          {!sidebarOpen && (
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20">
+              <Building2 className="w-4 h-4 text-white" />
+            </div>
+          )}
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-lg hover:bg-white/5"
+          >
+            {sidebarOpen ? <ChevronLeft className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+          </button>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 py-3 px-2 overflow-y-auto">
+          <div className="space-y-1">
+            {navItems.map((item) => {
+              const isActive = currentPage === item.id
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setCurrentPage(item.id)
+                    // Close sidebar on mobile after selection
+                    if (window.innerWidth < 1024) setSidebarOpen(false)
+                  }}
+                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-medium relative ${
+                    isActive
+                      ? 'bg-emerald-500/10 text-emerald-500 shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                  }`}
+                >
+                  <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-emerald-500' : ''}`} />
+                  <AnimatePresence>
+                    {sidebarOpen && (
+                      <motion.span
+                        initial={{ opacity: 0, width: 0 }}
+                        animate={{ opacity: 1, width: 'auto' }}
+                        exit={{ opacity: 0, width: 0 }}
+                        className="whitespace-nowrap overflow-hidden"
+                      >
+                        {item.label}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                  {isActive && sidebarOpen && (
+                    <div className="absolute right-0 w-1 h-8 bg-emerald-500 rounded-l-full" />
                   )}
-                </AnimatePresence>
-                {isActive && sidebarOpen && (
-                  <motion.div
-                    layoutId="activeNav"
-                    className="absolute right-0 w-1 h-8 bg-emerald-500 rounded-l-full"
-                  />
-                )}
-              </motion.button>
-            )
-          })}
-        </div>
-      </nav>
+                </button>
+              )
+            })}
+          </div>
+        </nav>
 
-      {/* Bottom */}
-      <div className="p-3 border-t border-border/20 space-y-2">
-        {sidebarOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex items-center gap-3 p-2 rounded-xl bg-background/30"
-          >
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-sm">
-              {user?.name?.charAt(0) || 'م'}
+        {/* Bottom - User section */}
+        <div className="p-3 border-t border-border/20 space-y-2">
+          {sidebarOpen && (
+            <div className="flex items-center gap-3 p-2 rounded-xl bg-white/5">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-sm shadow-lg">
+                {user?.name?.charAt(0) || 'م'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-bold text-foreground truncate">{user?.name || 'المستخدم'}</div>
+                <div className="text-[10px] text-muted-foreground truncate">{user?.email || ''}</div>
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-sm font-bold text-foreground truncate">{user?.name || 'المستخدم'}</div>
-              <div className="text-[10px] text-muted-foreground truncate">{user?.role === 'admin' ? 'مدير النظام' : user?.role === 'manager' ? 'مشرف' : 'مستخدم'}</div>
-            </div>
-          </motion.div>
-        )}
-        <div className="flex items-center gap-1">
-          <button
-            onClick={toggleTheme}
-            className="flex-1 flex items-center justify-center gap-1 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors text-xs"
-            title={theme === 'dark' ? 'الوضع الفاتح' : 'الوضع الداكن'}
-          >
-            {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            {sidebarOpen && <span>{theme === 'dark' ? 'فاتح' : 'داكن'}</span>}
-          </button>
-          <button
-            onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
-            className="flex-1 flex items-center justify-center gap-1 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors text-xs"
-            title={lang === 'ar' ? 'English' : 'عربي'}
-          >
-            <Globe className="w-4 h-4" />
-            {sidebarOpen && <span>{lang === 'ar' ? 'EN' : 'عربي'}</span>}
-          </button>
-          <button
-            onClick={logout}
-            className="flex-1 flex items-center justify-center gap-1 p-2 rounded-lg text-red-400 hover:text-red-500 hover:bg-red-500/5 transition-colors text-xs"
-          >
-            <LogOut className="w-4 h-4" />
-            {sidebarOpen && <span>خروج</span>}
-          </button>
+          )}
+          <div className="flex items-center gap-1">
+            <button
+              onClick={toggleTheme}
+              className="flex-1 flex items-center justify-center gap-1 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors text-xs"
+              title={theme === 'dark' ? 'الوضع الفاتح' : 'الوضع الداكن'}
+            >
+              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              {sidebarOpen && <span>{theme === 'dark' ? 'فاتح' : 'داكن'}</span>}
+            </button>
+            <button
+              onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
+              className="flex-1 flex items-center justify-center gap-1 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors text-xs"
+              title={lang === 'ar' ? 'English' : 'عربي'}
+            >
+              <Globe className="w-4 h-4" />
+              {sidebarOpen && <span>{lang === 'ar' ? 'EN' : 'عربي'}</span>}
+            </button>
+            <button
+              onClick={logout}
+              className="flex-1 flex items-center justify-center gap-1 p-2 rounded-lg text-red-400 hover:text-red-500 hover:bg-red-500/5 transition-colors text-xs"
+            >
+              <LogOut className="w-4 h-4" />
+              {sidebarOpen && <span>خروج</span>}
+            </button>
+          </div>
         </div>
-      </div>
-    </motion.aside>
+      </motion.aside>
+    </>
   )
 }
 
-function TopBar() {
-  const { currentPage, sidebarOpen, setSidebarOpen, t } = useAppStore()
-
-  const pageLabels: Record<string, string> = {
-    dashboard: t('dashboard'),
-    associations: t('associations'),
-    members: t('members'),
-    events: t('events'),
-    finance: t('finance'),
-    security: t('security'),
-    admin: t('admin'),
-  }
-
-  return (
-    <header className="sticky top-0 z-30 h-16 glass-dark border-b border-border/20 flex items-center justify-between px-4 md:px-6">
-      <div className="flex items-center gap-3">
-        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="md:hidden text-muted-foreground hover:text-foreground">
-          <Menu className="w-5 h-5" />
-        </button>
-        <h2 className="text-lg font-bold text-foreground">{pageLabels[currentPage] || ''}</h2>
-      </div>
-      <div className="flex items-center gap-2">
-        <NotificationPanel />
-      </div>
-    </header>
-  )
-}
-
+// ============================================
+// MAIN HOME COMPONENT
+// ============================================
 export default function Home() {
-  const { currentPage, isAuthenticated, theme, sidebarOpen } = useAppStore()
+  const { currentPage, isAuthenticated, theme, sidebarOpen, setSidebarOpen } = useAppStore()
 
   // Set dark theme by default
   useEffect(() => {
@@ -331,7 +536,7 @@ export default function Home() {
     document.documentElement.lang = 'ar'
   }, [])
 
-  // Validate session on mount - check if cookie exists and restore session
+  // Validate session on mount
   useEffect(() => {
     const validateSession = async () => {
       const token = document.cookie.split('; ').find(row => row.startsWith('session_token='))
@@ -344,7 +549,6 @@ export default function Home() {
               useAppStore.getState().login(data.user, token.split('=')[1])
             }
           } else {
-            // Session invalid, clear cookie
             document.cookie = 'session_token=; path=/; max-age=0'
           }
         } catch {
@@ -372,7 +576,7 @@ export default function Home() {
     return () => clearInterval(interval)
   }, [isAuthenticated])
 
-  // Auth pages
+  // Auth pages - no dashboard layout
   if (!isAuthenticated) {
     if (currentPage === 'register' || currentPage === 'login') {
       return <AuthPage />
@@ -397,9 +601,18 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-background" dir="rtl">
       <Toast />
+      
+      {/* Top Info Bar (like Gama Systems) */}
+      <TopInfoBar />
+      
+      {/* Main Navbar */}
+      <MainNavbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+      
+      {/* Sidebar */}
       <Sidebar />
+      
+      {/* Main Content */}
       <div className="transition-all duration-300" style={{ marginRight: sidebarOpen ? 260 : 72 }}>
-        <TopBar />
         <main className="p-4 md:p-6 max-w-7xl mx-auto">
           <AnimatePresence mode="wait">
             <motion.div
