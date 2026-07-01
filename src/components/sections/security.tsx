@@ -7,6 +7,7 @@ import { Shield, Lock, Eye, Fingerprint, AlertTriangle, CheckCircle, XCircle, Cl
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { AnimatedSecurityIllustration, AnimatedLoader } from './animated-illustrations'
 
 const actionLabels: Record<string, string> = {
   login: 'تسجيل دخول',
@@ -20,6 +21,9 @@ const actionLabels: Record<string, string> = {
   data_export: 'تصدير بيانات',
   register: 'تسجيل حساب',
   suspicious_activity: 'نشاط مشبوه',
+  create_association: 'إنشاء جمعية',
+  delete_association: 'حذف جمعية',
+  update_association: 'تحديث جمعية',
 }
 
 const severityColors: Record<string, string> = {
@@ -102,18 +106,22 @@ export function SecurityPage() {
     return Math.min(score, 100)
   }
 
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-[60vh]" dir="rtl">
-      <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-        className="w-12 h-12 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full" />
-    </div>
-  )
+  if (loading) return <AnimatedLoader text="جارٍ تحميل مركز الأمان..." />
 
   return (
     <div className="space-y-6" dir="rtl">
-      <div>
-        <h1 className="text-2xl font-black text-foreground">مركز الأمان</h1>
-        <p className="text-muted-foreground text-sm">إدارة حماية حسابك ومراقبة الأنشطة</p>
+      {/* Header with illustration */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-black text-foreground flex items-center gap-2">
+            <Shield className="w-6 h-6 text-emerald-500" />
+            مركز الأمان
+          </h1>
+          <p className="text-muted-foreground text-sm">إدارة حماية حسابك ومراقبة الأنشطة</p>
+        </div>
+        <div className="hidden md:block">
+          <AnimatedSecurityIllustration />
+        </div>
       </div>
 
       {/* Security Score */}
@@ -136,7 +144,13 @@ export function SecurityPage() {
             </svg>
             <div className="absolute inset-0 flex items-center justify-center">
               <div className="text-center">
-                <div className="text-3xl font-black text-foreground">{securityScore}</div>
+                <motion.div 
+                  className="text-3xl font-black text-foreground"
+                  animate={{ scale: [1, 1.05, 1] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  {securityScore}
+                </motion.div>
                 <div className="text-xs text-muted-foreground">من 100</div>
               </div>
             </div>
@@ -172,10 +186,14 @@ export function SecurityPage() {
           { title: 'حماية متعددة الطبقات', desc: 'جدار حماية متعدد المستويات مع كشف التسلل والاستجابة التلقائية', icon: Shield, color: 'from-amber-500 to-orange-600' },
         ].map((f, i) => (
           <motion.div key={f.title} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.1 }}
-            whileHover={{ y: -4 }} className="glass-card rounded-2xl p-5">
-            <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${f.color} flex items-center justify-center mb-3`}>
+            whileHover={{ y: -6 }} className="glass-card rounded-2xl p-5">
+            <motion.div
+              animate={{ rotateY: [0, 5, -5, 0] }}
+              transition={{ duration: 6, repeat: Infinity, delay: i * 0.5 }}
+              className={`w-12 h-12 rounded-xl bg-gradient-to-br ${f.color} flex items-center justify-center mb-3 shadow-lg`}
+            >
               <f.icon className="w-6 h-6 text-white" />
-            </div>
+            </motion.div>
             <h3 className="font-bold text-foreground mb-1">{f.title}</h3>
             <p className="text-sm text-muted-foreground">{f.desc}</p>
           </motion.div>
@@ -205,9 +223,13 @@ export function SecurityPage() {
               return (
                 <motion.div key={log.id} initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.02 }}
                   className="flex items-center gap-3 p-3 rounded-xl bg-background/30 hover:bg-emerald-500/5 transition-colors">
-                  <div className={`w-9 h-9 rounded-lg flex items-center justify-center ${severityColors[log.severity] || 'bg-muted'}`}>
+                  <motion.div
+                    animate={{ scale: [1, 1.1, 1] }}
+                    transition={{ duration: 2, repeat: Infinity, delay: i * 0.1 }}
+                    className={`w-9 h-9 rounded-lg flex items-center justify-center ${severityColors[log.severity] || 'bg-muted'}`}
+                  >
                     <SeverityIcon className="w-4 h-4" />
-                  </div>
+                  </motion.div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <span className="font-bold text-foreground text-sm">{actionLabels[log.action] || log.action}</span>
@@ -239,9 +261,13 @@ export function SecurityPage() {
 function SecurityCheck({ label, enabled, icon: Icon, onToggle, loading }: { label: string; enabled: boolean; icon: any; onToggle?: () => void; loading?: boolean }) {
   return (
     <div className="flex items-center gap-3 p-3 rounded-xl bg-background/30">
-      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${enabled ? 'bg-emerald-500/10' : 'bg-muted'}`}>
+      <motion.div
+        animate={{ scale: enabled ? [1, 1.1, 1] : 1 }}
+        transition={{ duration: 1.5, repeat: Infinity }}
+        className={`w-8 h-8 rounded-lg flex items-center justify-center ${enabled ? 'bg-emerald-500/10' : 'bg-muted'}`}
+      >
         <Icon className={`w-4 h-4 ${enabled ? 'text-emerald-500' : 'text-muted-foreground'}`} />
-      </div>
+      </motion.div>
       <div className="flex-1">
         <span className="text-sm font-medium text-foreground">{label}</span>
       </div>

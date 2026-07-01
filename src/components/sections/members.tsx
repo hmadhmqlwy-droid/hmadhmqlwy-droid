@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { useAppStore } from '@/store/app-store'
 import { Users, Plus, Search, Crown, Shield, UserCheck, Star, Mail, Calendar, Building2, UserPlus, Trash2, Edit3, X } from 'lucide-react'
+import { AnimatedMembersIllustration, AnimatedLoader, AnimatedEmptyState } from './animated-illustrations'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -162,12 +163,7 @@ export function MembersPage() {
   // Check if user can manage members (admin or president/secretary of any association)
   const canManage = user?.role === 'admin' || members.some(m => m.userId === user?.id && ['president', 'vice_president', 'secretary'].includes(m.role))
 
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-[60vh]" dir="rtl">
-      <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-        className="w-12 h-12 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full" />
-    </div>
-  )
+  if (loading) return <AnimatedLoader text="جارٍ تحميل الأعضاء..." />
 
   return (
     <div className="space-y-6" dir="rtl">

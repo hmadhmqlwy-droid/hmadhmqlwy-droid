@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { useAppStore } from '@/store/app-store'
 import { Shield, Users, Building2, Activity, Server, UserCheck, UserX, Crown, Mail, Calendar, Search, Download, AlertTriangle, CheckCircle, Clock, BarChart3, Lock } from 'lucide-react'
+import { AnimatedAdminIllustration, AnimatedLoader } from './animated-illustrations'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -148,12 +149,7 @@ export function AdminPage() {
     }
   }
 
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-[60vh]" dir="rtl">
-      <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-        className="w-12 h-12 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full" />
-    </div>
-  )
+  if (loading) return <AnimatedLoader text="جارٍ تحميل لوحة الإدارة..." />
 
   const stats = data?.stats || { totalUsers: 0, activeUsers: 0, adminUsers: 0, totalAssociations: 0, totalMembers: 0, totalEvents: 0, totalTransactions: 0, totalSecurityLogs: 0, totalIncome: 0, totalExpense: 0, activeSessions: 0 }
   const recentUsers = data?.recentUsers || []

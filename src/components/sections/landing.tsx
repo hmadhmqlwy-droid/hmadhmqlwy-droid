@@ -4,6 +4,7 @@ import { motion, useScroll, useTransform } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
 import { Shield, Users, Building2, Calendar, BarChart3, ChevronDown, Sparkles, Lock, Eye, Fingerprint } from 'lucide-react'
 import { useAppStore } from '@/store/app-store'
+import { AnimatedHeroIllustration, AnimatedSecurityIllustration, AnimatedDashboardIllustration, AnimatedMembersIllustration, AnimatedEventsIllustration, AnimatedFinanceIllustration } from './animated-illustrations'
 
 // Seeded random for deterministic SSR
 function seededRandom(seed: number) {
@@ -16,12 +17,9 @@ function Particles() {
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    // Using requestAnimationFrame to avoid synchronous setState in effect
     requestAnimationFrame(() => setMounted(true))
   }, [])
 
-  // Use useState with lazy init to avoid hydration mismatch
-  // Round values to 4 decimal places for consistent SSR/client rendering
   const particles = useState(() =>
     Array.from({ length: 50 }, (_, i) => ({
       id: i,
@@ -62,8 +60,8 @@ function Particles() {
   )
 }
 
-// Floating 3D Card
-function FloatingCard({ icon: Icon, title, desc, delay, color }: { icon: any; title: string; desc: string; delay: number; color: string }) {
+// Floating 3D Card with animated illustration
+function FloatingCard({ icon: Icon, title, desc, delay, color, illustration }: { icon: any; title: string; desc: string; delay: number; color: string; illustration?: React.ReactNode }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 60, rotateX: -15 }}
@@ -79,6 +77,12 @@ function FloatingCard({ icon: Icon, title, desc, delay, color }: { icon: any; ti
       className="perspective-container"
     >
       <div className={`glass-card rounded-2xl p-6 cursor-pointer preserve-3d card-3d group`}>
+        {/* Animated illustration area */}
+        {illustration && (
+          <div className="mb-3 flex justify-center overflow-hidden rounded-xl bg-background/20 py-2">
+            {illustration}
+          </div>
+        )}
         <div className={`w-14 h-14 rounded-xl ${color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
           <Icon className="w-7 h-7 text-white" />
         </div>
@@ -86,53 +90,6 @@ function FloatingCard({ icon: Icon, title, desc, delay, color }: { icon: any; ti
         <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
       </div>
     </motion.div>
-  )
-}
-
-// 3D Rotating Shield
-function SecurityShield() {
-  return (
-    <div className="perspective-container">
-      <motion.div
-        animate={{ 
-          rotateY: [0, 360],
-        }}
-        transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-        className="preserve-3d"
-      >
-        <div className="relative">
-          <motion.div
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-            className="w-32 h-32 md:w-40 md:h-40 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center border border-emerald-500/30 animate-shield-pulse"
-          >
-            <Shield className="w-16 h-16 md:w-20 md:h-20 text-emerald-500" />
-          </motion.div>
-          {/* Orbiting elements */}
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 8, repeat: Infinity, ease: 'linear' }}
-            className="absolute inset-0"
-          >
-            <Lock className="absolute -top-2 left-1/2 w-5 h-5 text-amber-500" />
-          </motion.div>
-          <motion.div
-            animate={{ rotate: -360 }}
-            transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
-            className="absolute inset-0"
-          >
-            <Fingerprint className="absolute -bottom-2 left-1/2 w-5 h-5 text-cyan-500" />
-          </motion.div>
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
-            className="absolute inset-0"
-          >
-            <Eye className="absolute top-1/2 -right-2 w-5 h-5 text-emerald-400" />
-          </motion.div>
-        </div>
-      </motion.div>
-    </div>
   )
 }
 
@@ -199,12 +156,12 @@ export function LandingPage() {
   const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0])
 
   const features = [
-    { icon: Building2, title: 'إدارة الجمعيات', desc: 'إنشاء وإدارة جمعياتك بكفاءة عالية مع تتبع شامل لجميع الأنشطة والعمليات', color: 'bg-emerald-500', delay: 0.2 },
-    { icon: Users, title: 'إدارة الأعضاء', desc: 'نظام متكامل لإدارة الأعضاء مع تحديد الأدوار والصلاحيات ومتابعة الحضور', color: 'bg-cyan-500', delay: 0.3 },
-    { icon: Calendar, title: 'الفعاليات والأنشطة', desc: 'تنظيم ومتابعة الفعاليات والأنشطة مع إدارة الحجوزات والميزانيات', color: 'bg-amber-500', delay: 0.4 },
-    { icon: BarChart3, title: 'التقارير المالية', desc: 'تقارير مالية شاملة مع رسوم بيانية تفاعلية وتحليلات متقدمة', color: 'bg-teal-500', delay: 0.5 },
-    { icon: Shield, title: 'حماية متقدمة', desc: 'نظام أمان متعدد الطبقات مع تشفير البيانات والتحقق الثنائي', color: 'bg-violet-500', delay: 0.6 },
-    { icon: Sparkles, title: 'ذكاء اصطناعي', desc: 'تحليلات ذكية وتوصيات آلية لتحسين أداء جمعيتك', color: 'bg-rose-500', delay: 0.7 },
+    { icon: Building2, title: 'إدارة الجمعيات', desc: 'إنشاء وإدارة جمعياتك بكفاءة عالية مع تتبع شامل لجميع الأنشطة والعمليات', color: 'bg-emerald-500', delay: 0.2, illustration: <AnimatedHeroIllustration /> },
+    { icon: Users, title: 'إدارة الأعضاء', desc: 'نظام متكامل لإدارة الأعضاء مع تحديد الأدوار والصلاحيات ومتابعة الحضور', color: 'bg-cyan-500', delay: 0.3, illustration: <AnimatedMembersIllustration /> },
+    { icon: Calendar, title: 'الفعاليات والأنشطة', desc: 'تنظيم ومتابعة الفعاليات والأنشطة مع إدارة الحجوزات والميزانيات', color: 'bg-amber-500', delay: 0.4, illustration: <AnimatedEventsIllustration /> },
+    { icon: BarChart3, title: 'التقارير المالية', desc: 'تقارير مالية شاملة مع رسوم بيانية تفاعلية وتحليلات متقدمة', color: 'bg-teal-500', delay: 0.5, illustration: <AnimatedFinanceIllustration /> },
+    { icon: Shield, title: 'حماية متقدمة', desc: 'نظام أمان متعدد الطبقات مع تشفير البيانات والتحقق الثنائي', color: 'bg-violet-500', delay: 0.6, illustration: <AnimatedSecurityIllustration /> },
+    { icon: Sparkles, title: 'ذكاء اصطناعي', desc: 'تحليلات ذكية وتوصيات آلية لتحسين أداء جمعيتك', color: 'bg-rose-500', delay: 0.7, illustration: <AnimatedDashboardIllustration /> },
   ]
 
   return (
@@ -315,14 +272,14 @@ export function LandingPage() {
               </motion.div>
             </div>
 
-            {/* 3D Shield / Visual */}
+            {/* Hero Animated Illustration */}
             <motion.div
               initial={{ opacity: 0, scale: 0.5, rotateY: -30 }}
               animate={{ opacity: 1, scale: 1, rotateY: 0 }}
               transition={{ duration: 1, delay: 0.4 }}
               className="flex-shrink-0"
             >
-              <SecurityShield />
+              <AnimatedHeroIllustration />
             </motion.div>
           </div>
 
@@ -363,7 +320,7 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Security Section */}
+      {/* Security Section with animated illustration */}
       <section className="relative z-10 py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="glass-card rounded-3xl p-8 md:p-12">
@@ -409,17 +366,7 @@ export function LandingPage() {
                 </motion.div>
               </div>
               <div className="flex-shrink-0">
-                <motion.div
-                  animate={{ y: [0, -10, 0] }}
-                  transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
-                  className="w-48 h-48 md:w-64 md:h-64 rounded-3xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center border border-emerald-500/20 animate-pulse-glow"
-                >
-                  <div className="text-center">
-                    <Shield className="w-16 h-16 md:w-20 md:h-20 text-emerald-500 mx-auto mb-3" />
-                    <div className="text-2xl md:text-3xl font-black text-emerald-500">99.9%</div>
-                    <div className="text-xs text-muted-foreground">معدل الأمان</div>
-                  </div>
-                </motion.div>
+                <AnimatedSecurityIllustration />
               </div>
             </div>
           </div>

@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { useAppStore } from '@/store/app-store'
 import { DollarSign, TrendingUp, TrendingDown, Plus, Search, Building2, ArrowUpLeft, ArrowDownLeft, Wallet, Receipt, CheckCircle, XCircle } from 'lucide-react'
+import { AnimatedFinanceIllustration, AnimatedLoader } from './animated-illustrations'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -124,12 +125,7 @@ export function FinancePage() {
     t.description?.includes(search) || t.category.includes(search) || t.association?.name?.includes(search)
   )
 
-  if (loading) return (
-    <div className="flex items-center justify-center min-h-[60vh]" dir="rtl">
-      <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-        className="w-12 h-12 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full" />
-    </div>
-  )
+  if (loading) return <AnimatedLoader text="جارٍ تحميل البيانات المالية..." />
 
   return (
     <div className="space-y-6" dir="rtl">

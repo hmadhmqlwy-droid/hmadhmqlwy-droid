@@ -3,7 +3,8 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { useAppStore } from '@/store/app-store'
-import { Building2, Plus, Search, Filter, MapPin, Users, Calendar, Trash2, Eye, Phone, Mail, Globe, Award, AlertCircle, Edit3 } from 'lucide-react'
+import { Building2, Plus, Search, Filter, MapPin, Users, Calendar, Trash2, Eye, Phone, Mail, Globe, Award, AlertCircle, Edit3, ShieldAlert } from 'lucide-react'
+import { AnimatedHeroIllustration, AnimatedLoader, AnimatedEmptyState } from './animated-illustrations'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -189,12 +190,11 @@ export function AssociationsPage() {
 
   const canDelete = (assoc: any) => {
     if (!user) return false
+    // فقط المدير أو رئيس الجمعية يمكنه الحذف - الأعضاء العاديون لا يمكنهم
     if (user.role === 'admin') return true
-    if (user.role === 'user' || user.role === 'manager') {
-      const membership = assoc.members?.find((m: any) => m.userId === user.id)
-      return membership?.role === 'president'
-    }
-    return false
+    const membership = assoc.members?.find((m: any) => m.userId === user.id)
+    // فقط رئيس الجمعية يمكنه حذفها (وليس الأعضاء أو المشرفين)
+    return membership?.role === 'president'
   }
 
   const canEdit = (assoc: any) => {
@@ -211,12 +211,7 @@ export function AssociationsPage() {
   })
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]" dir="rtl">
-        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          className="w-12 h-12 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full" />
-      </div>
-    )
+    return <AnimatedLoader text="جارٍ تحميل الجمعيات..." />
   }
 
   return (
