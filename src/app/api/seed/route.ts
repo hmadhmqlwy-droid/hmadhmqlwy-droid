@@ -1,24 +1,44 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { hashPassword } from '@/lib/auth'
 
-// Seed endpoint - creates admin user only, all other data starts empty
-export async function POST() {
+// Seed endpoint - creates admin user with custom credentials
+// POST /api/seed - body: { email, password, name }
+export async function POST(request: NextRequest) {
   try {
+    const body = await request.json().catch(() => ({}))
+    
+    // Admin credentials from request or environment variables
+    const adminEmail = body.email || process.env.ADMIN_EMAIL
+    const adminPassword = body.password || process.env.ADMIN_PASSWORD
+    const adminName = body.name || process.env.ADMIN_NAME || 'مدير النظام'
+
+    if (!adminEmail || !adminPassword) {
+      return NextResponse.json({ 
+        error: 'يجب توفير البريد الإلكتروني وكلمة المرور للمدير',
+        hint: 'أرسل { email, password, name } في الطلب أو عيّن ADMIN_EMAIL و ADMIN_PASSWORD في متغيرات البيئة'
+      }, { status: 400 })
+    }
+
+    // Validate password strength
+    if (adminPassword.length < 8) {
+      return NextResponse.json({ error: 'كلمة المرور يجب أن تكون 8 أحرف على الأقل' }, { status: 400 })
+    }
+
     // Check if admin already exists
-    const existingAdmin = await db.user.findUnique({ where: { email: 'admin@jamaat.pro' } })
+    const existingAdmin = await db.user.findUnique({ where: { email: adminEmail } })
 
     if (existingAdmin) {
-      return NextResponse.json({ message: 'الأدمن موجود بالفعل', admin: { email: 'admin@jamaat.pro' } })
+      return NextResponse.json({ message: 'المدير موجود بالفعل', admin: { email: adminEmail } })
     }
 
     // Create admin user with hashed password
-    const hashedPassword = await hashPassword('Admin@2026')
+    const hashedPassword = await hashPassword(adminPassword)
 
     const admin = await db.user.create({
       data: {
-        name: 'مدير النظام',
-        email: 'admin@jamaat.pro',
+        name: adminName,
+        email: adminEmail,
         password: hashedPassword,
         role: 'admin',
         isActive: true,
@@ -31,7 +51,7 @@ export async function POST() {
       data: {
         userId: admin.id,
         action: 'register',
-        details: 'إنشاء حساب مدير النظام الافتراضي',
+        details: 'إنشاء حساب مدير النظام',
         ipAddress: 'system',
         userAgent: 'seed-script',
         severity: 'info',
@@ -39,20 +59,16 @@ export async function POST() {
     })
 
     return NextResponse.json({
-      message: 'تم إنشاء حساب الأدمن بنجاح',
+      message: 'تم إنشاء حساب المدير بنجاح',
       admin: {
         id: admin.id,
         name: admin.name,
         email: admin.email,
         role: admin.role,
       },
-      credentials: {
-        email: 'admin@jamaat.pro',
-        password: 'Admin@2026',
-      }
     }, { status: 201 })
   } catch (error) {
     console.error('Seed error:', error)
-    return NextResponse.json({ error: 'خطأ في إنشاء بيانات الأدمن' }, { status: 500 })
+    return NextResponse.json({ error: 'خطأ في إنشاء بيانات المدير' }, { status: 500 })
   }
 }

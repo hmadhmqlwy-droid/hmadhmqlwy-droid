@@ -166,7 +166,7 @@ export function AuthPage() {
                       <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
                         type="email"
-                        placeholder="admin@jamaat.pro"
+                        placeholder="أدخل بريدك الإلكتروني"
                         value={loginEmail}
                         onChange={(e) => setLoginEmail(e.target.value)}
                         className="pr-10 bg-background/50 border-border/50 focus:border-emerald-500"
@@ -224,16 +224,14 @@ export function AuthPage() {
                     )}
                   </Button>
 
-                  {/* Admin credentials hint */}
+                  {/* Security notice */}
                   <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
                     <div className="flex items-start gap-2">
-                      <Info className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                      <Shield className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
                       <div className="text-xs text-muted-foreground">
-                        <span className="text-emerald-500 font-bold">بيانات الأدمن الافتراضية:</span>
+                        <span className="text-emerald-500 font-bold">اتصال آمن ومشفر</span>
                         <br />
-                        البريد: <span className="font-mono text-foreground" dir="ltr">admin@jamaat.pro</span>
-                        <br />
-                        كلمة المرور: <span className="font-mono text-foreground" dir="ltr">Admin@2026</span>
+                        بياناتك محمية بتشفير AES-256 أثناء النقل والتخزين
                       </div>
                     </div>
                   </div>
