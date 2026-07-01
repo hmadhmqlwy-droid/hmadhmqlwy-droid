@@ -11,7 +11,7 @@ model User {
   id              String   @id @default(cuid())
   email           String   @unique
   name            String
-  password        String
+  password        String?
   avatar          String?
   role            String   @default("user") // admin, manager, user
   twoFactorSecret String?
@@ -23,6 +23,7 @@ model User {
   sessions        Session[]
   securityLogs    SecurityLog[]
   associations    Member[]
+  accounts        Account[]
 }
 
 model Session {
@@ -142,4 +143,19 @@ model AuditLog {
   details    String?
   ipAddress  String?
   createdAt  DateTime @default(now())
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  provider          String  // google, github, etc.
+  providerAccountId String
+  accessToken       String?
+  refreshToken      String?
+  expiresAt         DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([provider, providerAccountId])
 }
