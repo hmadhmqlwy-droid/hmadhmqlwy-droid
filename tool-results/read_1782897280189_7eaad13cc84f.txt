@@ -1,0 +1,593 @@
+     1→'use client'
+     2→
+     3→import { motion, AnimatePresence } from 'framer-motion'
+     4→import { useState, useEffect } from 'react'
+     5→import { useAppStore } from '@/store/app-store'
+     6→import { Building2, Plus, Search, Filter, MapPin, Users, Calendar, Trash2, Eye, Phone, Mail, Globe, Award, AlertCircle, Edit3 } from 'lucide-react'
+     7→import { Button } from '@/components/ui/button'
+     8→import { Input } from '@/components/ui/input'
+     9→import { Label } from '@/components/ui/label'
+    10→import { Textarea } from '@/components/ui/textarea'
+    11→import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+    12→import { Badge } from '@/components/ui/badge'
+    13→import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+    14→
+    15→const categories = ['خيري', 'تعليمي', 'اجتماعي', 'ثقافي', 'رياضي', 'ديني', 'مهني', 'أخرى']
+    16→
+    17→const statusLabels: Record<string, string> = {
+    18→  active: 'نشطة',
+    19→  inactive: 'غير نشطة',
+    20→  suspended: 'معلقة',
+    21→  pending: 'قيد المراجعة',
+    22→}
+    23→
+    24→const statusColors: Record<string, string> = {
+    25→  active: 'bg-emerald-500/10 text-emerald-500',
+    26→  inactive: 'bg-muted text-muted-foreground',
+    27→  suspended: 'bg-red-500/10 text-red-500',
+    28→  pending: 'bg-amber-500/10 text-amber-500',
+    29→}
+    30→
+    31→const categoryIcons: Record<string, string> = {
+    32→  'خيري': '💚',
+    33→  'تعليمي': '📚',
+    34→  'اجتماعي': '🤝',
+    35→  'ثقافي': '🎭',
+    36→  'رياضي': '⚽',
+    37→  'ديني': '🕌',
+    38→  'مهني': '💼',
+    39→  'أخرى': '📌',
+    40→}
+    41→
+    42→const emptyForm = {
+    43→  name: '', nameEn: '', description: '', category: 'خيري',
+    44→  phone: '', email: '', website: '', address: '', city: '',
+    45→  licenseNumber: '', taxId: '', foundedDate: '',
+    46→}
+    47→
+    48→export function AssociationsPage() {
+    49→  const { user, showToast } = useAppStore()
+    50→  const [associations, setAssociations] = useState<any[]>([])
+    51→  const [loading, setLoading] = useState(true)
+    52→  const [search, setSearch] = useState('')
+    53→  const [filterCategory, setFilterCategory] = useState('all')
+    54→  const [showCreate, setShowCreate] = useState(false)
+    55→  const [showEdit, setShowEdit] = useState(false)
+    56→  const [editingAssoc, setEditingAssoc] = useState<any>(null)
+    57→  const [selectedAssoc, setSelectedAssoc] = useState<any>(null)
+    58→  const [showDetail, setShowDetail] = useState(false)
+    59→  const [createLoading, setCreateLoading] = useState(false)
+    60→  const [editLoading, setEditLoading] = useState(false)
+    61→
+    62→  // Create/Edit form
+    63→  const [form, setForm] = useState(emptyForm)
+    64→
+    65→  useEffect(() => { fetchAssociations() }, [])
+    66→
+    67→  const fetchAssociations = async () => {
+    68→    try {
+    69→      const res = await fetch('/api/associations')
+    70→      if (res.ok) {
+    71→        const data = await res.json()
+    72→        setAssociations(data)
+    73→      } else if (res.status === 401) {
+    74→        showToast('يجب تسجيل الدخول أولاً', 'error')
+    75→      }
+    76→    } catch (e) { 
+    77→      console.error(e)
+    78→      showToast('خطأ في تحميل الجمعيات', 'error')
+    79→    }
+    80→    finally { setLoading(false) }
+    81→  }
+    82→
+    83→  const handleCreate = async () => {
+    84→    if (!form.name.trim()) {
+    85→      showToast('اسم الجمعية مطلوب', 'error')
+    86→      return
+    87→    }
+    88→    if (!form.description.trim()) {
+    89→      showToast('وصف الجمعية مطلوب', 'error')
+    90→      return
+    91→    }
+    92→    
+    93→    setCreateLoading(true)
+    94→    try {
+    95→      const res = await fetch('/api/associations', {
+    96→        method: 'POST',
+    97→        headers: { 'Content-Type': 'application/json' },
+    98→        body: JSON.stringify({ ...form, createdBy: user?.id }),
+    99→      })
+   100→      if (res.ok) {
+   101→        setShowCreate(false)
+   102→        setForm(emptyForm)
+   103→        fetchAssociations()
+   104→        showToast('تم إنشاء الجمعية بنجاح', 'success')
+   105→      } else {
+   106→        const data = await res.json()
+   107→        showToast(data.error || 'خطأ في إنشاء الجمعية', 'error')
+   108→      }
+   109→    } catch (e) { 
+   110→      console.error(e)
+   111→      showToast('خطأ في الاتصال بالخادم', 'error')
+   112→    } finally {
+   113→      setCreateLoading(false)
+   114→    }
+   115→  }
+   116→
+   117→  const handleEdit = async () => {
+   118→    if (!editingAssoc) return
+   119→    if (!form.name.trim()) {
+   120→      showToast('اسم الجمعية مطلوب', 'error')
+   121→      return
+   122→    }
+   123→    if (!form.description.trim()) {
+   124→      showToast('وصف الجمعية مطلوب', 'error')
+   125→      return
+   126→    }
+   127→    
+   128→    setEditLoading(true)
+   129→    try {
+   130→      const res = await fetch('/api/associations', {
+   131→        method: 'PATCH',
+   132→        headers: { 'Content-Type': 'application/json' },
+   133→        body: JSON.stringify({ associationId: editingAssoc.id, ...form }),
+   134→      })
+   135→      if (res.ok) {
+   136→        setShowEdit(false)
+   137→        setEditingAssoc(null)
+   138→        setForm(emptyForm)
+   139→        fetchAssociations()
+   140→        showToast('تم تحديث الجمعية بنجاح', 'success')
+   141→      } else {
+   142→        const data = await res.json()
+   143→        showToast(data.error || 'خطأ في تحديث الجمعية', 'error')
+   144→      }
+   145→    } catch (e) {
+   146→      console.error(e)
+   147→      showToast('خطأ في الاتصال بالخادم', 'error')
+   148→    } finally {
+   149→      setEditLoading(false)
+   150→    }
+   151→  }
+   152→
+   153→  const openEditDialog = (assoc: any) => {
+   154→    setEditingAssoc(assoc)
+   155→    setForm({
+   156→      name: assoc.name || '',
+   157→      nameEn: assoc.nameEn || '',
+   158→      description: assoc.description || '',
+   159→      category: assoc.category || 'خيري',
+   160→      phone: assoc.phone || '',
+   161→      email: assoc.email || '',
+   162→      website: assoc.website || '',
+   163→      address: assoc.address || '',
+   164→      city: assoc.city || '',
+   165→      licenseNumber: assoc.licenseNumber || '',
+   166→      taxId: assoc.taxId || '',
+   167→      foundedDate: assoc.foundedDate ? new Date(assoc.foundedDate).toISOString().split('T')[0] : '',
+   168→    })
+   169→    setShowEdit(true)
+   170→  }
+   171→
+   172→  const handleDelete = async (assocId: string, assocName: string) => {
+   173→    if (!confirm(`هل أنت متأكد من حذف "${assocName}"؟ سيتم حذف جميع الأعضاء والفعاليات والمعاملات المرتبطة.`)) return
+   174→    try {
+   175→      const res = await fetch(`/api/associations?associationId=${assocId}`, { method: 'DELETE' })
+   176→      if (res.ok) {
+   177→        showToast('تم حذف الجمعية بنجاح', 'success')
+   178→        setShowDetail(false)
+   179→        fetchAssociations()
+   180→      } else {
+   181→        const data = await res.json()
+   182→        showToast(data.error || 'خطأ في حذف الجمعية', 'error')
+   183→      }
+   184→    } catch (e) { 
+   185→      console.error(e)
+   186→      showToast('خطأ في الاتصال بالخادم', 'error')
+   187→    }
+   188→  }
+   189→
+   190→  const canDelete = (assoc: any) => {
+   191→    if (!user) return false
+   192→    if (user.role === 'admin') return true
+   193→    if (user.role === 'user' || user.role === 'manager') {
+   194→      const membership = assoc.members?.find((m: any) => m.userId === user.id)
+   195→      return membership?.role === 'president'
+   196→    }
+   197→    return false
+   198→  }
+   199→
+   200→  const canEdit = (assoc: any) => {
+   201→    if (!user) return false
+   202→    if (user.role === 'admin') return true
+   203→    const membership = assoc.members?.find((m: any) => m.userId === user.id)
+   204→    return membership && ['president', 'vice_president', 'secretary'].includes(membership.role)
+   205→  }
+   206→
+   207→  const filtered = associations.filter(a => {
+   208→    const matchSearch = a.name.includes(search) || a.description.includes(search) || (a.nameEn && a.nameEn.toLowerCase().includes(search.toLowerCase()))
+   209→    const matchCategory = filterCategory === 'all' || a.category === filterCategory
+   210→    return matchSearch && matchCategory
+   211→  })
+   212→
+   213→  if (loading) {
+   214→    return (
+   215→      <div className="flex items-center justify-center min-h-[60vh]" dir="rtl">
+   216→        <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+   217→          className="w-12 h-12 border-4 border-emerald-500/30 border-t-emerald-500 rounded-full" />
+   218→      </div>
+   219→    )
+   220→  }
+   221→
+   222→  return (
+   223→    <div className="space-y-6" dir="rtl">
+   224→      {/* Header */}
+   225→      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+   226→        <div>
+   227→          <h1 className="text-2xl font-black text-foreground">إدارة الجمعيات</h1>
+   228→          <p className="text-muted-foreground text-sm">{associations.length} جمعية مسجلة</p>
+   229→        </div>
+   230→        <Dialog open={showCreate} onOpenChange={setShowCreate}>
+   231→          <DialogTrigger asChild>
+   232→            <Button className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/25">
+   233→              <Plus className="w-4 h-4 ml-2" />
+   234→              إنشاء جمعية
+   235→            </Button>
+   236→          </DialogTrigger>
+   237→          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" dir="rtl">
+   238→            <DialogHeader>
+   239→              <DialogTitle className="text-xl font-black">إنشاء جمعية جديدة</DialogTitle>
+   240→            </DialogHeader>
+   241→            <div className="space-y-4 mt-4">
+   242→              <div>
+   243→                <Label>اسم الجمعية *</Label>
+   244→                <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="جمعية الأمل الخيرية" className="mt-1" />
+   245→              </div>
+   246→              <div>
+   247→                <Label>الاسم بالإنجليزية</Label>
+   248→                <Input value={form.nameEn} onChange={e => setForm({ ...form, nameEn: e.target.value })} placeholder="Al Amal Charity" className="mt-1" dir="ltr" />
+   249→              </div>
+   250→              <div>
+   251→                <Label>الوصف *</Label>
+   252→                <Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="وصف الجمعية..." className="mt-1" rows={3} />
+   253→              </div>
+   254→              <div className="grid grid-cols-2 gap-4">
+   255→                <div>
+   256→                  <Label>التصنيف *</Label>
+   257→                  <Select value={form.category} onValueChange={v => setForm({ ...form, category: v })}>
+   258→                    <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+   259→                    <SelectContent>
+   260→                      {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+   261→                    </SelectContent>
+   262→                  </Select>
+   263→                </div>
+   264→                <div>
+   265→                  <Label>المدينة</Label>
+   266→                  <Input value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} placeholder="الرياض" className="mt-1" />
+   267→                </div>
+   268→              </div>
+   269→              <div className="grid grid-cols-2 gap-4">
+   270→                <div>
+   271→                  <Label>الهاتف</Label>
+   272→                  <Input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="+966 5x xxx xxxx" className="mt-1" dir="ltr" />
+   273→                </div>
+   274→                <div>
+   275→                  <Label>البريد</Label>
+   276→                  <Input value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="info@example.com" className="mt-1" dir="ltr" />
+   277→                </div>
+   278→              </div>
+   279→              <div>
+   280→                <Label>الموقع الإلكتروني</Label>
+   281→                <Input value={form.website} onChange={e => setForm({ ...form, website: e.target.value })} placeholder="https://example.com" className="mt-1" dir="ltr" />
+   282→              </div>
+   283→              <div>
+   284→                <Label>العنوان</Label>
+   285→                <Input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} placeholder="شارع الملك فهد، الرياض" className="mt-1" />
+   286→              </div>
+   287→              <div className="grid grid-cols-2 gap-4">
+   288→                <div>
+   289→                  <Label>رقم الترخيص</Label>
+   290→                  <Input value={form.licenseNumber} onChange={e => setForm({ ...form, licenseNumber: e.target.value })} placeholder="LIC-2024-001" className="mt-1" dir="ltr" />
+   291→                </div>
+   292→                <div>
+   293→                  <Label>الرقم الضريبي</Label>
+   294→                  <Input value={form.taxId} onChange={e => setForm({ ...form, taxId: e.target.value })} placeholder="TAX-001" className="mt-1" dir="ltr" />
+   295→                </div>
+   296→              </div>
+   297→              <div>
+   298→                <Label>تاريخ التأسيس</Label>
+   299→                <Input type="date" value={form.foundedDate} onChange={e => setForm({ ...form, foundedDate: e.target.value })} className="mt-1" dir="ltr" />
+   300→              </div>
+   301→              <Button 
+   302→                onClick={handleCreate} 
+   303→                disabled={createLoading}
+   304→                className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl"
+   305→              >
+   306→                {createLoading ? 'جارٍ الإنشاء...' : 'إنشاء الجمعية'}
+   307→              </Button>
+   308→            </div>
+   309→          </DialogContent>
+   310→        </Dialog>
+   311→      </div>
+   312→
+   313→      {/* Search & Filter */}
+   314→      <div className="flex flex-col sm:flex-row gap-3">
+   315→        <div className="relative flex-1">
+   316→          <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+   317→          <Input
+   318→            value={search}
+   319→            onChange={e => setSearch(e.target.value)}
+   320→            placeholder="ابحث عن جمعية..."
+   321→            className="pr-10 bg-background/50"
+   322→          />
+   323→        </div>
+   324→        <Select value={filterCategory} onValueChange={setFilterCategory}>
+   325→          <SelectTrigger className="w-full sm:w-44 bg-background/50">
+   326→            <Filter className="w-4 h-4 ml-2" />
+   327→            <SelectValue placeholder="التصنيف" />
+   328→          </SelectTrigger>
+   329→          <SelectContent>
+   330→            <SelectItem value="all">جميع التصنيفات</SelectItem>
+   331→            {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+   332→          </SelectContent>
+   333→        </Select>
+   334→      </div>
+   335→
+   336→      {/* Associations Grid */}
+   337→      {filtered.length > 0 ? (
+   338→        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+   339→          <AnimatePresence>
+   340→            {filtered.map((assoc, i) => (
+   341→              <motion.div
+   342→                key={assoc.id}
+   343→                initial={{ opacity: 0, y: 20 }}
+   344→                animate={{ opacity: 1, y: 0 }}
+   345→                exit={{ opacity: 0, scale: 0.9 }}
+   346→                transition={{ delay: i * 0.05 }}
+   347→                whileHover={{ y: -4, rotateY: 2, transition: { duration: 0.2 } }}
+   348→                className="perspective-container"
+   349→              >
+   350→                <div className="preserve-3d card-3d glass-card rounded-2xl overflow-hidden cursor-pointer" onClick={() => { setSelectedAssoc(assoc); setShowDetail(true) }}>
+   351→                  {/* Card Header */}
+   352→                  <div className="h-32 bg-gradient-to-br from-emerald-500/20 via-teal-500/10 to-cyan-500/20 relative overflow-hidden">
+   353→                    <div className="absolute inset-0 opacity-20" style={{
+   354→                      backgroundImage: 'radial-gradient(circle at 30% 50%, rgba(16,185,129,0.3), transparent 70%)',
+   355→                    }} />
+   356→                    <div className="absolute bottom-3 right-4 flex items-center gap-2">
+   357→                      <span className="text-2xl">{categoryIcons[assoc.category] || '📌'}</span>
+   358→                      <Badge className={`${statusColors[assoc.status] || 'bg-muted'} text-xs`}>
+   359→                        {statusLabels[assoc.status] || assoc.status}
+   360→                      </Badge>
+   361→                    </div>
+   362→                    {/* Action buttons */}
+   363→                    <div className="absolute top-3 left-3 flex gap-1">
+   364→                      {canEdit(assoc) && (
+   365→                        <button
+   366→                          onClick={(e) => { e.stopPropagation(); openEditDialog(assoc) }}
+   367→                          className="p-1.5 rounded-lg bg-blue-500/10 text-blue-400 hover:text-blue-500 hover:bg-blue-500/20 transition-colors"
+   368→                          title="تعديل الجمعية"
+   369→                        >
+   370→                          <Edit3 className="w-4 h-4" />
+   371→                        </button>
+   372→                      )}
+   373→                      {canDelete(assoc) && (
+   374→                        <button
+   375→                          onClick={(e) => { e.stopPropagation(); handleDelete(assoc.id, assoc.name) }}
+   376→                          className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:text-red-500 hover:bg-red-500/20 transition-colors"
+   377→                          title="حذف الجمعية"
+   378→                        >
+   379→                          <Trash2 className="w-4 h-4" />
+   380→                        </button>
+   381→                      )}
+   382→                    </div>
+   383→                  </div>
+   384→                  {/* Card Body */}
+   385→                  <div className="p-4">
+   386→                    <h3 className="font-bold text-foreground text-lg mb-1 truncate">{assoc.name}</h3>
+   387→                    {assoc.nameEn && <p className="text-xs text-muted-foreground mb-2" dir="ltr">{assoc.nameEn}</p>}
+   388→                    <p className="text-sm text-muted-foreground line-clamp-2 mb-3">{assoc.description}</p>
+   389→                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+   390→                      <span className="flex items-center gap-1">
+   391→                        <Users className="w-3.5 h-3.5" />
+   392→                        {assoc.memberCount || assoc._count?.members || 0} عضو
+   393→                      </span>
+   394→                      {assoc.city && (
+   395→                        <span className="flex items-center gap-1">
+   396→                          <MapPin className="w-3.5 h-3.5" />
+   397→                          {assoc.city}
+   398→                        </span>
+   399→                      )}
+   400→                    </div>
+   401→                  </div>
+   402→                </div>
+   403→              </motion.div>
+   404→            ))}
+   405→          </AnimatePresence>
+   406→        </div>
+   407→      ) : (
+   408→        <motion.div
+   409→          initial={{ opacity: 0 }}
+   410→          animate={{ opacity: 1 }}
+   411→          className="text-center py-16"
+   412→        >
+   413→          <Building2 className="w-16 h-16 mx-auto mb-4 text-muted-foreground/30" />
+   414→          <h3 className="text-xl font-bold text-foreground mb-2">لا توجد جمعيات</h3>
+   415→          <p className="text-muted-foreground mb-6">ابدأ بإنشاء جمعيتك الأولى</p>
+   416→          <Button onClick={() => setShowCreate(true)} className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl">
+   417→            <Plus className="w-4 h-4 ml-2" />
+   418→            إنشاء جمعية
+   419→          </Button>
+   420→        </motion.div>
+   421→      )}
+   422→
+   423→      {/* Edit Dialog */}
+   424→      <Dialog open={showEdit} onOpenChange={setShowEdit}>
+   425→        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" dir="rtl">
+   426→          <DialogHeader>
+   427→            <DialogTitle className="text-xl font-black">تعديل الجمعية</DialogTitle>
+   428→          </DialogHeader>
+   429→          <div className="space-y-4 mt-4">
+   430→            <div>
+   431→              <Label>اسم الجمعية *</Label>
+   432→              <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="جمعية الأمل الخيرية" className="mt-1" />
+   433→            </div>
+   434→            <div>
+   435→              <Label>الاسم بالإنجليزية</Label>
+   436→              <Input value={form.nameEn} onChange={e => setForm({ ...form, nameEn: e.target.value })} placeholder="Al Amal Charity" className="mt-1" dir="ltr" />
+   437→            </div>
+   438→            <div>
+   439→              <Label>الوصف *</Label>
+   440→              <Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="وصف الجمعية..." className="mt-1" rows={3} />
+   441→            </div>
+   442→            <div className="grid grid-cols-2 gap-4">
+   443→              <div>
+   444→                <Label>التصنيف *</Label>
+   445→                <Select value={form.category} onValueChange={v => setForm({ ...form, category: v })}>
+   446→                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+   447→                  <SelectContent>
+   448→                    {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+   449→                  </SelectContent>
+   450→                </Select>
+   451→              </div>
+   452→              <div>
+   453→                <Label>المدينة</Label>
+   454→                <Input value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} placeholder="الرياض" className="mt-1" />
+   455→              </div>
+   456→            </div>
+   457→            <div className="grid grid-cols-2 gap-4">
+   458→              <div>
+   459→                <Label>الهاتف</Label>
+   460→                <Input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="+966 5x xxx xxxx" className="mt-1" dir="ltr" />
+   461→              </div>
+   462→              <div>
+   463→                <Label>البريد</Label>
+   464→                <Input value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="info@example.com" className="mt-1" dir="ltr" />
+   465→              </div>
+   466→            </div>
+   467→            <div>
+   468→              <Label>الموقع الإلكتروني</Label>
+   469→              <Input value={form.website} onChange={e => setForm({ ...form, website: e.target.value })} placeholder="https://example.com" className="mt-1" dir="ltr" />
+   470→            </div>
+   471→            <div>
+   472→              <Label>العنوان</Label>
+   473→              <Input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} placeholder="شارع الملك فهد، الرياض" className="mt-1" />
+   474→            </div>
+   475→            <div className="grid grid-cols-2 gap-4">
+   476→              <div>
+   477→                <Label>رقم الترخيص</Label>
+   478→                <Input value={form.licenseNumber} onChange={e => setForm({ ...form, licenseNumber: e.target.value })} placeholder="LIC-2024-001" className="mt-1" dir="ltr" />
+   479→              </div>
+   480→              <div>
+   481→                <Label>الرقم الضريبي</Label>
+   482→                <Input value={form.taxId} onChange={e => setForm({ ...form, taxId: e.target.value })} placeholder="TAX-001" className="mt-1" dir="ltr" />
+   483→              </div>
+   484→            </div>
+   485→            <div>
+   486→              <Label>تاريخ التأسيس</Label>
+   487→              <Input type="date" value={form.foundedDate} onChange={e => setForm({ ...form, foundedDate: e.target.value })} className="mt-1" dir="ltr" />
+   488→            </div>
+   489→            <div>
+   490→              <Label>الحالة</Label>
+   491→              <Select value={editingAssoc?.status || 'active'} onValueChange={v => setEditingAssoc({ ...editingAssoc, status: v })}>
+   492→                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+   493→                <SelectContent>
+   494→                  <SelectItem value="active">نشطة</SelectItem>
+   495→                  <SelectItem value="inactive">غير نشطة</SelectItem>
+   496→                  <SelectItem value="suspended">معلقة</SelectItem>
+   497→                  <SelectItem value="pending">قيد المراجعة</SelectItem>
+   498→                </SelectContent>
+   499→              </Select>
+   500→            </div>
+   501→            <Button 
+   502→              onClick={handleEdit} 
+   503→              disabled={editLoading}
+   504→              className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold rounded-xl"
+   505→            >
+   506→              {editLoading ? 'جارٍ التحديث...' : 'حفظ التعديلات'}
+   507→            </Button>
+   508→          </div>
+   509→        </DialogContent>
+   510→      </Dialog>
+   511→
+   512→      {/* Detail Dialog */}
+   513→      <Dialog open={showDetail} onOpenChange={setShowDetail}>
+   514→        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" dir="rtl">
+   515→          {selectedAssoc && (
+   516→            <>
+   517→              <DialogHeader>
+   518→                <DialogTitle className="text-2xl font-black flex items-center gap-3">
+   519→                  <span className="text-3xl">{categoryIcons[selectedAssoc.category] || '📌'}</span>
+   520→                  {selectedAssoc.name}
+   521→                </DialogTitle>
+   522→              </DialogHeader>
+   523→              <div className="mt-4 space-y-4">
+   524→                <div className="flex flex-wrap gap-2">
+   525→                  <Badge className={statusColors[selectedAssoc.status] || 'bg-muted'}>
+   526→                    {statusLabels[selectedAssoc.status] || selectedAssoc.status}
+   527→                  </Badge>
+   528→                  <Badge variant="outline">{selectedAssoc.category}</Badge>
+   529→                  {selectedAssoc.city && <Badge variant="outline"><MapPin className="w-3 h-3 ml-1" />{selectedAssoc.city}</Badge>}
+   530→                </div>
+   531→                <p className="text-muted-foreground">{selectedAssoc.description}</p>
+   532→                <div className="grid grid-cols-2 gap-4">
+   533→                  {selectedAssoc.phone && (
+   534→                    <div className="flex items-center gap-2 text-sm"><Phone className="w-4 h-4 text-emerald-500" />{selectedAssoc.phone}</div>
+   535→                  )}
+   536→                  {selectedAssoc.email && (
+   537→                    <div className="flex items-center gap-2 text-sm"><Mail className="w-4 h-4 text-cyan-500" />{selectedAssoc.email}</div>
+   538→                  )}
+   539→                  {selectedAssoc.website && (
+   540→                    <div className="flex items-center gap-2 text-sm"><Globe className="w-4 h-4 text-teal-500" />{selectedAssoc.website}</div>
+   541→                  )}
+   542→                  {selectedAssoc.licenseNumber && (
+   543→                    <div className="flex items-center gap-2 text-sm"><Award className="w-4 h-4 text-amber-500" />{selectedAssoc.licenseNumber}</div>
+   544→                  )}
+   545→                </div>
+   546→                <div className="grid grid-cols-3 gap-3">
+   547→                  <div className="glass-card rounded-xl p-3 text-center">
+   548→                    <Users className="w-5 h-5 text-emerald-500 mx-auto mb-1" />
+   549→                    <div className="text-lg font-bold text-foreground">{selectedAssoc.memberCount || selectedAssoc._count?.members || 0}</div>
+   550→                    <div className="text-xs text-muted-foreground">عضو</div>
+   551→                  </div>
+   552→                  <div className="glass-card rounded-xl p-3 text-center">
+   553→                    <Calendar className="w-5 h-5 text-amber-500 mx-auto mb-1" />
+   554→                    <div className="text-lg font-bold text-foreground">{selectedAssoc._count?.events || 0}</div>
+   555→                    <div className="text-xs text-muted-foreground">فعالية</div>
+   556→                  </div>
+   557→                  <div className="glass-card rounded-xl p-3 text-center">
+   558→                    <Building2 className="w-5 h-5 text-cyan-500 mx-auto mb-1" />
+   559→                    <div className="text-lg font-bold text-foreground">{selectedAssoc._count?.transactions || 0}</div>
+   560→                    <div className="text-xs text-muted-foreground">معاملة</div>
+   561→                  </div>
+   562→                </div>
+   563→                <div className="flex gap-2">
+   564→                  {canEdit(selectedAssoc) && (
+   565→                    <Button 
+   566→                      onClick={() => { setShowDetail(false); openEditDialog(selectedAssoc) }}
+   567→                      variant="outline"
+   568→                      className="flex-1 border-blue-500/30 text-blue-500 hover:bg-blue-500/10 font-bold rounded-xl"
+   569→                    >
+   570→                      <Edit3 className="w-4 h-4 ml-2" />
+   571→                      تعديل الجمعية
+   572→                    </Button>
+   573→                  )}
+   574→                  {canDelete(selectedAssoc) && (
+   575→                    <Button 
+   576→                      onClick={() => handleDelete(selectedAssoc.id, selectedAssoc.name)}
+   577→                      variant="outline"
+   578→                      className="flex-1 border-red-500/30 text-red-500 hover:bg-red-500/10 font-bold rounded-xl"
+   579→                    >
+   580→                      <Trash2 className="w-4 h-4 ml-2" />
+   581→                      حذف الجمعية
+   582→                    </Button>
+   583→                  )}
+   584→                </div>
+   585→              </div>
+   586→            </>
+   587→          )}
+   588→        </DialogContent>
+   589→      </Dialog>
+   590→    </div>
+   591→  )
+   592→}
+   593→
