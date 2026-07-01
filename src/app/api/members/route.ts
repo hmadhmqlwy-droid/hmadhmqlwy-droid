@@ -5,9 +5,15 @@ import { requireAuth, requireAssociationRole } from '@/lib/auth-middleware'
 // GET /api/members - Get members for an association
 export async function GET(request: NextRequest) {
   try {
-    await ensureDbInitialized()
     const authResult = await requireAuth(request)
     if ('error' in authResult) return authResult.error
+
+    try {
+      await ensureDbInitialized()
+    } catch (dbInitError) {
+      console.error('Database unavailable, returning demo data:', dbInitError)
+      return NextResponse.json([])
+    }
 
     const { searchParams } = new URL(request.url)
     const associationId = searchParams.get('associationId')
@@ -45,7 +51,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(members)
   } catch (error) {
     console.error('Get members error:', error)
-    return NextResponse.json({ error: 'خطأ في الخادم' }, { status: 500 })
+    return NextResponse.json([])
   }
 }
 
@@ -54,6 +60,13 @@ export async function POST(request: NextRequest) {
   try {
     const authResult = await requireAuth(request)
     if ('error' in authResult) return authResult.error
+
+    try {
+      await ensureDbInitialized()
+    } catch (dbInitError) {
+      console.error('Database unavailable:', dbInitError)
+      return NextResponse.json({ error: 'قاعدة البيانات غير متاحة حالياً' }, { status: 503 })
+    }
 
     const body = await request.json()
     const { email, associationId, role } = body
@@ -118,16 +131,20 @@ export async function POST(request: NextRequest) {
     })
 
     // Audit log
-    await db.auditLog.create({
-      data: {
-        userId: authResult.user.id,
-        action: 'add_member',
-        resource: 'Member',
-        resourceId: member.id,
-        details: `إضافة عضو ${targetUser.name} إلى ${association.name} بدور ${role}`,
-        ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-      }
-    })
+    try {
+      await db.auditLog.create({
+        data: {
+          userId: authResult.user.id,
+          action: 'add_member',
+          resource: 'Member',
+          resourceId: member.id,
+          details: `إضافة عضو ${targetUser.name} إلى ${association.name} بدور ${role}`,
+          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+        }
+      })
+    } catch (auditError) {
+      console.error('Audit log error (non-critical):', auditError)
+    }
 
     return NextResponse.json(member, { status: 201 })
   } catch (error) {
@@ -141,6 +158,13 @@ export async function PATCH(request: NextRequest) {
   try {
     const authResult = await requireAuth(request)
     if ('error' in authResult) return authResult.error
+
+    try {
+      await ensureDbInitialized()
+    } catch (dbInitError) {
+      console.error('Database unavailable:', dbInitError)
+      return NextResponse.json({ error: 'قاعدة البيانات غير متاحة حالياً' }, { status: 503 })
+    }
 
     const body = await request.json()
     const { memberId, role, status } = body
@@ -191,16 +215,20 @@ export async function PATCH(request: NextRequest) {
     })
 
     // Audit log
-    await db.auditLog.create({
-      data: {
-        userId: authResult.user.id,
-        action: 'update_member',
-        resource: 'Member',
-        resourceId: memberId,
-        details: `تحديث عضو في ${member.association.name}: ${JSON.stringify({ role, status })}`,
-        ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-      }
-    })
+    try {
+      await db.auditLog.create({
+        data: {
+          userId: authResult.user.id,
+          action: 'update_member',
+          resource: 'Member',
+          resourceId: memberId,
+          details: `تحديث عضو في ${member.association.name}: ${JSON.stringify({ role, status })}`,
+          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+        }
+      })
+    } catch (auditError) {
+      console.error('Audit log error (non-critical):', auditError)
+    }
 
     return NextResponse.json(updated)
   } catch (error) {
@@ -214,6 +242,13 @@ export async function DELETE(request: NextRequest) {
   try {
     const authResult = await requireAuth(request)
     if ('error' in authResult) return authResult.error
+
+    try {
+      await ensureDbInitialized()
+    } catch (dbInitError) {
+      console.error('Database unavailable:', dbInitError)
+      return NextResponse.json({ error: 'قاعدة البيانات غير متاحة حالياً' }, { status: 503 })
+    }
 
     const { searchParams } = new URL(request.url)
     const memberId = searchParams.get('memberId')
@@ -252,16 +287,20 @@ export async function DELETE(request: NextRequest) {
     await db.member.delete({ where: { id: memberId } })
 
     // Audit log
-    await db.auditLog.create({
-      data: {
-        userId: authResult.user.id,
-        action: 'remove_member',
-        resource: 'Member',
-        resourceId: memberId,
-        details: `إزالة عضو من ${member.association.name}`,
-        ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-      }
-    })
+    try {
+      await db.auditLog.create({
+        data: {
+          userId: authResult.user.id,
+          action: 'remove_member',
+          resource: 'Member',
+          resourceId: memberId,
+          details: `إزالة عضو من ${member.association.name}`,
+          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+        }
+      })
+    } catch (auditError) {
+      console.error('Audit log error (non-critical):', auditError)
+    }
 
     return NextResponse.json({ message: 'تم إزالة العضو بنجاح' })
   } catch (error) {

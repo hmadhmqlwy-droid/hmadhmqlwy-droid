@@ -4,9 +4,15 @@ import { requireAuth, requireAssociationRole } from '@/lib/auth-middleware'
 
 export async function GET(request: NextRequest) {
   try {
-    await ensureDbInitialized()
     const authResult = await requireAuth(request)
     if ('error' in authResult) return authResult.error
+
+    try {
+      await ensureDbInitialized()
+    } catch (dbInitError) {
+      console.error('Database unavailable, returning demo data:', dbInitError)
+      return NextResponse.json([])
+    }
 
     const associations = await db.association.findMany({
       include: {
@@ -26,7 +32,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(enriched)
   } catch (error) {
     console.error('Get associations error:', error)
-    return NextResponse.json({ error: 'خطأ في الخادم' }, { status: 500 })
+    return NextResponse.json([])
   }
 }
 
@@ -34,6 +40,13 @@ export async function POST(request: NextRequest) {
   try {
     const authResult = await requireAuth(request)
     if ('error' in authResult) return authResult.error
+
+    try {
+      await ensureDbInitialized()
+    } catch (dbInitError) {
+      console.error('Database unavailable:', dbInitError)
+      return NextResponse.json({ error: 'قاعدة البيانات غير متاحة حالياً' }, { status: 503 })
+    }
 
     const body = await request.json()
     const { name, nameEn, description, category, phone, email, website, address, city, country, licenseNumber, taxId, foundedDate } = body
@@ -72,16 +85,20 @@ export async function POST(request: NextRequest) {
     })
 
     // Audit log
-    await db.auditLog.create({
-      data: {
-        userId: authResult.user.id,
-        action: 'create_association',
-        resource: 'Association',
-        resourceId: association.id,
-        details: `إنشاء جمعية: ${name}`,
-        ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-      }
-    })
+    try {
+      await db.auditLog.create({
+        data: {
+          userId: authResult.user.id,
+          action: 'create_association',
+          resource: 'Association',
+          resourceId: association.id,
+          details: `إنشاء جمعية: ${name}`,
+          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+        }
+      })
+    } catch (auditError) {
+      console.error('Audit log error (non-critical):', auditError)
+    }
 
     return NextResponse.json(association, { status: 201 })
   } catch (error) {
@@ -95,6 +112,13 @@ export async function DELETE(request: NextRequest) {
   try {
     const authResult = await requireAuth(request)
     if ('error' in authResult) return authResult.error
+
+    try {
+      await ensureDbInitialized()
+    } catch (dbInitError) {
+      console.error('Database unavailable:', dbInitError)
+      return NextResponse.json({ error: 'قاعدة البيانات غير متاحة حالياً' }, { status: 503 })
+    }
 
     const { searchParams } = new URL(request.url)
     const associationId = searchParams.get('associationId')
@@ -112,16 +136,20 @@ export async function DELETE(request: NextRequest) {
 
       await db.association.delete({ where: { id: associationId } })
 
-      await db.auditLog.create({
-        data: {
-          userId: authResult.user.id,
-          action: 'delete_association',
-          resource: 'Association',
-          resourceId: associationId,
-          details: `حذف جمعية: ${association.name}`,
-          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-        }
-      })
+      try {
+        await db.auditLog.create({
+          data: {
+            userId: authResult.user.id,
+            action: 'delete_association',
+            resource: 'Association',
+            resourceId: associationId,
+            details: `حذف جمعية: ${association.name}`,
+            ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+          }
+        })
+      } catch (auditError) {
+        console.error('Audit log error (non-critical):', auditError)
+      }
 
       return NextResponse.json({ message: 'تم حذف الجمعية بنجاح' })
     }
@@ -139,16 +167,20 @@ export async function DELETE(request: NextRequest) {
 
     await db.association.delete({ where: { id: associationId } })
 
-    await db.auditLog.create({
-      data: {
-        userId: authResult.user.id,
-        action: 'delete_association',
-        resource: 'Association',
-        resourceId: associationId,
-        details: `حذف جمعية: ${association.name}`,
-        ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-      }
-    })
+    try {
+      await db.auditLog.create({
+        data: {
+          userId: authResult.user.id,
+          action: 'delete_association',
+          resource: 'Association',
+          resourceId: associationId,
+          details: `حذف جمعية: ${association.name}`,
+          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+        }
+      })
+    } catch (auditError) {
+      console.error('Audit log error (non-critical):', auditError)
+    }
 
     return NextResponse.json({ message: 'تم حذف الجمعية بنجاح' })
   } catch (error) {
@@ -162,6 +194,13 @@ export async function PATCH(request: NextRequest) {
   try {
     const authResult = await requireAuth(request)
     if ('error' in authResult) return authResult.error
+
+    try {
+      await ensureDbInitialized()
+    } catch (dbInitError) {
+      console.error('Database unavailable:', dbInitError)
+      return NextResponse.json({ error: 'قاعدة البيانات غير متاحة حالياً' }, { status: 503 })
+    }
 
     const body = await request.json()
     const { associationId, ...updateData } = body
@@ -193,16 +232,20 @@ export async function PATCH(request: NextRequest) {
       data: updateData,
     })
 
-    await db.auditLog.create({
-      data: {
-        userId: authResult.user.id,
-        action: 'update_association',
-        resource: 'Association',
-        resourceId: associationId,
-        details: `تحديث جمعية: ${association.name}`,
-        ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-      }
-    })
+    try {
+      await db.auditLog.create({
+        data: {
+          userId: authResult.user.id,
+          action: 'update_association',
+          resource: 'Association',
+          resourceId: associationId,
+          details: `تحديث جمعية: ${association.name}`,
+          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+        }
+      })
+    } catch (auditError) {
+      console.error('Audit log error (non-critical):', auditError)
+    }
 
     return NextResponse.json(association)
   } catch (error) {

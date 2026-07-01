@@ -1,12 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db, ensureDbInitialized } from '@/lib/db'
+import { requireAuth } from '@/lib/auth-middleware'
 import { hashPassword } from '@/lib/auth'
 
 // Seed endpoint - creates or updates admin user with custom credentials
 // POST /api/seed - body: { email, password, name }
 export async function POST(request: NextRequest) {
   try {
-    await ensureDbInitialized()
+    try {
+      await ensureDbInitialized()
+    } catch (dbInitError) {
+      console.error('Database unavailable for seed:', dbInitError)
+      return NextResponse.json({ 
+        error: 'قاعدة البيانات غير متاحة حالياً. لا يمكن إنشاء بيانات المدير' 
+      }, { status: 503 })
+    }
+
     const body = await request.json().catch(() => ({}))
     
     // Admin credentials from request or environment variables
@@ -68,16 +77,20 @@ export async function POST(request: NextRequest) {
     })
 
     // Log the creation
-    await db.securityLog.create({
-      data: {
-        userId: admin.id,
-        action: 'register',
-        details: 'إنشاء حساب مدير النظام',
-        ipAddress: 'system',
-        userAgent: 'seed-script',
-        severity: 'info',
-      }
-    })
+    try {
+      await db.securityLog.create({
+        data: {
+          userId: admin.id,
+          action: 'register',
+          details: 'إنشاء حساب مدير النظام',
+          ipAddress: 'system',
+          userAgent: 'seed-script',
+          severity: 'info',
+        }
+      })
+    } catch (logError) {
+      console.error('Security log error (non-critical):', logError)
+    }
 
     return NextResponse.json({
       message: 'تم إنشاء حساب المدير بنجاح',

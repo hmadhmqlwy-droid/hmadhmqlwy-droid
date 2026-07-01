@@ -4,9 +4,23 @@ import { requireAuth, requireAdmin } from '@/lib/auth-middleware'
 
 export async function GET(request: NextRequest) {
   try {
-    await ensureDbInitialized()
     const authResult = await requireAuth(request)
     if ('error' in authResult) return authResult.error
+
+    try {
+      await ensureDbInitialized()
+    } catch (dbInitError) {
+      console.error('Database unavailable, returning empty export:', dbInitError)
+      // Return empty CSV with headers only
+      const BOM = '\uFEFF'
+      const emptyCsv = BOM + '"لا توجد بيانات"\n"قاعدة البيانات غير متاحة حالياً"\n'
+      return new NextResponse(emptyCsv, {
+        headers: {
+          'Content-Type': 'text/csv; charset=utf-8',
+          'Content-Disposition': `attachment; filename="empty_report.csv"`,
+        },
+      })
+    }
 
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type') || 'associations'
@@ -73,15 +87,19 @@ export async function GET(request: NextRequest) {
     }
 
     // Audit log for export
-    await db.auditLog.create({
-      data: {
-        userId: authResult.user.id,
-        action: 'data_export',
-        resource: type,
-        details: `تصدير بيانات ${type} بصيغة ${format}`,
-        ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-      }
-    })
+    try {
+      await db.auditLog.create({
+        data: {
+          userId: authResult.user.id,
+          action: 'data_export',
+          resource: type,
+          details: `تصدير بيانات ${type} بصيغة ${format}`,
+          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+        }
+      })
+    } catch (auditError) {
+      console.error('Audit log error (non-critical):', auditError)
+    }
 
     // Export as JSON
     if (format === 'json') {
