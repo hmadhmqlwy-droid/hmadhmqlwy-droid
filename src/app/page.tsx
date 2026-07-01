@@ -30,23 +30,23 @@ function TopInfoBar() {
   if (!isVisible) return null
 
   return (
-    <div className="bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 text-white text-xs relative z-50" dir="rtl">
+    <div className="bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 text-white text-xs relative z-50" dir="rtl">
       <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-9">
         {/* Right side - Social icons */}
         <div className="flex items-center gap-3">
-          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-emerald-400 transition-colors">
+          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-indigo-300 transition-colors">
             <Twitter className="w-3.5 h-3.5" />
           </a>
-          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-emerald-400 transition-colors">
+          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-indigo-300 transition-colors">
             <Instagram className="w-3.5 h-3.5" />
           </a>
-          <a href="https://wa.me/966500000000" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-emerald-400 transition-colors">
+          <a href="https://wa.me/966500000000" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-indigo-300 transition-colors">
             <MessageCircle className="w-3.5 h-3.5" />
           </a>
-          <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-emerald-400 transition-colors">
+          <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-indigo-300 transition-colors">
             <Youtube className="w-3.5 h-3.5" />
           </a>
-          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-emerald-400 transition-colors">
+          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-indigo-300 transition-colors">
             <Facebook className="w-3.5 h-3.5" />
           </a>
         </div>
@@ -98,18 +98,18 @@ function MainNavbar({ onMenuClick }: { onMenuClick: () => void }) {
   }, [])
 
   return (
-    <header className="sticky top-0 z-40 bg-[#0f1d2e]/95 backdrop-blur-xl border-b border-border/20" dir="rtl">
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200/50 shadow-sm" dir="rtl">
       <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
         {/* Right - Logo + Menu */}
         <div className="flex items-center gap-3">
-          <button onClick={onMenuClick} className="text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-lg hover:bg-white/5">
+          <button onClick={onMenuClick} className="text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-lg hover:bg-slate-100">
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-200">
               <Building2 className="w-4 h-4 text-white" />
             </div>
-            <span className="text-lg font-black text-foreground hidden sm:block">جمعيات<span className="text-emerald-500">برو</span></span>
+            <span className="text-lg font-black text-foreground hidden sm:block">جمعيات<span className="text-indigo-500">برو</span></span>
           </div>
         </div>
 
@@ -158,7 +158,7 @@ function MainNavbar({ onMenuClick }: { onMenuClick: () => void }) {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -5, scale: 0.95 }}
                   transition={{ duration: 0.15 }}
-                  className="absolute left-0 top-full mt-2 w-64 glass-dark rounded-xl border border-border/30 shadow-xl overflow-hidden z-50"
+                  className="absolute left-0 top-full mt-2 w-64 bg-white rounded-xl border border-slate-200 shadow-xl overflow-hidden z-50"
                   dir="rtl"
                 >
                   {/* User info */}
@@ -329,7 +329,7 @@ function NotificationPanel() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -10, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute left-0 top-full mt-2 w-80 glass-dark rounded-xl border border-border/30 shadow-xl overflow-hidden z-50"
+            className="absolute left-0 top-full mt-2 w-80 bg-white rounded-xl border border-slate-200 shadow-xl overflow-hidden z-50"
             dir="rtl"
           >
             <div className="p-3 border-b border-border/20 flex items-center justify-between">
@@ -404,7 +404,7 @@ function Sidebar() {
           x: 0
         }}
         transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
-        className={`fixed right-0 top-0 bottom-0 z-50 bg-[#0a1628]/98 backdrop-blur-xl border-l border-border/20 flex flex-col ${
+        className={`fixed right-0 top-0 bottom-0 z-50 bg-white/98 backdrop-blur-xl border-l border-slate-200/50 shadow-lg flex flex-col ${
           !sidebarOpen ? 'lg:translate-x-0' : ''
         }`}
       >
@@ -418,15 +418,15 @@ function Sidebar() {
                 exit={{ opacity: 0 }}
                 className="flex items-center gap-2"
               >
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-200">
                   <Building2 className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-lg font-black text-foreground">جمعيات<span className="text-emerald-500">برو</span></span>
+                <span className="text-lg font-black text-foreground">جمعيات<span className="text-indigo-500">برو</span></span>
               </motion.div>
             )}
           </AnimatePresence>
           {!sidebarOpen && (
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mx-auto shadow-lg shadow-indigo-200">
               <Building2 className="w-4 h-4 text-white" />
             </div>
           )}
@@ -453,11 +453,11 @@ function Sidebar() {
                   }}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-medium relative ${
                     isActive
-                      ? 'bg-emerald-500/10 text-emerald-500 shadow-sm'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+                      ? 'bg-indigo-50 text-indigo-600 shadow-sm'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-slate-50'
                   }`}
                 >
-                  <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-emerald-500' : ''}`} />
+                  <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-indigo-600' : ''}`} />
                   <AnimatePresence>
                     {sidebarOpen && (
                       <motion.span
@@ -471,7 +471,7 @@ function Sidebar() {
                     )}
                   </AnimatePresence>
                   {isActive && sidebarOpen && (
-                    <div className="absolute right-0 w-1 h-8 bg-emerald-500 rounded-l-full" />
+                    <div className="absolute right-0 w-1 h-8 bg-indigo-500 rounded-l-full" />
                   )}
                 </button>
               )
@@ -482,8 +482,8 @@ function Sidebar() {
         {/* Bottom - User section */}
         <div className="p-3 border-t border-border/20 space-y-2">
           {sidebarOpen && (
-            <div className="flex items-center gap-3 p-2 rounded-xl bg-white/5">
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-sm shadow-lg">
+            <div className="flex items-center gap-3 p-2 rounded-xl bg-slate-50">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-sm shadow-lg">
                 {user?.name?.charAt(0) || 'م'}
               </div>
               <div className="flex-1 min-w-0">
@@ -495,7 +495,7 @@ function Sidebar() {
           <div className="flex items-center gap-1">
             <button
               onClick={toggleTheme}
-              className="flex-1 flex items-center justify-center gap-1 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors text-xs"
+              className="flex-1 flex items-center justify-center gap-1 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-slate-100 transition-colors text-xs"
               title={theme === 'dark' ? 'الوضع الفاتح' : 'الوضع الداكن'}
             >
               {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -503,7 +503,7 @@ function Sidebar() {
             </button>
             <button
               onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
-              className="flex-1 flex items-center justify-center gap-1 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors text-xs"
+              className="flex-1 flex items-center justify-center gap-1 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-slate-100 transition-colors text-xs"
               title={lang === 'ar' ? 'English' : 'عربي'}
             >
               <Globe className="w-4 h-4" />
@@ -529,9 +529,8 @@ function Sidebar() {
 export default function Home() {
   const { currentPage, isAuthenticated, theme, sidebarOpen, setSidebarOpen } = useAppStore()
 
-  // Set dark theme by default
+  // Set light theme by default
   useEffect(() => {
-    document.documentElement.classList.add('dark')
     document.documentElement.dir = 'rtl'
     document.documentElement.lang = 'ar'
   }, [])

@@ -1,0 +1,633 @@
+     1→     1→'use client'
+     2→     2→
+     3→     3→import { motion, AnimatePresence } from 'framer-motion'
+     4→     4→import { useAppStore, translations } from '@/store/app-store'
+     5→     5→import { LandingPage } from '@/components/sections/landing'
+     6→     6→import { AuthPage } from '@/components/sections/auth'
+     7→     7→import { DashboardPage } from '@/components/sections/dashboard'
+     8→     8→import { AssociationsPage } from '@/components/sections/associations'
+     9→     9→import { MembersPage } from '@/components/sections/members'
+    10→    10→import { EventsPage } from '@/components/sections/events'
+    11→    11→import { FinancePage } from '@/components/sections/finance'
+    12→    12→import { SecurityPage } from '@/components/sections/security'
+    13→    13→import { AdminPage } from '@/components/sections/admin'
+    14→    14→import {
+    15→    15→  Building2, LayoutDashboard, Users, Calendar, DollarSign, Shield, LogOut, Menu, X,
+    16→    16→  Moon, Sun, ChevronLeft, Settings, Bell, Crown, Globe, Download, Check, XCircle, Info, AlertTriangle,
+    17→    17→  Mail, Phone, Facebook, Twitter, Instagram, Youtube, MessageCircle, Sparkles, Search, User
+    18→    18→} from 'lucide-react'
+    19→    19→import { Button } from '@/components/ui/button'
+    20→    20→import { Badge } from '@/components/ui/badge'
+    21→    21→import { Input } from '@/components/ui/input'
+    22→    22→import { useEffect, useRef, useState, useCallback } from 'react'
+    23→    23→
+    24→    24→// ============================================
+    25→    25→// TOP INFO BAR (Like Gama Systems)
+    26→    26→// ============================================
+    27→    27→function TopInfoBar() {
+    28→    28→  const [isVisible, setIsVisible] = useState(true)
+    29→    29→  
+    30→    30→  if (!isVisible) return null
+    31→    31→
+    32→    32→  return (
+    33→    33→    <div className="bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 text-white text-xs relative z-50" dir="rtl">
+    34→    34→      <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-9">
+    35→    35→        {/* Right side - Social icons */}
+    36→    36→        <div className="flex items-center gap-3">
+    37→    37→          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-emerald-400 transition-colors">
+    38→    38→            <Twitter className="w-3.5 h-3.5" />
+    39→    39→          </a>
+    40→    40→          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-emerald-400 transition-colors">
+    41→    41→            <Instagram className="w-3.5 h-3.5" />
+    42→    42→          </a>
+    43→    43→          <a href="https://wa.me/966500000000" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-emerald-400 transition-colors">
+    44→    44→            <MessageCircle className="w-3.5 h-3.5" />
+    45→    45→          </a>
+    46→    46→          <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-emerald-400 transition-colors">
+    47→    47→            <Youtube className="w-3.5 h-3.5" />
+    48→    48→          </a>
+    49→    49→          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-emerald-400 transition-colors">
+    50→    50→            <Facebook className="w-3.5 h-3.5" />
+    51→    51→          </a>
+    52→    52→        </div>
+    53→    53→
+    54→    54→        {/* Center - Promo text */}
+    55→    55→        <div className="hidden md:flex items-center gap-1">
+    56→    56→          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+    57→    57→          <span className="text-amber-400 font-bold">سجّل الآن واحصل على خصم 20% على جميع الخدمات</span>
+    58→    58→        </div>
+    59→    59→
+    60→    60→        {/* Left side - Contact info */}
+    61→    61→        <div className="flex items-center gap-4">
+    62→    62→          <div className="hidden sm:flex items-center gap-1.5 text-white/70">
+    63→    63→            <Phone className="w-3.5 h-3.5" />
+    64→    64→            <span dir="ltr">+966 50 000 0000</span>
+    65→    65→          </div>
+    66→    66→          <div className="hidden sm:flex items-center gap-1.5 text-white/70">
+    67→    67→            <Mail className="w-3.5 h-3.5" />
+    68→    68→            <span>info@jamiat-pro.com</span>
+    69→    69→          </div>
+    70→    70→          <button 
+    71→    71→            onClick={() => setIsVisible(false)}
+    72→    72→            className="text-white/40 hover:text-white transition-colors p-0.5"
+    73→    73→          >
+    74→    74→            <X className="w-3 h-3" />
+    75→    75→          </button>
+    76→    76→        </div>
+    77→    77→      </div>
+    78→    78→    </div>
+    79→    79→  )
+    80→    80→}
+    81→    81→
+    82→    82→// ============================================
+    83→    83→// MAIN NAVBAR (Below top info bar)
+    84→    84→// ============================================
+    85→    85→function MainNavbar({ onMenuClick }: { onMenuClick: () => void }) {
+    86→    86→  const { user, setCurrentPage, logout } = useAppStore()
+    87→    87→  const [searchOpen, setSearchOpen] = useState(false)
+    88→    88→  const [searchQuery, setSearchQuery] = useState('')
+    89→    89→  const [profileOpen, setProfileOpen] = useState(false)
+    90→    90→  const profileRef = useRef<HTMLDivElement>(null)
+    91→    91→
+    92→    92→  useEffect(() => {
+    93→    93→    const handleClick = (e: MouseEvent) => {
+    94→    94→      if (profileRef.current && !profileRef.current.contains(e.target as Node)) setProfileOpen(false)
+    95→    95→    }
+    96→    96→    document.addEventListener('mousedown', handleClick)
+    97→    97→    return () => document.removeEventListener('mousedown', handleClick)
+    98→    98→  }, [])
+    99→    99→
+   100→   100→  return (
+   101→   101→    <header className="sticky top-0 z-40 bg-[#0f1d2e]/95 backdrop-blur-xl border-b border-border/20" dir="rtl">
+   102→   102→      <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
+   103→   103→        {/* Right - Logo + Menu */}
+   104→   104→        <div className="flex items-center gap-3">
+   105→   105→          <button onClick={onMenuClick} className="text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-lg hover:bg-white/5">
+   106→   106→            <Menu className="w-5 h-5" />
+   107→   107→          </button>
+   108→   108→          <div className="flex items-center gap-2">
+   109→   109→            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+   110→   110→              <Building2 className="w-4 h-4 text-white" />
+   111→   111→            </div>
+   112→   112→            <span className="text-lg font-black text-foreground hidden sm:block">جمعيات<span className="text-emerald-500">برو</span></span>
+   113→   113→          </div>
+   114→   114→        </div>
+   115→   115→
+   116→   116→        {/* Center - Search */}
+   117→   117→        <div className="flex-1 max-w-md hidden md:block">
+   118→   118→          <div className="relative">
+   119→   119→            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+   120→   120→            <Input
+   121→   121→              value={searchQuery}
+   122→   122→              onChange={(e) => setSearchQuery(e.target.value)}
+   123→   123→              placeholder="ابحث في المنصة..."
+   124→   124→              className="pr-10 pl-4 h-9 bg-white/5 border-border/30 rounded-xl text-sm focus:border-emerald-500/50"
+   125→   125→            />
+   126→   126→          </div>
+   127→   127→        </div>
+   128→   128→
+   129→   129→        {/* Left - Actions */}
+   130→   130→        <div className="flex items-center gap-2">
+   131→   131→          {/* Mobile search toggle */}
+   132→   132→          <button 
+   133→   133→            onClick={() => setSearchOpen(!searchOpen)}
+   134→   134→            className="md:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors"
+   135→   135→          >
+   136→   136→            <Search className="w-4 h-4" />
+   137→   137→          </button>
+   138→   138→
+   139→   139→          {/* Notifications */}
+   140→   140→          <NotificationPanel />
+   141→   141→
+   142→   142→          {/* Profile */}
+   143→   143→          <div className="relative" ref={profileRef}>
+   144→   144→            <button
+   145→   145→              onClick={() => setProfileOpen(!profileOpen)}
+   146→   146→              className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-white/5 transition-colors"
+   147→   147→            >
+   148→   148→              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-emerald-500/20">
+   149→   149→                {user?.name?.charAt(0) || 'م'}
+   150→   150→              </div>
+   151→   151→              <span className="hidden sm:block text-sm font-bold text-foreground max-w-[120px] truncate">{user?.name || 'المستخدم'}</span>
+   152→   152→            </button>
+   153→   153→
+   154→   154→            <AnimatePresence>
+   155→   155→              {profileOpen && (
+   156→   156→                <motion.div
+   157→   157→                  initial={{ opacity: 0, y: -5, scale: 0.95 }}
+   158→   158→                  animate={{ opacity: 1, y: 0, scale: 1 }}
+   159→   159→                  exit={{ opacity: 0, y: -5, scale: 0.95 }}
+   160→   160→                  transition={{ duration: 0.15 }}
+   161→   161→                  className="absolute left-0 top-full mt-2 w-64 glass-dark rounded-xl border border-border/30 shadow-xl overflow-hidden z-50"
+   162→   162→                  dir="rtl"
+   163→   163→                >
+   164→   164→                  {/* User info */}
+   165→   165→                  <div className="p-4 border-b border-border/20">
+   166→   166→                    <div className="flex items-center gap-3">
+   167→   167→                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold shadow-lg">
+   168→   168→                        {user?.name?.charAt(0) || 'م'}
+   169→   169→                      </div>
+   170→   170→                      <div className="flex-1 min-w-0">
+   171→   171→                        <div className="text-sm font-bold text-foreground truncate">{user?.name || 'المستخدم'}</div>
+   172→   172→                        <div className="text-xs text-muted-foreground truncate">{user?.email || ''}</div>
+   173→   173→                      </div>
+   174→   174→                    </div>
+   175→   175→                    <div className="mt-2">
+   176→   176→                      <Badge className={`${user?.role === 'admin' ? 'bg-amber-500/10 text-amber-500' : user?.role === 'manager' ? 'bg-purple-500/10 text-purple-500' : 'bg-emerald-500/10 text-emerald-500'} text-[10px]`}>
+   177→   177→                        {user?.role === 'admin' ? 'مدير النظام' : user?.role === 'manager' ? 'مشرف' : 'مستخدم'}
+   178→   178→                      </Badge>
+   179→   179→                    </div>
+   180→   180→                  </div>
+   181→   181→                  
+   182→   182→                  {/* Actions */}
+   183→   183→                  <div className="p-2">
+   184→   184→                    <button
+   185→   185→                      onClick={() => { setCurrentPage('security'); setProfileOpen(false) }}
+   186→   186→                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors"
+   187→   187→                    >
+   188→   188→                      <Shield className="w-4 h-4" />
+   189→   189→                      مركز الأمان
+   190→   190→                    </button>
+   191→   191→                    <button
+   192→   192→                      onClick={() => { logout(); setProfileOpen(false) }}
+   193→   193→                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-400 hover:text-red-500 hover:bg-red-500/5 transition-colors"
+   194→   194→                    >
+   195→   195→                      <LogOut className="w-4 h-4" />
+   196→   196→                      تسجيل الخروج
+   197→   197→                    </button>
+   198→   198→                  </div>
+   199→   199→                </motion.div>
+   200→   200→              )}
+   201→   201→            </AnimatePresence>
+   202→   202→          </div>
+   203→   203→        </div>
+   204→   204→      </div>
+   205→   205→
+   206→   206→      {/* Mobile search bar */}
+   207→   207→      <AnimatePresence>
+   208→   208→        {searchOpen && (
+   209→   209→          <motion.div
+   210→   210→            initial={{ height: 0, opacity: 0 }}
+   211→   211→            animate={{ height: 'auto', opacity: 1 }}
+   212→   212→            exit={{ height: 0, opacity: 0 }}
+   213→   213→            className="md:hidden px-4 pb-3 border-t border-border/10"
+   214→   214→          >
+   215→   215→            <div className="relative mt-2">
+   216→   216→              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+   217→   217→              <Input
+   218→   218→                value={searchQuery}
+   219→   219→                onChange={(e) => setSearchQuery(e.target.value)}
+   220→   220→                placeholder="ابحث في المنصة..."
+   221→   221→                className="pr-10 pl-4 h-9 bg-white/5 border-border/30 rounded-xl text-sm focus:border-emerald-500/50"
+   222→   222→                autoFocus
+   223→   223→              />
+   224→   224→            </div>
+   225→   225→          </motion.div>
+   226→   226→        )}
+   227→   227→      </AnimatePresence>
+   228→   228→    </header>
+   229→   229→  )
+   230→   230→}
+   231→   231→
+   232→   232→// ============================================
+   233→   233→// TOAST COMPONENT
+   234→   234→// ============================================
+   235→   235→function Toast() {
+   236→   236→  const { toast, clearToast } = useAppStore()
+   237→   237→  
+   238→   238→  useEffect(() => {
+   239→   239→    if (toast) {
+   240→   240→      const timer = setTimeout(clearToast, 4000)
+   241→   241→      return () => clearTimeout(timer)
+   242→   242→    }
+   243→   243→  }, [toast, clearToast])
+   244→   244→
+   245→   245→  if (!toast) return null
+   246→   246→
+   247→   247→  const colors = {
+   248→   248→    success: 'bg-emerald-500 border-emerald-600',
+   249→   249→    error: 'bg-red-500 border-red-600',
+   250→   250→    info: 'bg-cyan-500 border-cyan-600',
+   251→   251→  }
+   252→   252→  const icons = {
+   253→   253→    success: Check,
+   254→   254→    error: XCircle,
+   255→   255→    info: Info,
+   256→   256→  }
+   257→   257→  const Icon = icons[toast.type]
+   258→   258→
+   259→   259→  return (
+   260→   260→    <motion.div
+   261→   261→      initial={{ opacity: 0, y: -50, x: '-50%' }}
+   262→   262→      animate={{ opacity: 1, y: 0, x: '-50%' }}
+   263→   263→      exit={{ opacity: 0, y: -50, x: '-50%' }}
+   264→   264→      className="fixed top-4 left-1/2 z-[100] max-w-md w-full"
+   265→   265→    >
+   266→   266→      <div className={`mx-4 px-4 py-3 rounded-xl border ${colors[toast.type]} text-white shadow-lg flex items-center gap-3`}>
+   267→   267→        <Icon className="w-5 h-5 flex-shrink-0" />
+   268→   268→        <span className="text-sm font-medium flex-1">{toast.message}</span>
+   269→   269→        <button onClick={clearToast} className="text-white/70 hover:text-white">
+   270→   270→          <X className="w-4 h-4" />
+   271→   271→        </button>
+   272→   272→      </div>
+   273→   273→    </motion.div>
+   274→   274→  )
+   275→   275→}
+   276→   276→
+   277→   277→// ============================================
+   278→   278→// NOTIFICATION PANEL
+   279→   279→// ============================================
+   280→   280→function NotificationPanel() {
+   281→   281→  const { notifications, unreadCount, markAllRead } = useAppStore()
+   282→   282→  const [open, setOpen] = useState(false)
+   283→   283→  const panelRef = useRef<HTMLDivElement>(null)
+   284→   284→
+   285→   285→  useEffect(() => {
+   286→   286→    const handleClick = (e: MouseEvent) => {
+   287→   287→      if (panelRef.current && !panelRef.current.contains(e.target as Node)) setOpen(false)
+   288→   288→    }
+   289→   289→    document.addEventListener('mousedown', handleClick)
+   290→   290→    return () => document.removeEventListener('mousedown', handleClick)
+   291→   291→  }, [])
+   292→   292→
+   293→   293→  const notifIcons: Record<string, any> = {
+   294→   294→    info: Info,
+   295→   295→    warning: AlertTriangle,
+   296→   296→    success: Check,
+   297→   297→    error: XCircle,
+   298→   298→  }
+   299→   299→
+   300→   300→  const notifColors: Record<string, string> = {
+   301→   301→    info: 'text-cyan-500 bg-cyan-500/10',
+   302→   302→    warning: 'text-amber-500 bg-amber-500/10',
+   303→   303→    success: 'text-emerald-500 bg-emerald-500/10',
+   304→   304→    error: 'text-red-500 bg-red-500/10',
+   305→   305→  }
+   306→   306→
+   307→   307→  return (
+   308→   308→    <div className="relative" ref={panelRef}>
+   309→   309→      <button
+   310→   310→        onClick={() => { setOpen(!open); if (!open && unreadCount > 0) markAllRead() }}
+   311→   311→        className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors"
+   312→   312→      >
+   313→   313→        <Bell className="w-4 h-4" />
+   314→   314→        {unreadCount > 0 && (
+   315→   315→          <motion.span
+   316→   316→            initial={{ scale: 0 }}
+   317→   317→            animate={{ scale: 1 }}
+   318→   318→            className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full text-[10px] text-white font-bold flex items-center justify-center"
+   319→   319→          >
+   320→   320→            {unreadCount > 9 ? '9+' : unreadCount}
+   321→   321→          </motion.span>
+   322→   322→        )}
+   323→   323→      </button>
+   324→   324→
+   325→   325→      <AnimatePresence>
+   326→   326→        {open && (
+   327→   327→          <motion.div
+   328→   328→            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+   329→   329→            animate={{ opacity: 1, y: 0, scale: 1 }}
+   330→   330→            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+   331→   331→            transition={{ duration: 0.15 }}
+   332→   332→            className="absolute left-0 top-full mt-2 w-80 glass-dark rounded-xl border border-border/30 shadow-xl overflow-hidden z-50"
+   333→   333→            dir="rtl"
+   334→   334→          >
+   335→   335→            <div className="p-3 border-b border-border/20 flex items-center justify-between">
+   336→   336→              <span className="font-bold text-foreground text-sm">الإشعارات</span>
+   337→   337→              {unreadCount > 0 && (
+   338→   338→                <Badge className="bg-red-500/10 text-red-500 text-[10px]">{unreadCount} جديد</Badge>
+   339→   339→              )}
+   340→   340→            </div>
+   341→   341→            <div className="max-h-80 overflow-y-auto">
+   342→   342→              {notifications.length > 0 ? notifications.map((n) => {
+   343→   343→                const Icon = notifIcons[n.type] || Info
+   344→   344→                return (
+   345→   345→                  <div key={n.id} className={`p-3 border-b border-border/10 hover:bg-white/5 transition-colors ${!n.read ? 'bg-emerald-500/5' : ''}`}>
+   346→   346→                    <div className="flex items-start gap-2">
+   347→   347→                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${notifColors[n.type] || notifColors.info}`}>
+   348→   348→                        <Icon className="w-3.5 h-3.5" />
+   349→   349→                      </div>
+   350→   350→                      <div className="flex-1 min-w-0">
+   351→   351→                        <div className="text-xs font-bold text-foreground">{n.title}</div>
+   352→   352→                        <div className="text-[10px] text-muted-foreground line-clamp-2">{n.message}</div>
+   353→   353→                      </div>
+   354→   354→                    </div>
+   355→   355→                  </div>
+   356→   356→                )
+   357→   357→              }) : (
+   358→   358→                <div className="p-8 text-center">
+   359→   359→                  <Bell className="w-8 h-8 mx-auto mb-2 text-muted-foreground/30" />
+   360→   360→                  <p className="text-xs text-muted-foreground">لا توجد إشعارات</p>
+   361→   361→                </div>
+   362→   362→              )}
+   363→   363→            </div>
+   364→   364→          </motion.div>
+   365→   365→        )}
+   366→   366→      </AnimatePresence>
+   367→   367→    </div>
+   368→   368→  )
+   369→   369→}
+   370→   370→
+   371→   371→// ============================================
+   372→   372→// SIDEBAR (Fixed on right, no hover weirdness)
+   373→   373→// ============================================
+   374→   374→function Sidebar() {
+   375→   375→  const { currentPage, setCurrentPage, sidebarOpen, setSidebarOpen, user, logout, theme, toggleTheme, lang, setLang, t } = useAppStore()
+   376→   376→
+   377→   377→  const navItems = [
+   378→   378→    { id: 'dashboard' as const, label: t('dashboard'), icon: LayoutDashboard },
+   379→   379→    { id: 'associations' as const, label: t('associations'), icon: Building2 },
+   380→   380→    { id: 'members' as const, label: t('members'), icon: Users },
+   381→   381→    { id: 'events' as const, label: t('events'), icon: Calendar },
+   382→   382→    { id: 'finance' as const, label: t('finance'), icon: DollarSign },
+   383→   383→    { id: 'security' as const, label: t('security'), icon: Shield },
+   384→   384→    ...(user?.role === 'admin' ? [{ id: 'admin' as const, label: t('admin'), icon: Crown }] : []),
+   385→   385→  ]
+   386→   386→
+   387→   387→  return (
+   388→   388→    <>
+   389→   389→      {/* Mobile overlay */}
+   390→   390→      {sidebarOpen && (
+   391→   391→        <motion.div
+   392→   392→          initial={{ opacity: 0 }}
+   393→   393→          animate={{ opacity: 1 }}
+   394→   394→          exit={{ opacity: 0 }}
+   395→   395→          onClick={() => setSidebarOpen(false)}
+   396→   396→          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+   397→   397→        />
+   398→   398→      )}
+   399→   399→
+   400→   400→      <motion.aside
+   401→   401→        initial={false}
+   402→   402→        animate={{ 
+   403→   403→          width: sidebarOpen ? 260 : 72,
+   404→   404→          x: 0
+   405→   405→        }}
+   406→   406→        transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+   407→   407→        className={`fixed right-0 top-0 bottom-0 z-50 bg-[#0a1628]/98 backdrop-blur-xl border-l border-border/20 flex flex-col ${
+   408→   408→          !sidebarOpen ? 'lg:translate-x-0' : ''
+   409→   409→        }`}
+   410→   410→      >
+   411→   411→        {/* Logo */}
+   412→   412→        <div className="h-14 flex items-center justify-between px-3 border-b border-border/20">
+   413→   413→          <AnimatePresence mode="wait">
+   414→   414→            {sidebarOpen && (
+   415→   415→              <motion.div
+   416→   416→                initial={{ opacity: 0 }}
+   417→   417→                animate={{ opacity: 1 }}
+   418→   418→                exit={{ opacity: 0 }}
+   419→   419→                className="flex items-center gap-2"
+   420→   420→              >
+   421→   421→                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+   422→   422→                  <Building2 className="w-4 h-4 text-white" />
+   423→   423→                </div>
+   424→   424→                <span className="text-lg font-black text-foreground">جمعيات<span className="text-emerald-500">برو</span></span>
+   425→   425→              </motion.div>
+   426→   426→            )}
+   427→   427→          </AnimatePresence>
+   428→   428→          {!sidebarOpen && (
+   429→   429→            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20">
+   430→   430→              <Building2 className="w-4 h-4 text-white" />
+   431→   431→            </div>
+   432→   432→          )}
+   433→   433→          <button
+   434→   434→            onClick={() => setSidebarOpen(!sidebarOpen)}
+   435→   435→            className="text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-lg hover:bg-white/5"
+   436→   436→          >
+   437→   437→            {sidebarOpen ? <ChevronLeft className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+   438→   438→          </button>
+   439→   439→        </div>
+   440→   440→
+   441→   441→        {/* Navigation */}
+   442→   442→        <nav className="flex-1 py-3 px-2 overflow-y-auto">
+   443→   443→          <div className="space-y-1">
+   444→   444→            {navItems.map((item) => {
+   445→   445→              const isActive = currentPage === item.id
+   446→   446→              return (
+   447→   447→                <button
+   448→   448→                  key={item.id}
+   449→   449→                  onClick={() => {
+   450→   450→                    setCurrentPage(item.id)
+   451→   451→                    // Close sidebar on mobile after selection
+   452→   452→                    if (window.innerWidth < 1024) setSidebarOpen(false)
+   453→   453→                  }}
+   454→   454→                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-medium relative ${
+   455→   455→                    isActive
+   456→   456→                      ? 'bg-emerald-500/10 text-emerald-500 shadow-sm'
+   457→   457→                      : 'text-muted-foreground hover:text-foreground hover:bg-white/5'
+   458→   458→                  }`}
+   459→   459→                >
+   460→   460→                  <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-emerald-500' : ''}`} />
+   461→   461→                  <AnimatePresence>
+   462→   462→                    {sidebarOpen && (
+   463→   463→                      <motion.span
+   464→   464→                        initial={{ opacity: 0, width: 0 }}
+   465→   465→                        animate={{ opacity: 1, width: 'auto' }}
+   466→   466→                        exit={{ opacity: 0, width: 0 }}
+   467→   467→                        className="whitespace-nowrap overflow-hidden"
+   468→   468→                      >
+   469→   469→                        {item.label}
+   470→   470→                      </motion.span>
+   471→   471→                    )}
+   472→   472→                  </AnimatePresence>
+   473→   473→                  {isActive && sidebarOpen && (
+   474→   474→                    <div className="absolute right-0 w-1 h-8 bg-emerald-500 rounded-l-full" />
+   475→   475→                  )}
+   476→   476→                </button>
+   477→   477→              )
+   478→   478→            })}
+   479→   479→          </div>
+   480→   480→        </nav>
+   481→   481→
+   482→   482→        {/* Bottom - User section */}
+   483→   483→        <div className="p-3 border-t border-border/20 space-y-2">
+   484→   484→          {sidebarOpen && (
+   485→   485→            <div className="flex items-center gap-3 p-2 rounded-xl bg-white/5">
+   486→   486→              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-sm shadow-lg">
+   487→   487→                {user?.name?.charAt(0) || 'م'}
+   488→   488→              </div>
+   489→   489→              <div className="flex-1 min-w-0">
+   490→   490→                <div className="text-sm font-bold text-foreground truncate">{user?.name || 'المستخدم'}</div>
+   491→   491→                <div className="text-[10px] text-muted-foreground truncate">{user?.email || ''}</div>
+   492→   492→              </div>
+   493→   493→            </div>
+   494→   494→          )}
+   495→   495→          <div className="flex items-center gap-1">
+   496→   496→            <button
+   497→   497→              onClick={toggleTheme}
+   498→   498→              className="flex-1 flex items-center justify-center gap-1 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors text-xs"
+   499→   499→              title={theme === 'dark' ? 'الوضع الفاتح' : 'الوضع الداكن'}
+   500→   500→            >
+   501→   501→              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+   502→   502→              {sidebarOpen && <span>{theme === 'dark' ? 'فاتح' : 'داكن'}</span>}
+   503→   503→            </button>
+   504→   504→            <button
+   505→   505→              onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
+   506→   506→              className="flex-1 flex items-center justify-center gap-1 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors text-xs"
+   507→   507→              title={lang === 'ar' ? 'English' : 'عربي'}
+   508→   508→            >
+   509→   509→              <Globe className="w-4 h-4" />
+   510→   510→              {sidebarOpen && <span>{lang === 'ar' ? 'EN' : 'عربي'}</span>}
+   511→   511→            </button>
+   512→   512→            <button
+   513→   513→              onClick={logout}
+   514→   514→              className="flex-1 flex items-center justify-center gap-1 p-2 rounded-lg text-red-400 hover:text-red-500 hover:bg-red-500/5 transition-colors text-xs"
+   515→   515→            >
+   516→   516→              <LogOut className="w-4 h-4" />
+   517→   517→              {sidebarOpen && <span>خروج</span>}
+   518→   518→            </button>
+   519→   519→          </div>
+   520→   520→        </div>
+   521→   521→      </motion.aside>
+   522→   522→    </>
+   523→   523→  )
+   524→   524→}
+   525→   525→
+   526→   526→// ============================================
+   527→   527→// MAIN HOME COMPONENT
+   528→   528→// ============================================
+   529→   529→export default function Home() {
+   530→   530→  const { currentPage, isAuthenticated, theme, sidebarOpen, setSidebarOpen } = useAppStore()
+   531→   531→
+   532→   532→  // Set dark theme by default
+   533→   533→  useEffect(() => {
+   534→   534→    document.documentElement.classList.add('dark')
+   535→   535→    document.documentElement.dir = 'rtl'
+   536→   536→    document.documentElement.lang = 'ar'
+   537→   537→  }, [])
+   538→   538→
+   539→   539→  // Validate session on mount
+   540→   540→  useEffect(() => {
+   541→   541→    const validateSession = async () => {
+   542→   542→      const token = document.cookie.split('; ').find(row => row.startsWith('session_token='))
+   543→   543→      if (token && !isAuthenticated) {
+   544→   544→        try {
+   545→   545→          const res = await fetch('/api/auth/me')
+   546→   546→          if (res.ok) {
+   547→   547→            const data = await res.json()
+   548→   548→            if (data.user) {
+   549→   549→              useAppStore.getState().login(data.user, token.split('=')[1])
+   550→   550→            }
+   551→   551→          } else {
+   552→   552→            document.cookie = 'session_token=; path=/; max-age=0'
+   553→   553→          }
+   554→   554→        } catch {
+   555→   555→          // Ignore errors
+   556→   556→        }
+   557→   557→      }
+   558→   558→    }
+   559→   559→    validateSession()
+   560→   560→  }, [isAuthenticated])
+   561→   561→
+   562→   562→  // Fetch notifications periodically
+   563→   563→  useEffect(() => {
+   564→   564→    if (!isAuthenticated) return
+   565→   565→    const fetchNotifs = async () => {
+   566→   566→      try {
+   567→   567→        const res = await fetch('/api/notifications')
+   568→   568→        if (res.ok) {
+   569→   569→          const data = await res.json()
+   570→   570→          useAppStore.getState().setNotifications(data.notifications)
+   571→   571→        }
+   572→   572→      } catch {}
+   573→   573→    }
+   574→   574→    fetchNotifs()
+   575→   575→    const interval = setInterval(fetchNotifs, 30000)
+   576→   576→    return () => clearInterval(interval)
+   577→   577→  }, [isAuthenticated])
+   578→   578→
+   579→   579→  // Auth pages - no dashboard layout
+   580→   580→  if (!isAuthenticated) {
+   581→   581→    if (currentPage === 'register' || currentPage === 'login') {
+   582→   582→      return <AuthPage />
+   583→   583→    }
+   584→   584→    return <LandingPage />
+   585→   585→  }
+   586→   586→
+   587→   587→  // Dashboard pages
+   588→   588→  const renderPage = () => {
+   589→   589→    switch (currentPage) {
+   590→   590→      case 'dashboard': return <DashboardPage />
+   591→   591→      case 'associations': return <AssociationsPage />
+   592→   592→      case 'members': return <MembersPage />
+   593→   593→      case 'events': return <EventsPage />
+   594→   594→      case 'finance': return <FinancePage />
+   595→   595→      case 'security': return <SecurityPage />
+   596→   596→      case 'admin': return <AdminPage />
+   597→   597→      default: return <DashboardPage />
+   598→   598→    }
+   599→   599→  }
+   600→   600→
+   601→   601→  return (
+   602→   602→    <div className="min-h-screen bg-background" dir="rtl">
+   603→   603→      <Toast />
+   604→   604→      
+   605→   605→      {/* Top Info Bar (like Gama Systems) */}
+   606→   606→      <TopInfoBar />
+   607→   607→      
+   608→   608→      {/* Main Navbar */}
+   609→   609→      <MainNavbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+   610→   610→      
+   611→   611→      {/* Sidebar */}
+   612→   612→      <Sidebar />
+   613→   613→      
+   614→   614→      {/* Main Content */}
+   615→   615→      <div className="transition-all duration-300" style={{ marginRight: sidebarOpen ? 260 : 72 }}>
+   616→   616→        <main className="p-4 md:p-6 max-w-7xl mx-auto">
+   617→   617→          <AnimatePresence mode="wait">
+   618→   618→            <motion.div
+   619→   619→              key={currentPage}
+   620→   620→              initial={{ opacity: 0, y: 10 }}
+   621→   621→              animate={{ opacity: 1, y: 0 }}
+   622→   622→              exit={{ opacity: 0, y: -10 }}
+   623→   623→              transition={{ duration: 0.2 }}
+   624→   624→            >
+   625→   625→              {renderPage()}
+   626→   626→            </motion.div>
+   627→   627→          </AnimatePresence>
+   628→   628→        </main>
+   629→   629→      </div>
+   630→   630→    </div>
+   631→   631→  )
+   632→   632→}
+   633→   633→

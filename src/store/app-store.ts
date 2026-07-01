@@ -276,7 +276,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   notifications: [],
   unreadCount: 0,
   sidebarOpen: true,
-  theme: 'dark',
+  theme: 'light',
   lang: 'ar',
   toast: null,
 

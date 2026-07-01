@@ -1,0 +1,1606 @@
+     1→'use client'
+     2→
+     3→import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
+     4→import { useEffect, useRef, useState, useCallback } from 'react'
+     5→import { Shield, Users, Building2, Calendar, BarChart3, ChevronDown, Sparkles, Lock, Eye, Fingerprint, 
+     6→  Phone, Mail, MapPin, Send, ArrowLeft, ChevronRight, Globe, Star, CheckCircle2, 
+     7→  Monitor, Smartphone, Database, Cloud, Cpu, Headphones, Clock, Award, Zap,
+     8→  Facebook, Twitter, Instagram, Youtube, MessageCircle, Play, ArrowUp,
+     9→  Heart, Target, Lightbulb, Rocket, TrendingUp, Settings, BookOpen, Layers
+    10→} from 'lucide-react'
+    11→import { useAppStore } from '@/store/app-store'
+    12→import { AnimatedHeroIllustration, AnimatedSecurityIllustration, AnimatedDashboardIllustration, AnimatedMembersIllustration, AnimatedEventsIllustration, AnimatedFinanceIllustration } from './animated-illustrations'
+    13→
+    14→// Seeded random for deterministic SSR
+    15→function seededRandom(seed: number) {
+    16→  const x = Math.sin(seed) * 10000
+    17→  return x - Math.floor(x)
+    18→}
+    19→
+    20→// Particle component for light background
+    21→function Particles() {
+    22→  const [mounted, setMounted] = useState(false)
+    23→
+    24→  useEffect(() => {
+    25→    requestAnimationFrame(() => setMounted(true))
+    26→  }, [])
+    27→
+    28→  const particles = useState(() =>
+    29→    Array.from({ length: 30 }, (_, i) => ({
+    30→      id: i,
+    31→      x: Math.round(seededRandom(i * 7 + 1) * 100 * 10000) / 10000,
+    32→      y: Math.round(seededRandom(i * 13 + 2) * 100 * 10000) / 10000,
+    33→      size: Math.round((seededRandom(i * 17 + 3) * 6 + 2) * 10000) / 10000,
+    34→      duration: seededRandom(i * 23 + 4) * 20 + 10,
+    35→      delay: seededRandom(i * 31 + 5) * 5,
+    36→      animX1: Math.round((seededRandom(i * 37 + 6) * 50 - 25) * 10000) / 10000,
+    37→      animX2: Math.round((seededRandom(i * 41 + 7) * 100 - 50) * 10000) / 10000,
+    38→      color: ['rgba(16,185,129,0.12)', 'rgba(6,182,212,0.1)', 'rgba(139,92,246,0.08)', 'rgba(245,158,11,0.08)'][i % 4],
+    39→    }))
+    40→  )[0]
+    41→
+    42→  if (!mounted) return null
+    43→
+    44→  return (
+    45→    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+    46→      {particles.map(p => (
+    47→        <motion.div
+    48→          key={p.id}
+    49→          className="absolute rounded-full"
+    50→          style={{ left: `${p.x}%`, top: `${p.y}%`, width: p.size, height: p.size, background: p.color }}
+    51→          animate={{
+    52→            y: [0, -200, -400],
+    53→            x: [0, p.animX1, p.animX2],
+    54→            opacity: [0, 0.8, 0],
+    55→            scale: [0.5, 1, 0.5],
+    56→          }}
+    57→          transition={{
+    58→            duration: p.duration,
+    59→            delay: p.delay,
+    60→            repeat: Infinity,
+    61→            ease: 'linear',
+    62→          }}
+    63→        />
+    64→      ))}
+    65→    </div>
+    66→  )
+    67→}
+    68→
+    69→// Floating 3D Card with animated illustration
+    70→function FloatingCard({ icon: Icon, title, desc, delay, color, illustration }: { icon: any; title: string; desc: string; delay: number; color: string; illustration?: React.ReactNode }) {
+    71→  return (
+    72→    <motion.div
+    73→      initial={{ opacity: 0, y: 60, rotateX: -15 }}
+    74→      animate={{ opacity: 1, y: 0, rotateX: 0 }}
+    75→      transition={{ duration: 0.8, delay, ease: [0.23, 1, 0.32, 1] }}
+    76→      whileHover={{ 
+    77→        y: -12, 
+    78→        rotateY: 5, 
+    79→        rotateX: -5,
+    80→        scale: 1.03,
+    81→        transition: { duration: 0.3 }
+    82→      }}
+    83→      className="perspective-container"
+    84→    >
+    85→      <div className={`glass-card rounded-2xl p-6 cursor-pointer preserve-3d card-3d group h-full`}>
+    86→        {illustration && (
+    87→          <div className="mb-3 flex justify-center overflow-hidden rounded-xl bg-emerald-50/50 py-2">
+    88→            {illustration}
+    89→          </div>
+    90→        )}
+    91→        <div className={`w-14 h-14 rounded-xl ${color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+    92→          <Icon className="w-7 h-7 text-white" />
+    93→        </div>
+    94→        <h3 className="text-lg font-bold text-foreground mb-2">{title}</h3>
+    95→        <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+    96→      </div>
+    97→    </motion.div>
+    98→  )
+    99→}
+   100→
+   101→// Stats counter
+   102→function StatsCounter() {
+   103→  const [counts, setCounts] = useState({ associations: 0, members: 0, events: 0, security: 0 })
+   104→  const targets = { associations: 1250, members: 45800, events: 3200, security: 99.9 }
+   105→
+   106→  useEffect(() => {
+   107→    const duration = 2000
+   108→    const steps = 60
+   109→    const interval = duration / steps
+   110→    let step = 0
+   111→
+   112→    const timer = setInterval(() => {
+   113→      step++
+   114→      const progress = step / steps
+   115→      const eased = 1 - Math.pow(1 - progress, 3)
+   116→      
+   117→      setCounts({
+   118→        associations: Math.round(targets.associations * eased),
+   119→        members: Math.round(targets.members * eased),
+   120→        events: Math.round(targets.events * eased),
+   121→        security: Math.round(targets.security * eased * 10) / 10,
+   122→      })
+   123→
+   124→      if (step >= steps) clearInterval(timer)
+   125→    }, interval)
+   126→
+   127→    return () => clearInterval(timer)
+   128→  }, [])
+   129→
+   130→  const stats = [
+   131→    { label: 'جمعية مسجلة', value: counts.associations.toLocaleString('ar-SA'), icon: Building2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+   132→    { label: 'عضو فعّال', value: counts.members.toLocaleString('ar-SA'), icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
+   133→    { label: 'فعالية منفذة', value: counts.events.toLocaleString('ar-SA'), icon: Calendar, color: 'text-amber-600', bg: 'bg-amber-50' },
+   134→    { label: 'نسبة الأمان', value: `${counts.security}%`, icon: Shield, color: 'text-violet-600', bg: 'bg-violet-50' },
+   135→  ]
+   136→
+   137→  return (
+   138→    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+   139→      {stats.map((stat, i) => (
+   140→        <motion.div
+   141→          key={stat.label}
+   142→          initial={{ opacity: 0, y: 30 }}
+   143→          animate={{ opacity: 1, y: 0 }}
+   144→          transition={{ delay: 0.8 + i * 0.1 }}
+   145→          className={`${stat.bg} rounded-2xl p-5 text-center border border-white/60 shadow-sm`}
+   146→        >
+   147→          <stat.icon className={`w-7 h-7 mx-auto mb-2 ${stat.color}`} />
+   148→          <div className={`text-2xl md:text-3xl font-bold ${stat.color} animate-count-up`}>{stat.value}</div>
+   149→          <div className="text-xs md:text-sm text-muted-foreground mt-1 font-medium">{stat.label}</div>
+   150→        </motion.div>
+   151→      ))}
+   152→    </div>
+   153→  )
+   154→}
+   155→
+   156→// ============================================
+   157→// HERO SLIDER (Light Theme)
+   158→// ============================================
+   159→function HeroSlider() {
+   160→  const [current, setCurrent] = useState(0)
+   161→  const slides = [
+   162→    {
+   163→      badge: 'منصة ذكية لإدارة الجمعيات',
+   164→      title1: 'منصة تنظيم',
+   165→      title2: 'الجمعيات الذكية',
+   166→      desc: 'أدِر جمعيتك بكفاءة واحترافية مع نظام متكامل يشمل إدارة الأعضاء والفعاليات والماليات مع حماية متقدمة من الدرجة الأولى',
+   167→      cta: 'ابدأ رحلتك الآن',
+   168→      ctaSecondary: 'لديك حساب؟ سجّل دخول',
+   169→      illustration: <AnimatedHeroIllustration />,
+   170→    },
+   171→    {
+   172→      badge: 'حلول متكاملة للمؤسسات',
+   173→      title1: 'نظام إدارة',
+   174→      title2: 'الموارد الشامل',
+   175→      desc: 'نظام متقدم لإدارة موارد مؤسستك بشكل شامل مع تقارير مالية دقيقة وتحليلات ذكية تساعدك على اتخاذ القرارات الصحيحة',
+   176→      cta: 'اكتشف المزيد',
+   177→      ctaSecondary: 'طلب نسخة تجريبية',
+   178→      illustration: <AnimatedDashboardIllustration />,
+   179→    },
+   180→    {
+   181→      badge: 'أمان من الدرجة الأولى',
+   182→      title1: 'حماية متقدمة',
+   183→      title2: 'لبياناتك الحساسة',
+   184→      desc: 'تشفير AES-256 مع تحقق ثنائي ومراقبة ذكية على مدار الساعة لضمان أمان بياناتك والامتثال لأعلى المعايير الدولية',
+   185→      cta: 'تعرّف على الأمان',
+   186→      ctaSecondary: 'تواصل معنا',
+   187→      illustration: <AnimatedSecurityIllustration />,
+   188→    },
+   189→  ]
+   190→
+   191→  useEffect(() => {
+   192→    const timer = setInterval(() => {
+   193→      setCurrent(prev => (prev + 1) % slides.length)
+   194→    }, 7000)
+   195→    return () => clearInterval(timer)
+   196→  }, [slides.length])
+   197→
+   198→  const { setCurrentPage } = useAppStore()
+   199→
+   200→  return (
+   201→    <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+   202→      <div className="flex-1 text-center lg:text-right">
+   203→        <AnimatePresence mode="wait">
+   204→          <motion.div
+   205→            key={current}
+   206→            initial={{ opacity: 0, y: 30 }}
+   207→            animate={{ opacity: 1, y: 0 }}
+   208→            exit={{ opacity: 0, y: -30 }}
+   209→            transition={{ duration: 0.5 }}
+   210→          >
+   211→            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/60 text-emerald-700 text-sm font-medium mb-6">
+   212→              <Sparkles className="w-4 h-4" />
+   213→              {slides[current].badge}
+   214→            </span>
+   215→          </motion.div>
+   216→        </AnimatePresence>
+   217→
+   218→        <AnimatePresence mode="wait">
+   219→          <motion.h1
+   220→            key={`title-${current}`}
+   221→            initial={{ opacity: 0, y: 30 }}
+   222→            animate={{ opacity: 1, y: 0 }}
+   223→            exit={{ opacity: 0, y: -30 }}
+   224→            transition={{ duration: 0.5, delay: 0.1 }}
+   225→            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-tight mb-6"
+   226→          >
+   227→            <span className="text-foreground">{slides[current].title1}</span>
+   228→            <br />
+   229→            <span className="gradient-text">
+   230→              {slides[current].title2}
+   231→            </span>
+   232→          </motion.h1>
+   233→        </AnimatePresence>
+   234→
+   235→        <AnimatePresence mode="wait">
+   236→          <motion.p
+   237→            key={`desc-${current}`}
+   238→            initial={{ opacity: 0, y: 30 }}
+   239→            animate={{ opacity: 1, y: 0 }}
+   240→            exit={{ opacity: 0, y: -30 }}
+   241→            transition={{ duration: 0.5, delay: 0.2 }}
+   242→            className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0 mb-8 leading-relaxed"
+   243→          >
+   244→            {slides[current].desc}
+   245→          </motion.p>
+   246→        </AnimatePresence>
+   247→
+   248→        <AnimatePresence mode="wait">
+   249→          <motion.div
+   250→            key={`cta-${current}`}
+   251→            initial={{ opacity: 0, y: 30 }}
+   252→            animate={{ opacity: 1, y: 0 }}
+   253→            exit={{ opacity: 0, y: -30 }}
+   254→            transition={{ duration: 0.5, delay: 0.3 }}
+   255→            className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
+   256→          >
+   257→            <motion.button
+   258→              whileHover={{ scale: 1.05, boxShadow: '0 20px 40px -12px rgba(16,185,129,0.3)' }}
+   259→              whileTap={{ scale: 0.95 }}
+   260→              onClick={() => setCurrentPage('register')}
+   261→              className="px-8 py-4 text-base font-bold rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-xl shadow-emerald-500/20 transition-all flex items-center justify-center gap-2"
+   262→            >
+   263→              {slides[current].cta}
+   264→              <ArrowLeft className="w-5 h-5" />
+   265→            </motion.button>
+   266→            <motion.button
+   267→              whileHover={{ scale: 1.05 }}
+   268→              whileTap={{ scale: 0.95 }}
+   269→              onClick={() => setCurrentPage('login')}
+   270→              className="px-8 py-4 text-base font-bold rounded-2xl bg-white border-2 border-emerald-200 text-foreground hover:border-emerald-400 hover:text-emerald-600 transition-colors shadow-sm"
+   271→            >
+   272→              {slides[current].ctaSecondary}
+   273→            </motion.button>
+   274→          </motion.div>
+   275→        </AnimatePresence>
+   276→
+   277→        {/* Slider indicators */}
+   278→        <div className="flex items-center gap-2 mt-8 justify-center lg:justify-start">
+   279→          {slides.map((_, i) => (
+   280→            <button
+   281→              key={i}
+   282→              onClick={() => setCurrent(i)}
+   283→              className={`h-2.5 rounded-full transition-all duration-500 ${
+   284→                i === current ? 'w-10 bg-emerald-500' : 'w-2.5 bg-emerald-300 hover:bg-emerald-400'
+   285→              }`}
+   286→            />
+   287→          ))}
+   288→        </div>
+   289→      </div>
+   290→
+   291→      {/* Hero Animated Illustration */}
+   292→      <motion.div
+   293→        initial={{ opacity: 0, scale: 0.5, rotateY: -30 }}
+   294→        animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+   295→        transition={{ duration: 1, delay: 0.4 }}
+   296→        className="flex-shrink-0"
+   297→      >
+   298→        <AnimatePresence mode="wait">
+   299→          <motion.div
+   300→            key={`ill-${current}`}
+   301→            initial={{ opacity: 0, scale: 0.8, rotateY: -15 }}
+   302→            animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+   303→            exit={{ opacity: 0, scale: 0.8, rotateY: 15 }}
+   304→            transition={{ duration: 0.5 }}
+   305→          >
+   306→            {slides[current].illustration}
+   307→          </motion.div>
+   308→        </AnimatePresence>
+   309→      </motion.div>
+   310→    </div>
+   311→  )
+   312→}
+   313→
+   314→// ============================================
+   315→// ABOUT PLATFORM SECTION
+   316→// ============================================
+   317→function AboutSection() {
+   318→  const { setCurrentPage } = useAppStore()
+   319→  
+   320→  const highlights = [
+   321→    {
+   322→      icon: Rocket,
+   323→      title: 'بداية سهلة وسريعة',
+   324→      desc: 'ابدأ باستخدام المنصة في دقائق معدودة دون الحاجة لتدريب معقد. واجهة بسيطة وبديهية تناسب جميع المستويات التقنية.',
+   325→      color: 'from-emerald-500 to-teal-500',
+   326→      bg: 'bg-emerald-50',
+   327→    },
+   328→    {
+   329→      icon: Shield,
+   330→      title: 'أمان بلا تنازلات',
+   331→      desc: 'نظام حماية متعدد الطبقات مع تشفير AES-256 وتحقق ثنائي ومراقبة ذكية على مدار الساعة لحماية بياناتك الحساسة.',
+   332→      color: 'from-blue-500 to-indigo-500',
+   333→      bg: 'bg-blue-50',
+   334→    },
+   335→    {
+   336→      icon: TrendingUp,
+   337→      title: 'تقارير ذكية وتحليلات',
+   338→      desc: 'لوحات تحكم تفاعلية وتقارير مالية شاملة مع رسوم بيانية حية وتحليلات ذكية تدعم قراراتك الإدارية.',
+   339→      color: 'from-violet-500 to-purple-500',
+   340→      bg: 'bg-violet-50',
+   341→    },
+   342→    {
+   343→      icon: Users,
+   344→      title: 'إدارة أعضاء متقدمة',
+   345→      desc: 'نظام شامل لإدارة الأعضاء يتضمن تحديد الأدوار والصلاحيات وتتبع الحضور والمشاركة وتواصل فعّال.',
+   346→      color: 'from-amber-500 to-orange-500',
+   347→      bg: 'bg-amber-50',
+   348→    },
+   349→  ]
+   350→
+   351→  return (
+   352→    <section className="relative z-10 py-20 md:py-28" id="about">
+   353→      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   354→        {/* Section Header */}
+   355→        <motion.div
+   356→          initial={{ opacity: 0, y: 30 }}
+   357→          whileInView={{ opacity: 1, y: 0 }}
+   358→          viewport={{ once: true }}
+   359→          className="text-center mb-16"
+   360→        >
+   361→          <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/50 text-emerald-700 text-sm font-bold mb-6">
+   362→            <Lightbulb className="w-4 h-4" />
+   363→            عن منصة جمعياتبرو
+   364→          </span>
+   365→          <h2 className="text-3xl md:text-5xl font-black text-foreground mb-6">
+   366→            منصة واحدة لـ<span className="gradient-text">كل احتياجاتك</span>
+   367→          </h2>
+   368→          <p className="text-muted-foreground text-lg max-w-3xl mx-auto leading-relaxed">
+   369→            جمعياتبرو هي منصة سحابية متكاملة صُممت خصيصاً لإدارة الجمعيات والمؤسسات غير الربحية في المملكة العربية السعودية. نوفر لك أدوات احترافية تبسّط العمليات اليومية وتعزز الإنتاجية مع ضمان أعلى معايير الأمان والجودة.
+   370→          </p>
+   371→        </motion.div>
+   372→
+   373→        {/* Main Content Grid */}
+   374→        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-16">
+   375→          {/* Left: Animated Illustration */}
+   376→          <motion.div
+   377→            initial={{ opacity: 0, x: 40 }}
+   378→            whileInView={{ opacity: 1, x: 0 }}
+   379→            viewport={{ once: true }}
+   380→            transition={{ duration: 0.6 }}
+   381→            className="relative"
+   382→          >
+   383→            <div className="relative bg-gradient-to-br from-emerald-50 via-white to-blue-50 rounded-3xl p-8 border border-emerald-100/50 shadow-lg shadow-emerald-100/30">
+   384→              {/* Animated blobs */}
+   385→              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-200/30 rounded-full blur-2xl animate-blob-1" />
+   386→              <div className="absolute bottom-0 left-0 w-40 h-40 bg-blue-200/30 rounded-full blur-2xl animate-blob-2" />
+   387→              
+   388→              {/* Central animated graphic */}
+   389→              <div className="relative z-10 flex items-center justify-center py-8">
+   390→                <div className="relative w-64 h-64">
+   391→                  {/* Rotating ring */}
+   392→                  <motion.div
+   393→                    animate={{ rotate: 360 }}
+   394→                    transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+   395→                    className="absolute inset-0"
+   396→                  >
+   397→                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-lg shadow-emerald-200 flex items-center justify-center">
+   398→                      <Building2 className="w-7 h-7 text-white" />
+   399→                    </div>
+   400→                    <div className="absolute bottom-0 right-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 shadow-lg shadow-blue-200 flex items-center justify-center">
+   401→                      <Users className="w-6 h-6 text-white" />
+   402→                    </div>
+   403→                    <div className="absolute bottom-0 left-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 shadow-lg shadow-amber-200 flex items-center justify-center">
+   404→                      <Calendar className="w-6 h-6 text-white" />
+   405→                    </div>
+   406→                    <div className="absolute top-1/2 right-0 -translate-y-1/2 w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-400 to-violet-600 shadow-lg shadow-violet-200 flex items-center justify-center">
+   407→                      <BarChart3 className="w-6 h-6 text-white" />
+   408→                    </div>
+   409→                    <div className="absolute top-1/2 left-0 -translate-y-1/2 w-12 h-12 rounded-2xl bg-gradient-to-br from-rose-400 to-rose-600 shadow-lg shadow-rose-200 flex items-center justify-center">
+   410→                      <Shield className="w-6 h-6 text-white" />
+   411→                    </div>
+   412→                  </motion.div>
+   413→                  {/* Center pulsing icon */}
+   414→                  <div className="absolute inset-0 flex items-center justify-center">
+   415→                    <motion.div
+   416→                      animate={{ scale: [1, 1.08, 1] }}
+   417→                      transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+   418→                      className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-2xl shadow-emerald-300/50"
+   419→                    >
+   420→                      <Sparkles className="w-10 h-10 text-white" />
+   421→                    </motion.div>
+   422→                  </div>
+   423→                  {/* Decorative circles */}
+   424→                  <svg className="absolute inset-0 w-full h-full" viewBox="0 0 256 256" fill="none">
+   425→                    <circle cx="128" cy="128" r="115" stroke="rgba(16,185,129,0.15)" strokeWidth="1.5" strokeDasharray="8 12" />
+   426→                    <circle cx="128" cy="128" r="90" stroke="rgba(6,182,212,0.1)" strokeWidth="1" strokeDasharray="4 8" />
+   427→                  </svg>
+   428→                </div>
+   429→              </div>
+   430→            </div>
+   431→          </motion.div>
+   432→
+   433→          {/* Right: Feature List */}
+   434→          <motion.div
+   435→            initial={{ opacity: 0, x: -40 }}
+   436→            whileInView={{ opacity: 1, x: 0 }}
+   437→            viewport={{ once: true }}
+   438→            transition={{ duration: 0.6, delay: 0.2 }}
+   439→            className="flex flex-col justify-center"
+   440→          >
+   441→            <div className="space-y-5">
+   442→              {highlights.map((item, i) => (
+   443→                <motion.div
+   444→                  key={item.title}
+   445→                  initial={{ opacity: 0, y: 20 }}
+   446→                  whileInView={{ opacity: 1, y: 0 }}
+   447→                  viewport={{ once: true }}
+   448→                  transition={{ delay: 0.1 * i }}
+   449→                  whileHover={{ x: -8, scale: 1.01 }}
+   450→                  className={`${item.bg} rounded-2xl p-5 border border-white/60 shadow-sm flex items-start gap-4 group cursor-default`}
+   451→                >
+   452→                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform duration-300`}>
+   453→                    <item.icon className="w-6 h-6 text-white" />
+   454→                  </div>
+   455→                  <div>
+   456→                    <h4 className="font-bold text-foreground text-base mb-1">{item.title}</h4>
+   457→                    <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
+   458→                  </div>
+   459→                </motion.div>
+   460→              ))}
+   461→            </div>
+   462→            
+   463→            <motion.div
+   464→              initial={{ opacity: 0 }}
+   465→              whileInView={{ opacity: 1 }}
+   466→              viewport={{ once: true }}
+   467→              transition={{ delay: 0.5 }}
+   468→              className="mt-8 flex gap-3"
+   469→            >
+   470→              <motion.button
+   471→                whileHover={{ scale: 1.05 }}
+   472→                whileTap={{ scale: 0.95 }}
+   473→                onClick={() => setCurrentPage('register')}
+   474→                className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-sm shadow-lg shadow-emerald-200 flex items-center gap-2"
+   475→              >
+   476→                ابدأ مجاناً
+   477→                <ArrowLeft className="w-4 h-4" />
+   478→              </motion.button>
+   479→              <motion.button
+   480→                whileHover={{ scale: 1.05 }}
+   481→                whileTap={{ scale: 0.95 }}
+   482→                className="px-6 py-3 rounded-xl bg-white border-2 border-emerald-200 text-emerald-700 font-bold text-sm hover:border-emerald-400 transition-colors shadow-sm"
+   483→                onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+   484→              >
+   485→                تواصل معنا
+   486→              </motion.button>
+   487→            </motion.div>
+   488→          </motion.div>
+   489→        </div>
+   490→
+   491→        {/* Animated Feature Cards Row */}
+   492→        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+   493→          {[
+   494→            { icon: Layers, title: 'نظام متعدد الطبقات', desc: 'بنية تحتية قوية تدعم النمو', color: 'from-emerald-500 to-teal-500' },
+   495→            { icon: Target, title: 'دقة في التنفيذ', desc: 'أدوات مصممة بعناية فائقة', color: 'from-blue-500 to-indigo-500' },
+   496→            { icon: Heart, title: 'تصميم يراعي المستخدم', desc: 'تجربة استخدام سلسة وممتعة', color: 'from-rose-500 to-pink-500' },
+   497→            { icon: BookOpen, title: 'دعم وتوثيق شامل', desc: 'فريق دعم ومستندات مفصلة', color: 'from-amber-500 to-orange-500' },
+   498→          ].map((item, i) => (
+   499→            <motion.div
+   500→              key={item.title}
+   501→              initial={{ opacity: 0, y: 30 }}
+   502→              whileInView={{ opacity: 1, y: 0 }}
+   503→              viewport={{ once: true }}
+   504→              transition={{ delay: i * 0.1 }}
+   505→              whileHover={{ y: -5, scale: 1.03 }}
+   506→              className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow text-center group"
+   507→            >
+   508→              <motion.div
+   509→                animate={{ y: [0, -5, 0] }}
+   510→                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: i * 0.5 }}
+   511→                className={`w-14 h-14 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center mx-auto mb-3 shadow-md group-hover:scale-110 transition-transform`}
+   512→              >
+   513→                <item.icon className="w-7 h-7 text-white" />
+   514→              </motion.div>
+   515→              <h4 className="font-bold text-foreground text-sm mb-1">{item.title}</h4>
+   516→              <p className="text-muted-foreground text-xs">{item.desc}</p>
+   517→            </motion.div>
+   518→          ))}
+   519→        </div>
+   520→      </div>
+   521→    </section>
+   522→  )
+   523→}
+   524→
+   525→// ============================================
+   526→// PRODUCTS/SERVICES SECTION (Light Theme)
+   527→// ============================================
+   528→function ProductsSection() {
+   529→  const [activeTab, setActiveTab] = useState('management')
+   530→  
+   531→  const tabs = [
+   532→    { id: 'management', label: 'إدارة الموارد', icon: Database },
+   533→    { id: 'web', label: 'تطبيقات الويب', icon: Globe },
+   534→    { id: 'mobile', label: 'تطبيقات الجوال', icon: Smartphone },
+   535→    { id: 'ecommerce', label: 'المتاجر الإلكترونية', icon: Monitor },
+   536→  ]
+   537→
+   538→  const products: Record<string, Array<{title: string; desc: string; icon: any; color: string; features: string[]}>> = {
+   539→    management: [
+   540→      { title: 'نظام إدارة الجمعيات', desc: 'نظام شامل لإدارة الجمعيات والمؤسسات مع تقارير مالية متقدمة', icon: Building2, color: 'from-emerald-500 to-teal-600', features: ['إدارة الأعضاء', 'التقارير المالية', 'نظام الصلاحيات'] },
+   541→      { title: 'نظام نقاط البيع', desc: 'حل متكامل لنقاط البيع مع إدارة المخزون والمحاسبة', icon: Monitor, color: 'from-cyan-500 to-blue-600', features: ['إدارة المبيعات', 'تتبع المخزون', 'فواتير إلكترونية'] },
+   542→      { title: 'نظام المحاسبة المالية', desc: 'برنامج محاسبي معتمد من هيئة الزكاة والضريبة والجمارك', icon: BarChart3, color: 'from-amber-500 to-orange-600', features: ['دفتر الأستاذ', 'ضريبة القيمة المضافة', 'التقارير الضريبية'] },
+   543→    ],
+   544→    web: [
+   545→      { title: 'منصات الويب المتقدمة', desc: 'تطوير منصات ويب احترافية بتقنيات حديثة وأداء عالي', icon: Globe, color: 'from-violet-500 to-purple-600', features: ['React/Next.js', 'API متقدمة', 'أداء فائق'] },
+   546→      { title: 'لوحات التحكم', desc: 'لوحات تحكم تفاعلية مع رسوم بيانية وتحليلات متقدمة', icon: Cpu, color: 'from-emerald-500 to-green-600', features: ['بيانات حية', 'تقارير مخصصة', 'تصدير البيانات'] },
+   547→      { title: 'أنظمة إدارة المحتوى', desc: 'أنظمة CMS مرنة لإدارة المحتوى بسهولة وفعالية', icon: Database, color: 'from-cyan-500 to-teal-600', features: ['محرر متقدم', 'إدارة الوسائط', 'SEO مدمج'] },
+   548→    ],
+   549→    mobile: [
+   550→      { title: 'تطبيقات الأندرويد', desc: 'تطبيقات أندرويد أصلية بأداء ممتاز وتجربة مستخدم متميزة', icon: Smartphone, color: 'from-green-500 to-emerald-600', features: ['أداء عالي', 'إشعارات ذكية', 'عمل بدون إنترنت'] },
+   551→      { title: 'تطبيقات iOS', desc: 'تطبيقات آيفون بتصميم أنيق متوافق مع إرشادات آبل', icon: Smartphone, color: 'from-blue-500 to-indigo-600', features: ['Swift/Kotlin', 'تصميم أصلي', 'تكامل النظام'] },
+   552→      { title: 'تطبيقات مهنية متخصصة', desc: 'تطبيقات لإدارة المهندسين والمندوبين عبر الجوال', icon: Users, color: 'from-amber-500 to-yellow-600', features: ['تتبع الموقع', 'إدارة المهام', 'تقارير ميدانية'] },
+   553→    ],
+   554→    ecommerce: [
+   555→      { title: 'المتاجر الإلكترونية', desc: 'متاجر احترافية مع بوابات دفع متعددة ونظام شحن متكامل', icon: Monitor, color: 'from-rose-500 to-pink-600', features: ['بوابات دفع', 'إدارة الشحن', 'تتبع الطلبات'] },
+   556→      { title: 'منصات المزادات', desc: 'نظام مزادات وحراجات إلكتروني مع إدارة كاملة للمنتجات', icon: Star, color: 'from-amber-500 to-orange-600', features: ['مزادات حية', 'تقييم البائعين', 'نظام وساطة'] },
+   557→      { title: 'إدارة الضيافة', desc: 'نظام حجز الوجبات والحفلات مع إدارة كاملة للفعاليات', icon: Calendar, color: 'from-teal-500 to-cyan-600', features: ['حجز ذكي', 'إدارة القوائم', 'تقارير الفعاليات'] },
+   558→    ],
+   559→  }
+   560→
+   561→  return (
+   562→    <section className="relative z-10 py-16 md:py-24" id="products">
+   563→      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   564→        <motion.div
+   565→          initial={{ opacity: 0, y: 20 }}
+   566→          whileInView={{ opacity: 1, y: 0 }}
+   567→          viewport={{ once: true }}
+   568→          className="text-center mb-12"
+   569→        >
+   570→          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-200/50 text-blue-700 text-sm font-medium mb-4">
+   571→            <Sparkles className="w-4 h-4" />
+   572→            حلولنا المتكاملة
+   573→          </span>
+   574→          <h2 className="text-3xl md:text-4xl font-black text-foreground mb-4">
+   575→            منتجات وخدمات <span className="gradient-text">احترافية</span>
+   576→          </h2>
+   577→          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+   578→            نقدم مجموعة شاملة من الحلول التقنية المتكاملة لتلبية احتياجات مؤسستك
+   579→          </p>
+   580→        </motion.div>
+   581→
+   582→        {/* Tabs */}
+   583→        <div className="flex flex-wrap justify-center gap-2 mb-10">
+   584→          {tabs.map(tab => (
+   585→            <motion.button
+   586→              key={tab.id}
+   587→              whileHover={{ scale: 1.05 }}
+   588→              whileTap={{ scale: 0.95 }}
+   589→              onClick={() => setActiveTab(tab.id)}
+   590→              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
+   591→                activeTab === tab.id
+   592→                  ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-200'
+   593→                  : 'bg-white border border-gray-200 text-muted-foreground hover:border-emerald-300 hover:text-emerald-600 shadow-sm'
+   594→              }`}
+   595→            >
+   596→              <tab.icon className="w-4 h-4" />
+   597→              {tab.label}
+   598→            </motion.button>
+   599→          ))}
+   600→        </div>
+   601→
+   602→        {/* Products Grid */}
+   603→        <AnimatePresence mode="wait">
+   604→          <motion.div
+   605→            key={activeTab}
+   606→            initial={{ opacity: 0, y: 20 }}
+   607→            animate={{ opacity: 1, y: 0 }}
+   608→            exit={{ opacity: 0, y: -20 }}
+   609→            transition={{ duration: 0.3 }}
+   610→            className="grid grid-cols-1 md:grid-cols-3 gap-6"
+   611→          >
+   612→            {products[activeTab]?.map((product, i) => (
+   613→              <motion.div
+   614→                key={product.title}
+   615→                initial={{ opacity: 0, y: 30 }}
+   616→                animate={{ opacity: 1, y: 0 }}
+   617→                transition={{ delay: i * 0.1 }}
+   618→                whileHover={{ y: -8, scale: 1.02 }}
+   619→                className="perspective-container"
+   620→              >
+   621→                <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-shadow card-3d group h-full">
+   622→                  {/* Product Image/Animation Header */}
+   623→                  <div className={`h-48 bg-gradient-to-br ${product.color} relative overflow-hidden`}>
+   624→                    {/* Animated mesh background */}
+   625→                    <div className="absolute inset-0 opacity-20">
+   626→                      <motion.div
+   627→                        animate={{ x: [0, 50, 0], y: [0, -30, 0] }}
+   628→                        transition={{ duration: 10, repeat: Infinity, ease: 'linear' }}
+   629→                        className="absolute w-32 h-32 rounded-full bg-white/20 -top-10 -right-10"
+   630→                      />
+   631→                      <motion.div
+   632→                        animate={{ x: [0, -40, 0], y: [0, 40, 0] }}
+   633→                        transition={{ duration: 12, repeat: Infinity, ease: 'linear' }}
+   634→                        className="absolute w-24 h-24 rounded-full bg-white/15 bottom-5 left-5"
+   635→                      />
+   636→                      <motion.div
+   637→                        animate={{ scale: [1, 1.2, 1] }}
+   638→                        transition={{ duration: 4, repeat: Infinity }}
+   639→                        className="absolute w-16 h-16 rounded-full bg-white/10 top-1/2 left-1/2"
+   640→                      />
+   641→                    </div>
+   642→                    {/* Icon */}
+   643→                    <div className="absolute inset-0 flex items-center justify-center">
+   644→                      <motion.div
+   645→                        animate={{ y: [0, -8, 0] }}
+   646→                        transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+   647→                        className="w-20 h-20 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/20"
+   648→                      >
+   649→                        <product.icon className="w-10 h-10 text-white" />
+   650→                      </motion.div>
+   651→                    </div>
+   652→                    {/* Badge */}
+   653→                    <div className="absolute top-3 right-3 px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm text-white text-xs font-bold">
+   654→                      جديد
+   655→                    </div>
+   656→                  </div>
+   657→                  {/* Product Info */}
+   658→                  <div className="p-6">
+   659→                    <h3 className="text-lg font-bold text-foreground mb-2">{product.title}</h3>
+   660→                    <p className="text-sm text-muted-foreground mb-4 leading-relaxed">{product.desc}</p>
+   661→                    <div className="space-y-2 mb-4">
+   662→                      {product.features.map(feat => (
+   663→                        <div key={feat} className="flex items-center gap-2 text-sm">
+   664→                          <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+   665→                          <span className="text-muted-foreground">{feat}</span>
+   666→                        </div>
+   667→                      ))}
+   668→                    </div>
+   669→                    <button className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-sm hover:shadow-lg hover:shadow-emerald-200 transition-all flex items-center justify-center gap-2">
+   670→                      اطلب نسخة تجريبية
+   671→                      <ArrowLeft className="w-4 h-4" />
+   672→                    </button>
+   673→                  </div>
+   674→                </div>
+   675→              </motion.div>
+   676→            ))}
+   677→          </motion.div>
+   678→        </AnimatePresence>
+   679→      </div>
+   680→    </section>
+   681→  )
+   682→}
+   683→
+   684→// ============================================
+   685→// WHY US / ADVANTAGES SECTION (Light)
+   686→// ============================================
+   687→function WhyUsSection() {
+   688→  const advantages = [
+   689→    { icon: Shield, title: 'أمان متقدم', desc: 'تشفير AES-256 مع حماية متعددة الطبقات ومراقبة 24/7', color: 'text-emerald-600 bg-emerald-50 border-emerald-200/50' },
+   690→    { icon: Headphones, title: 'دعم فني متواصل', desc: 'فريق دعم فني متخصص جاهز لمساعدتك على مدار الساعة', color: 'text-blue-600 bg-blue-50 border-blue-200/50' },
+   691→    { icon: Award, title: 'جودة معتمدة', desc: 'برامج معتمدة من هيئة الزكاة والضريبة والجمارك السعودية', color: 'text-amber-600 bg-amber-50 border-amber-200/50' },
+   692→    { icon: Zap, title: 'أداء فائق', desc: 'تقنيات حديثة تضمن سرعة وأداء ممتاز في جميع الأوقات', color: 'text-violet-600 bg-violet-50 border-violet-200/50' },
+   693→    { icon: Cloud, title: 'سحابي 100%', desc: 'اعمل من أي مكان وأي جهاز مع مزامنة تلقائية للبيانات', color: 'text-cyan-600 bg-cyan-50 border-cyan-200/50' },
+   694→    { icon: Clock, title: 'تحديثات مستمرة', desc: 'تحديثات دورية مجانية مع ميزات جديدة باستمرار', color: 'text-rose-600 bg-rose-50 border-rose-200/50' },
+   695→  ]
+   696→
+   697→  return (
+   698→    <section className="relative z-10 py-16 md:py-24 bg-gradient-to-b from-emerald-50/30 to-white">
+   699→      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   700→        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+   701→          {/* Animated illustration */}
+   702→          <motion.div
+   703→            initial={{ opacity: 0, x: 30 }}
+   704→            whileInView={{ opacity: 1, x: 0 }}
+   705→            viewport={{ once: true }}
+   706→            className="flex-shrink-0"
+   707→          >
+   708→            <div className="relative w-72 h-72 md:w-80 md:h-80">
+   709→              {/* Rotating circles */}
+   710→              <motion.div
+   711→                animate={{ rotate: 360 }}
+   712→                transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+   713→                className="absolute inset-0"
+   714→              >
+   715→                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center shadow-sm">
+   716→                  <Shield className="w-7 h-7 text-emerald-600" />
+   717→                </div>
+   718→                <div className="absolute bottom-0 left-0 w-14 h-14 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center shadow-sm">
+   719→                  <Globe className="w-6 h-6 text-blue-600" />
+   720→                </div>
+   721→                <div className="absolute bottom-0 right-0 w-14 h-14 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center shadow-sm">
+   722→                  <Award className="w-6 h-6 text-amber-600" />
+   723→                </div>
+   724→              </motion.div>
+   725→              {/* Center icon */}
+   726→              <div className="absolute inset-0 flex items-center justify-center">
+   727→                <motion.div
+   728→                  animate={{ scale: [1, 1.05, 1] }}
+   729→                  transition={{ duration: 3, repeat: Infinity }}
+   730→                  className="w-24 h-24 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-2xl shadow-emerald-200/50"
+   731→                >
+   732→                  <Building2 className="w-12 h-12 text-white" />
+   733→                </motion.div>
+   734→              </div>
+   735→              {/* Decorative ring */}
+   736→              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 320 320" fill="none">
+   737→                <circle cx="160" cy="160" r="140" stroke="rgba(16,185,129,0.12)" strokeWidth="1.5" strokeDasharray="8 12" />
+   738→                <circle cx="160" cy="160" r="110" stroke="rgba(6,182,212,0.08)" strokeWidth="1" strokeDasharray="4 8" />
+   739→              </svg>
+   740→            </div>
+   741→          </motion.div>
+   742→
+   743→          {/* Content */}
+   744→          <div className="flex-1">
+   745→            <motion.div
+   746→              initial={{ opacity: 0, x: -30 }}
+   747→              whileInView={{ opacity: 1, x: 0 }}
+   748→              viewport={{ once: true }}
+   749→            >
+   750→              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/50 text-emerald-700 text-sm font-medium mb-4">
+   751→                <Star className="w-4 h-4" />
+   752→                لماذا نحن؟
+   753→              </span>
+   754→              <h2 className="text-3xl md:text-4xl font-black text-foreground mb-6">
+   755→                مميزات تجعلنا <span className="gradient-text">الخيار الأول</span>
+   756→              </h2>
+   757→              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+   758→                {advantages.map((adv, i) => (
+   759→                  <motion.div
+   760→                    key={adv.title}
+   761→                    initial={{ opacity: 0, y: 20 }}
+   762→                    whileInView={{ opacity: 1, y: 0 }}
+   763→                    viewport={{ once: true }}
+   764→                    transition={{ delay: i * 0.1 }}
+   765→                    whileHover={{ x: -5 }}
+   766→                    className={`flex items-start gap-3 p-3 rounded-xl border ${adv.color} transition-all cursor-default`}
+   767→                  >
+   768→                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0`}>
+   769→                      <adv.icon className="w-5 h-5" />
+   770→                    </div>
+   771→                    <div>
+   772→                      <h4 className="font-bold text-foreground text-sm mb-1">{adv.title}</h4>
+   773→                      <p className="text-muted-foreground text-xs leading-relaxed">{adv.desc}</p>
+   774→                    </div>
+   775→                  </motion.div>
+   776→                ))}
+   777→              </div>
+   778→            </motion.div>
+   779→          </div>
+   780→        </div>
+   781→      </div>
+   782→    </section>
+   783→  )
+   784→}
+   785→
+   786→// ============================================
+   787→// PARTNERS/CLIENTS CAROUSEL (Light)
+   788→// ============================================
+   789→function PartnersCarousel() {
+   790→  const partners = [
+   791→    'وزارة الموارد البشرية', 'هيئة الزكاة والضريبة', 'الغرفة التجارية',
+   792→    'بنك التنمية', 'صندوق التنمية', 'مؤسسة التقنية',
+   793→    'جامعة الملك سعود', 'مدينة الملك عبدالعزيز', 'أرامكو',
+   794→    'سابك', 'الراجحي', 'الإنماء',
+   795→  ]
+   796→
+   797→  return (
+   798→    <section className="relative z-10 py-12 bg-gray-50/50 border-y border-gray-100">
+   799→      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   800→        <motion.div
+   801→          initial={{ opacity: 0, y: 20 }}
+   802→          whileInView={{ opacity: 1, y: 0 }}
+   803→          viewport={{ once: true }}
+   804→          className="text-center mb-8"
+   805→        >
+   806→          <p className="text-sm text-muted-foreground font-medium">يثق بنا أكثر من 1,250 مؤسسة وجمعية في المملكة</p>
+   807→        </motion.div>
+   808→        <div className="overflow-hidden relative">
+   809→          <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-l from-transparent to-gray-50/80 z-10" />
+   810→          <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-r from-transparent to-gray-50/80 z-10" />
+   811→          <motion.div
+   812→            animate={{ x: [0, -1200] }}
+   813→            transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+   814→            className="flex gap-8 items-center"
+   815→          >
+   816→            {[...partners, ...partners].map((partner, i) => (
+   817→              <div key={i} className="flex-shrink-0 bg-white rounded-xl px-6 py-3 text-sm font-medium text-muted-foreground hover:text-emerald-600 hover:shadow-md transition-all cursor-default border border-gray-100 shadow-sm">
+   818→                {partner}
+   819→              </div>
+   820→            ))}
+   821→          </motion.div>
+   822→        </div>
+   823→      </div>
+   824→    </section>
+   825→  )
+   826→}
+   827→
+   828→// ============================================
+   829→// CONTACT SECTION (Light Theme)
+   830→// ============================================
+   831→function ContactSection() {
+   832→  const [formData, setFormData] = useState({ name: '', email: '', phone: '', subject: '', message: '' })
+   833→  const [sending, setSending] = useState(false)
+   834→  const [sent, setSent] = useState(false)
+   835→
+   836→  const handleSubmit = useCallback((e: React.FormEvent) => {
+   837→    e.preventDefault()
+   838→    setSending(true)
+   839→    setTimeout(() => {
+   840→      setSending(false)
+   841→      setSent(true)
+   842→      setFormData({ name: '', email: '', phone: '', subject: '', message: '' })
+   843→      setTimeout(() => setSent(false), 3000)
+   844→    }, 1500)
+   845→  }, [])
+   846→
+   847→  const contactInfo = [
+   848→    { icon: MapPin, title: 'العنوان', value: 'جدة - حي الفيحاء - مركز العريفي التجاري', color: 'text-emerald-600 bg-emerald-50' },
+   849→    { icon: Phone, title: 'الهاتف', value: '+966 56 746 1842', color: 'text-blue-600 bg-blue-50' },
+   850→    { icon: Mail, title: 'البريد الإلكتروني', value: 'info@jamiat-pro.com', color: 'text-amber-600 bg-amber-50' },
+   851→    { icon: Clock, title: 'ساعات العمل', value: 'الأحد - الخميس: 8 صباحاً - 5 مساءً', color: 'text-violet-600 bg-violet-50' },
+   852→  ]
+   853→
+   854→  return (
+   855→    <section className="relative z-10 py-16 md:py-24 bg-gradient-to-b from-white to-emerald-50/20" id="contact">
+   856→      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   857→        <motion.div
+   858→          initial={{ opacity: 0, y: 20 }}
+   859→          whileInView={{ opacity: 1, y: 0 }}
+   860→          viewport={{ once: true }}
+   861→          className="text-center mb-12"
+   862→        >
+   863→          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-50 border border-amber-200/50 text-amber-700 text-sm font-medium mb-4">
+   864→            <Phone className="w-4 h-4" />
+   865→            تواصل معنا
+   866→          </span>
+   867→          <h2 className="text-3xl md:text-4xl font-black text-foreground mb-4">
+   868→            نحن هنا <span className="gradient-text">لمساعدتك</span>
+   869→          </h2>
+   870→          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+   871→            يرجى الاتصال بنا باستخدام أحد البيانات التالية أو أرسل رسالتك عبر النموذج
+   872→          </p>
+   873→        </motion.div>
+   874→
+   875→        <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
+   876→          {/* Contact Form */}
+   877→          <motion.div
+   878→            initial={{ opacity: 0, x: -30 }}
+   879→            whileInView={{ opacity: 1, x: 0 }}
+   880→            viewport={{ once: true }}
+   881→            className="lg:col-span-3"
+   882→          >
+   883→            <div className="bg-white rounded-2xl p-6 md:p-8 border border-gray-100 shadow-sm">
+   884→              <h3 className="text-xl font-bold text-foreground mb-6">أرسل لنا رسالة</h3>
+   885→              <form onSubmit={handleSubmit} className="space-y-4" dir="rtl">
+   886→                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+   887→                  <div>
+   888→                    <label className="block text-sm font-medium text-foreground mb-1.5">الاسم الكامل</label>
+   889→                    <input
+   890→                      type="text"
+   891→                      value={formData.name}
+   892→                      onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+   893→                      placeholder="أدخل اسمك"
+   894→                      className="w-full px-4 py-2.5 rounded-xl bg-gray-50/80 border border-gray-200 text-foreground text-sm focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 focus:outline-none transition-all"
+   895→                      required
+   896→                    />
+   897→                  </div>
+   898→                  <div>
+   899→                    <label className="block text-sm font-medium text-foreground mb-1.5">البريد الإلكتروني</label>
+   900→                    <input
+   901→                      type="email"
+   902→                      value={formData.email}
+   903→                      onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+   904→                      placeholder="example@email.com"
+   905→                      className="w-full px-4 py-2.5 rounded-xl bg-gray-50/80 border border-gray-200 text-foreground text-sm focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 focus:outline-none transition-all"
+   906→                      dir="ltr"
+   907→                      required
+   908→                    />
+   909→                  </div>
+   910→                </div>
+   911→                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+   912→                  <div>
+   913→                    <label className="block text-sm font-medium text-foreground mb-1.5">رقم الهاتف</label>
+   914→                    <input
+   915→                      type="tel"
+   916→                      value={formData.phone}
+   917→                      onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+   918→                      placeholder="+966 5X XXX XXXX"
+   919→                      className="w-full px-4 py-2.5 rounded-xl bg-gray-50/80 border border-gray-200 text-foreground text-sm focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 focus:outline-none transition-all"
+   920→                      dir="ltr"
+   921→                    />
+   922→                  </div>
+   923→                  <div>
+   924→                    <label className="block text-sm font-medium text-foreground mb-1.5">الموضوع</label>
+   925→                    <input
+   926→                      type="text"
+   927→                      value={formData.subject}
+   928→                      onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
+   929→                      placeholder="موضوع الرسالة"
+   930→                      className="w-full px-4 py-2.5 rounded-xl bg-gray-50/80 border border-gray-200 text-foreground text-sm focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 focus:outline-none transition-all"
+   931→                      required
+   932→                    />
+   933→                  </div>
+   934→                </div>
+   935→                <div>
+   936→                  <label className="block text-sm font-medium text-foreground mb-1.5">الرسالة</label>
+   937→                  <textarea
+   938→                    value={formData.message}
+   939→                    onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
+   940→                    placeholder="اكتب رسالتك هنا..."
+   941→                    rows={5}
+   942→                    className="w-full px-4 py-2.5 rounded-xl bg-gray-50/80 border border-gray-200 text-foreground text-sm focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 focus:outline-none transition-all resize-none"
+   943→                    required
+   944→                  />
+   945→                </div>
+   946→                <motion.button
+   947→                  whileHover={{ scale: 1.02 }}
+   948→                  whileTap={{ scale: 0.98 }}
+   949→                  type="submit"
+   950→                  disabled={sending}
+   951→                  className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-sm hover:shadow-lg hover:shadow-emerald-200 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+   952→                >
+   953→                  {sending ? (
+   954→                    <motion.div
+   955→                      animate={{ rotate: 360 }}
+   956→                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+   957→                      className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+   958→                    />
+   959→                  ) : sent ? (
+   960→                    <>
+   961→                      <CheckCircle2 className="w-5 h-5" />
+   962→                      تم الإرسال بنجاح!
+   963→                    </>
+   964→                  ) : (
+   965→                    <>
+   966→                      <Send className="w-5 h-5" />
+   967→                      إرسال الرسالة
+   968→                    </>
+   969→                  )}
+   970→                </motion.button>
+   971→              </form>
+   972→            </div>
+   973→          </motion.div>
+   974→
+   975→          {/* Contact Info + Map */}
+   976→          <motion.div
+   977→            initial={{ opacity: 0, x: 30 }}
+   978→            whileInView={{ opacity: 1, x: 0 }}
+   979→            viewport={{ once: true }}
+   980→            className="lg:col-span-2 space-y-4"
+   981→          >
+   982→            {contactInfo.map((info, i) => (
+   983→              <motion.div
+   984→                key={info.title}
+   985→                initial={{ opacity: 0, y: 20 }}
+   986→                whileInView={{ opacity: 1, y: 0 }}
+   987→                viewport={{ once: true }}
+   988→                transition={{ delay: i * 0.1 }}
+   989→                className="bg-white rounded-xl p-4 flex items-start gap-3 border border-gray-100 shadow-sm"
+   990→              >
+   991→                <div className={`w-10 h-10 rounded-xl ${info.color} flex items-center justify-center flex-shrink-0`}>
+   992→                  <info.icon className="w-5 h-5" />
+   993→                </div>
+   994→                <div>
+   995→                  <h4 className="font-bold text-foreground text-sm">{info.title}</h4>
+   996→                  <p className="text-muted-foreground text-xs mt-0.5">{info.value}</p>
+   997→                </div>
+   998→              </motion.div>
+   999→            ))}
+  1000→
+  1001→            {/* Map Placeholder */}
+  1002→            <div className="bg-white rounded-xl overflow-hidden h-48 relative border border-gray-100 shadow-sm">
+  1003→              <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-blue-50 flex items-center justify-center">
+  1004→                <div className="text-center">
+  1005→                  <MapPin className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
+  1006→                  <p className="text-sm text-muted-foreground">جدة - المملكة العربية السعودية</p>
+  1007→                </div>
+  1008→              </div>
+  1009→              {/* Animated map markers */}
+  1010→              <motion.div
+  1011→                animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+  1012→                transition={{ duration: 2, repeat: Infinity }}
+  1013→                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-emerald-500/50"
+  1014→              />
+  1015→              <motion.div
+  1016→                animate={{ scale: [1, 1.5, 1], opacity: [0.3, 0, 0.3] }}
+  1017→                transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
+  1018→                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full border-2 border-emerald-400/30"
+  1019→              />
+  1020→            </div>
+  1021→
+  1022→            {/* Social Links */}
+  1023→            <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+  1024→              <h4 className="font-bold text-foreground text-sm mb-3">تابعنا</h4>
+  1025→              <div className="flex gap-2">
+  1026→                {[
+  1027→                  { icon: Twitter, color: 'hover:bg-sky-50 hover:text-sky-500 hover:border-sky-200' },
+  1028→                  { icon: Instagram, color: 'hover:bg-pink-50 hover:text-pink-500 hover:border-pink-200' },
+  1029→                  { icon: Facebook, color: 'hover:bg-blue-50 hover:text-blue-500 hover:border-blue-200' },
+  1030→                  { icon: Youtube, color: 'hover:bg-red-50 hover:text-red-500 hover:border-red-200' },
+  1031→                  { icon: MessageCircle, color: 'hover:bg-green-50 hover:text-green-500 hover:border-green-200' },
+  1032→                ].map((social, i) => (
+  1033→                  <motion.button
+  1034→                    key={i}
+  1035→                    whileHover={{ scale: 1.1, y: -2 }}
+  1036→                    whileTap={{ scale: 0.9 }}
+  1037→                    className={`w-9 h-9 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-muted-foreground transition-all ${social.color}`}
+  1038→                  >
+  1039→                    <social.icon className="w-4 h-4" />
+  1040→                  </motion.button>
+  1041→                ))}
+  1042→              </div>
+  1043→            </div>
+  1044→          </motion.div>
+  1045→        </div>
+  1046→      </div>
+  1047→    </section>
+  1048→  )
+  1049→}
+  1050→
+  1051→// ============================================
+  1052→// NEWSLETTER SECTION (Light)
+  1053→// ============================================
+  1054→function NewsletterSection() {
+  1055→  const [email, setEmail] = useState('')
+  1056→  const [subscribed, setSubscribed] = useState(false)
+  1057→
+  1058→  const handleSubscribe = useCallback((e: React.FormEvent) => {
+  1059→    e.preventDefault()
+  1060→    if (email) {
+  1061→      setSubscribed(true)
+  1062→      setEmail('')
+  1063→      setTimeout(() => setSubscribed(false), 4000)
+  1064→    }
+  1065→  }, [email])
+  1066→
+  1067→  return (
+  1068→    <section className="relative z-10 py-16 md:py-24">
+  1069→      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+  1070→        <motion.div
+  1071→          initial={{ opacity: 0, y: 30 }}
+  1072→          whileInView={{ opacity: 1, y: 0 }}
+  1073→          viewport={{ once: true }}
+  1074→          className="relative bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-600 rounded-3xl p-8 md:p-12 overflow-hidden shadow-2xl shadow-emerald-200/30"
+  1075→        >
+  1076→          {/* Background decoration */}
+  1077→          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+  1078→            <motion.div
+  1079→              animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
+  1080→              transition={{ duration: 15, repeat: Infinity }}
+  1081→              className="absolute w-40 h-40 rounded-full bg-white/10 -top-10 -left-10"
+  1082→            />
+  1083→            <motion.div
+  1084→              animate={{ x: [0, -20, 0], y: [0, 30, 0] }}
+  1085→              transition={{ duration: 12, repeat: Infinity }}
+  1086→              className="absolute w-32 h-32 rounded-full bg-white/10 -bottom-10 -right-10"
+  1087→            />
+  1088→            <motion.div
+  1089→              animate={{ scale: [1, 1.3, 1] }}
+  1090→              transition={{ duration: 6, repeat: Infinity }}
+  1091→              className="absolute w-20 h-20 rounded-full bg-white/5 top-1/2 left-1/2"
+  1092→            />
+  1093→          </div>
+  1094→
+  1095→          <div className="relative z-10 text-center">
+  1096→            <motion.div
+  1097→              animate={{ y: [0, -5, 0] }}
+  1098→              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+  1099→              className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mx-auto mb-6 border border-white/20"
+  1100→            >
+  1101→              <Mail className="w-8 h-8 text-white" />
+  1102→            </motion.div>
+  1103→            <h3 className="text-2xl md:text-3xl font-black text-white mb-3">
+  1104→              اشترك في القائمة البريدية
+  1105→            </h3>
+  1106→            <p className="text-white/80 mb-6 max-w-lg mx-auto">
+  1107→              احصل على آخر العروض والمقالات والتحديثات مباشرة في بريدك الإلكتروني
+  1108→            </p>
+  1109→            <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto" dir="rtl">
+  1110→              <input
+  1111→                type="email"
+  1112→                value={email}
+  1113→                onChange={(e) => setEmail(e.target.value)}
+  1114→                placeholder="أدخل بريدك الإلكتروني"
+  1115→                className="flex-1 px-4 py-3 rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 text-white placeholder:text-white/60 text-sm focus:border-white/60 focus:outline-none transition-colors"
+  1116→                dir="ltr"
+  1117→                required
+  1118→              />
+  1119→              <motion.button
+  1120→                whileHover={{ scale: 1.05 }}
+  1121→                whileTap={{ scale: 0.95 }}
+  1122→                type="submit"
+  1123→                className="px-6 py-3 rounded-xl bg-white text-emerald-700 font-bold text-sm hover:shadow-lg transition-all flex items-center gap-2 justify-center"
+  1124→              >
+  1125→                {subscribed ? (
+  1126→                  <>
+  1127→                    <CheckCircle2 className="w-4 h-4" />
+  1128→                    تم الاشتراك!
+  1129→                  </>
+  1130→                ) : (
+  1131→                  <>
+  1132→                    <Send className="w-4 h-4" />
+  1133→                    اشتراك
+  1134→                  </>
+  1135→                )}
+  1136→              </motion.button>
+  1137→            </form>
+  1138→          </div>
+  1139→        </motion.div>
+  1140→      </div>
+  1141→    </section>
+  1142→  )
+  1143→}
+  1144→
+  1145→// ============================================
+  1146→// TESTIMONIALS SECTION (Light)
+  1147→// ============================================
+  1148→function TestimonialsSection() {
+  1149→  const testimonials = [
+  1150→    { name: 'أحمد محمد', role: 'مدير جمعية النور', text: 'منصة رائعة سهّلت علينا إدارة الجمعية بشكل كبير. التقارير المالية دقيقة والنظام سريع جداً.', rating: 5 },
+  1151→    { name: 'فاطمة العلي', role: 'مشرفة الأعضاء', text: 'أفضل نظام استخدمناه لإدارة الأعضاء والفعاليات. الدعم الفني ممتاز وسريع الاستجابة.', rating: 5 },
+  1152→    { name: 'خالد السعيد', role: 'محاسب مالي', text: 'التقارير المالية المتقدمة وفّرت علينا ساعات من العمل. النظام معتمد ويلبي جميع المتطلبات.', rating: 5 },
+  1153→  ]
+  1154→
+  1155→  return (
+  1156→    <section className="relative z-10 py-16 md:py-24 bg-gradient-to-b from-emerald-50/20 to-white">
+  1157→      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  1158→        <motion.div
+  1159→          initial={{ opacity: 0, y: 20 }}
+  1160→          whileInView={{ opacity: 1, y: 0 }}
+  1161→          viewport={{ once: true }}
+  1162→          className="text-center mb-12"
+  1163→        >
+  1164→          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-violet-50 border border-violet-200/50 text-violet-700 text-sm font-medium mb-4">
+  1165→            <Star className="w-4 h-4" />
+  1166→            آراء العملاء
+  1167→          </span>
+  1168→          <h2 className="text-3xl md:text-4xl font-black text-foreground mb-4">
+  1169→            ماذا يقول <span className="gradient-text">عملاؤنا</span>
+  1170→          </h2>
+  1171→        </motion.div>
+  1172→
+  1173→        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+  1174→          {testimonials.map((t, i) => (
+  1175→            <motion.div
+  1176→              key={t.name}
+  1177→              initial={{ opacity: 0, y: 30 }}
+  1178→              whileInView={{ opacity: 1, y: 0 }}
+  1179→              viewport={{ once: true }}
+  1180→              transition={{ delay: i * 0.1 }}
+  1181→              whileHover={{ y: -5 }}
+  1182→              className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
+  1183→            >
+  1184→              <div className="flex items-center gap-1 mb-4">
+  1185→                {Array.from({ length: t.rating }).map((_, j) => (
+  1186→                  <Star key={j} className="w-4 h-4 text-amber-500 fill-amber-500" />
+  1187→                ))}
+  1188→              </div>
+  1189→              <p className="text-muted-foreground text-sm leading-relaxed mb-4">{t.text}</p>
+  1190→              <div className="flex items-center gap-3">
+  1191→                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
+  1192→                  {t.name.charAt(0)}
+  1193→                </div>
+  1194→                <div>
+  1195→                  <div className="font-bold text-foreground text-sm">{t.name}</div>
+  1196→                  <div className="text-xs text-muted-foreground">{t.role}</div>
+  1197→                </div>
+  1198→              </div>
+  1199→            </motion.div>
+  1200→          ))}
+  1201→        </div>
+  1202→      </div>
+  1203→    </section>
+  1204→  )
+  1205→}
+  1206→
+  1207→// ============================================
+  1208→// ENHANCED FOOTER (Light)
+  1209→// ============================================
+  1210→function EnhancedFooter() {
+  1211→  const { setCurrentPage } = useAppStore()
+  1212→  
+  1213→  return (
+  1214→    <footer className="relative z-10 bg-gray-900 text-white" dir="rtl">
+  1215→      {/* Main Footer */}
+  1216→      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
+  1217→        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+  1218→          {/* About */}
+  1219→          <div>
+  1220→            <div className="flex items-center gap-2 mb-4">
+  1221→              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
+  1222→                <Building2 className="w-5 h-5 text-white" />
+  1223→              </div>
+  1224→              <span className="text-xl font-bold">جمعيات<span className="text-emerald-400">برو</span></span>
+  1225→            </div>
+  1226→            <p className="text-sm text-gray-400 leading-relaxed mb-4">
+  1227→              منصة متكاملة لإدارة الجمعيات والمؤسسات بتقنيات حديثة وأمان متقدم. نقدم حلولاً تقنية وفق أعلى مستويات الجودة.
+  1228→            </p>
+  1229→            <div className="flex gap-2">
+  1230→              {[
+  1231→                { icon: Twitter, color: 'hover:bg-sky-500/20 hover:text-sky-400' },
+  1232→                { icon: Instagram, color: 'hover:bg-pink-500/20 hover:text-pink-400' },
+  1233→                { icon: Facebook, color: 'hover:bg-blue-500/20 hover:text-blue-400' },
+  1234→                { icon: Youtube, color: 'hover:bg-red-500/20 hover:text-red-400' },
+  1235→              ].map((social, i) => (
+  1236→                <motion.button
+  1237→                  key={i}
+  1238→                  whileHover={{ scale: 1.1, y: -2 }}
+  1239→                  className={`w-9 h-9 rounded-lg bg-gray-800 flex items-center justify-center text-gray-400 transition-all ${social.color}`}
+  1240→                >
+  1241→                  <social.icon className="w-4 h-4" />
+  1242→                </motion.button>
+  1243→              ))}
+  1244→            </div>
+  1245→          </div>
+  1246→
+  1247→          {/* Quick Links */}
+  1248→          <div>
+  1249→            <h4 className="font-bold text-white mb-4">روابط سريعة</h4>
+  1250→            <ul className="space-y-2">
+  1251→              {[
+  1252→                { label: 'الرئيسية', page: 'landing' },
+  1253→                { label: 'تسجيل الدخول', page: 'login' },
+  1254→                { label: 'إنشاء حساب', page: 'register' },
+  1255→                { label: 'المنتجات', page: 'landing' },
+  1256→                { label: 'تواصل معنا', page: 'landing' },
+  1257→              ].map(link => (
+  1258→                <li key={link.label}>
+  1259→                  <button
+  1260→                    onClick={() => setCurrentPage(link.page as any)}
+  1261→                    className="text-sm text-gray-400 hover:text-emerald-400 transition-colors flex items-center gap-1"
+  1262→                  >
+  1263→                    <ChevronRight className="w-3 h-3" />
+  1264→                    {link.label}
+  1265→                  </button>
+  1266→                </li>
+  1267→              ))}
+  1268→            </ul>
+  1269→          </div>
+  1270→
+  1271→          {/* Services */}
+  1272→          <div>
+  1273→            <h4 className="font-bold text-white mb-4">خدماتنا</h4>
+  1274→            <ul className="space-y-2">
+  1275→              {[
+  1276→                'إدارة موارد المؤسسات',
+  1277→                'تطبيقات الويب',
+  1278→                'تطبيقات الجوال',
+  1279→                'المتاجر الإلكترونية',
+  1280→                'الاستشارات البرمجية',
+  1281→              ].map(service => (
+  1282→                <li key={service}>
+  1283→                  <span className="text-sm text-gray-400 hover:text-emerald-400 transition-colors cursor-default flex items-center gap-1">
+  1284→                    <ChevronRight className="w-3 h-3" />
+  1285→                    {service}
+  1286→                  </span>
+  1287→                </li>
+  1288→              ))}
+  1289→            </ul>
+  1290→          </div>
+  1291→
+  1292→          {/* Contact */}
+  1293→          <div>
+  1294→            <h4 className="font-bold text-white mb-4">معلومات التواصل</h4>
+  1295→            <div className="space-y-3">
+  1296→              <div className="flex items-start gap-2">
+  1297→                <MapPin className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+  1298→                <span className="text-sm text-gray-400">جدة - حي الفيحاء - مركز العريفي التجاري</span>
+  1299→              </div>
+  1300→              <div className="flex items-center gap-2">
+  1301→                <Phone className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+  1302→                <span className="text-sm text-gray-400" dir="ltr">+966 56 746 1842</span>
+  1303→              </div>
+  1304→              <div className="flex items-center gap-2">
+  1305→                <Mail className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+  1306→                <span className="text-sm text-gray-400">info@jamiat-pro.com</span>
+  1307→              </div>
+  1308→              <div className="flex items-center gap-2">
+  1309→                <Clock className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+  1310→                <span className="text-sm text-gray-400">أحد - خميس: 8ص - 5م</span>
+  1311→              </div>
+  1312→            </div>
+  1313→          </div>
+  1314→        </div>
+  1315→      </div>
+  1316→
+  1317→      {/* Bottom Bar */}
+  1318→      <div className="border-t border-gray-800 py-6">
+  1319→        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+  1320→          <p className="text-sm text-gray-400 text-center md:text-right">
+  1321→            جميع الحقوق محفوظة © 2026 جمعياتبرو | تطوير: <span className="text-emerald-400 font-bold">زعيم الدمار</span>
+  1322→          </p>
+  1323→          <div className="flex items-center gap-4 text-sm text-gray-400">
+  1324→            <button className="hover:text-emerald-400 transition-colors">سياسة الخصوصية</button>
+  1325→            <span>|</span>
+  1326→            <button className="hover:text-emerald-400 transition-colors">الشروط والأحكام</button>
+  1327→          </div>
+  1328→        </div>
+  1329→      </div>
+  1330→    </footer>
+  1331→  )
+  1332→}
+  1333→
+  1334→// ============================================
+  1335→// SCROLL TO TOP BUTTON
+  1336→// ============================================
+  1337→function ScrollToTop() {
+  1338→  const [show, setShow] = useState(false)
+  1339→
+  1340→  useEffect(() => {
+  1341→    const handleScroll = () => setShow(window.scrollY > 400)
+  1342→    window.addEventListener('scroll', handleScroll)
+  1343→    return () => window.removeEventListener('scroll', handleScroll)
+  1344→  }, [])
+  1345→
+  1346→  return (
+  1347→    <AnimatePresence>
+  1348→      {show && (
+  1349→        <motion.button
+  1350→          initial={{ opacity: 0, scale: 0.5 }}
+  1351→          animate={{ opacity: 1, scale: 1 }}
+  1352→          exit={{ opacity: 0, scale: 0.5 }}
+  1353→          whileHover={{ scale: 1.1 }}
+  1354→          whileTap={{ scale: 0.9 }}
+  1355→          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+  1356→          className="fixed bottom-6 left-6 z-50 w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-xl shadow-emerald-200/30 flex items-center justify-center"
+  1357→        >
+  1358→          <ArrowUp className="w-5 h-5" />
+  1359→        </motion.button>
+  1360→      )}
+  1361→    </AnimatePresence>
+  1362→  )
+  1363→}
+  1364→
+  1365→// ============================================
+  1366→// MAIN LANDING PAGE
+  1367→// ============================================
+  1368→export function LandingPage() {
+  1369→  const { setCurrentPage } = useAppStore()
+  1370→  const heroRef = useRef<HTMLDivElement>(null)
+  1371→  const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] })
+  1372→  const heroY = useTransform(scrollYProgress, [0, 1], [0, -100])
+  1373→  const heroOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0])
+  1374→
+  1375→  const features = [
+  1376→    { icon: Building2, title: 'إدارة الجمعيات', desc: 'إنشاء وإدارة جمعياتك بكفاءة عالية مع تتبع شامل لجميع الأنشطة والعمليات', color: 'bg-emerald-500', delay: 0.2, illustration: <AnimatedHeroIllustration /> },
+  1377→    { icon: Users, title: 'إدارة الأعضاء', desc: 'نظام متكامل لإدارة الأعضاء مع تحديد الأدوار والصلاحيات ومتابعة الحضور', color: 'bg-blue-500', delay: 0.3, illustration: <AnimatedMembersIllustration /> },
+  1378→    { icon: Calendar, title: 'الفعاليات والأنشطة', desc: 'تنظيم ومتابعة الفعاليات والأنشطة مع إدارة الحجوزات والميزانيات', color: 'bg-amber-500', delay: 0.4, illustration: <AnimatedEventsIllustration /> },
+  1379→    { icon: BarChart3, title: 'التقارير المالية', desc: 'تقارير مالية شاملة مع رسوم بيانية تفاعلية وتحليلات متقدمة', color: 'bg-teal-500', delay: 0.5, illustration: <AnimatedFinanceIllustration /> },
+  1380→    { icon: Shield, title: 'حماية متقدمة', desc: 'نظام أمان متعدد الطبقات مع تشفير البيانات والتحقق الثنائي', color: 'bg-violet-500', delay: 0.6, illustration: <AnimatedSecurityIllustration /> },
+  1381→    { icon: Sparkles, title: 'ذكاء اصطناعي', desc: 'تحليلات ذكية وتوصيات آلية لتحسين أداء جمعيتك', color: 'bg-rose-500', delay: 0.7, illustration: <AnimatedDashboardIllustration /> },
+  1382→  ]
+  1383→
+  1384→  return (
+  1385→    <div ref={heroRef} className="relative min-h-screen overflow-hidden bg-white" dir="rtl">
+  1386→      {/* Background Effects - Light */}
+  1387→      <div className="absolute inset-0 gradient-mesh" />
+  1388→      <Particles />
+  1389→      
+  1390→      {/* Grid Pattern - Light */}
+  1391→      <div className="absolute inset-0 opacity-[0.03]" style={{
+  1392→        backgroundImage: 'linear-gradient(rgba(16,185,129,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.2) 1px, transparent 1px)',
+  1393→        backgroundSize: '60px 60px'
+  1394→      }} />
+  1395→
+  1396→      {/* Floating decorative blobs */}
+  1397→      <div className="absolute top-20 left-10 w-72 h-72 bg-emerald-200/20 rounded-full blur-3xl animate-blob-1" />
+  1398→      <div className="absolute top-1/2 right-10 w-96 h-96 bg-blue-200/15 rounded-full blur-3xl animate-blob-2" />
+  1399→      <div className="absolute bottom-20 left-1/3 w-64 h-64 bg-violet-200/10 rounded-full blur-3xl animate-blob-1" />
+  1400→
+  1401→      {/* Hero Section with Slider */}
+  1402→      <motion.section style={{ y: heroY, opacity: heroOpacity }} className="relative z-10">
+  1403→        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16 md:pt-16 md:pb-24">
+  1404→          {/* Nav */}
+  1405→          <motion.nav 
+  1406→            initial={{ opacity: 0, y: -20 }}
+  1407→            animate={{ opacity: 1, y: 0 }}
+  1408→            className="flex items-center justify-between mb-16 md:mb-24"
+  1409→          >
+  1410→            <div className="flex items-center gap-3">
+  1411→              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-200/30">
+  1412→                <Building2 className="w-5 h-5 text-white" />
+  1413→              </div>
+  1414→              <span className="text-xl font-bold text-foreground">جمعيات<span className="text-emerald-600">برو</span></span>
+  1415→            </div>
+  1416→            <div className="flex items-center gap-3">
+  1417→              <motion.button
+  1418→                whileHover={{ scale: 1.05 }}
+  1419→                whileTap={{ scale: 0.95 }}
+  1420→                onClick={() => setCurrentPage('login')}
+  1421→                className="px-4 py-2 text-sm font-medium text-foreground hover:text-emerald-600 transition-colors"
+  1422→              >
+  1423→                تسجيل الدخول
+  1424→              </motion.button>
+  1425→              <motion.button
+  1426→                whileHover={{ scale: 1.05 }}
+  1427→                whileTap={{ scale: 0.95 }}
+  1428→                onClick={() => setCurrentPage('register')}
+  1429→                className="px-5 py-2.5 text-sm font-bold rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-200/30 hover:shadow-emerald-200/50 transition-shadow"
+  1430→              >
+  1431→                ابدأ مجاناً
+  1432→              </motion.button>
+  1433→            </div>
+  1434→          </motion.nav>
+  1435→
+  1436→          {/* Hero Slider */}
+  1437→          <HeroSlider />
+  1438→
+  1439→          {/* Stats */}
+  1440→          <motion.div
+  1441→            initial={{ opacity: 0, y: 40 }}
+  1442→            animate={{ opacity: 1, y: 0 }}
+  1443→            transition={{ duration: 0.8, delay: 0.6 }}
+  1444→            className="mt-16 md:mt-24"
+  1445→          >
+  1446→            <StatsCounter />
+  1447→          </motion.div>
+  1448→        </div>
+  1449→      </motion.section>
+  1450→
+  1451→      {/* Features Section */}
+  1452→      <section className="relative z-10 py-16 md:py-24">
+  1453→        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  1454→          <motion.div
+  1455→            initial={{ opacity: 0, y: 20 }}
+  1456→            whileInView={{ opacity: 1, y: 0 }}
+  1457→            viewport={{ once: true }}
+  1458→            className="text-center mb-12 md:mb-16"
+  1459→          >
+  1460→            <h2 className="text-3xl md:text-4xl font-black text-foreground mb-4">
+  1461→              كل ما تحتاجه <span className="gradient-text">في مكان واحد</span>
+  1462→            </h2>
+  1463→            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+  1464→              منصة شاملة توفر لك جميع الأدوات اللازمة لإدارة جمعيتك باحترافية
+  1465→            </p>
+  1466→          </motion.div>
+  1467→
+  1468→          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  1469→            {features.map((f) => (
+  1470→              <FloatingCard key={f.title} {...f} />
+  1471→            ))}
+  1472→          </div>
+  1473→        </div>
+  1474→      </section>
+  1475→
+  1476→      {/* About Platform Section */}
+  1477→      <AboutSection />
+  1478→
+  1479→      {/* Products Section (Like Gama) */}
+  1480→      <ProductsSection />
+  1481→
+  1482→      {/* Why Us Section */}
+  1483→      <WhyUsSection />
+  1484→
+  1485→      {/* Partners Carousel */}
+  1486→      <PartnersCarousel />
+  1487→
+  1488→      {/* Security Section with animated illustration */}
+  1489→      <section className="relative z-10 py-16 md:py-24 bg-gradient-to-b from-white to-emerald-50/20">
+  1490→        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  1491→          <div className="bg-white rounded-3xl p-8 md:p-12 border border-gray-100 shadow-sm">
+  1492→            <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-16">
+  1493→              <div className="flex-1">
+  1494→                <motion.div
+  1495→                  initial={{ opacity: 0, x: 30 }}
+  1496→                  whileInView={{ opacity: 1, x: 0 }}
+  1497→                  viewport={{ once: true }}
+  1498→                >
+  1499→                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/50 text-emerald-700 text-sm font-medium mb-4">
+  1500→                    <Lock className="w-4 h-4" />
+  1501→                    أمان من الدرجة الأولى
+  1502→                  </span>
+  1503→                  <h2 className="text-3xl md:text-4xl font-black text-foreground mb-6">
+  1504→                    حماية <span className="gradient-text">شاملة</span> لبياناتك
+  1505→                  </h2>
+  1506→                  <div className="space-y-4">
+  1507→                    {[
+  1508→                      { title: 'تشفير AES-256', desc: 'تشفير متقدم لجميع البيانات الحساسة' },
+  1509→                      { title: 'تحقق ثنائي', desc: 'طبقة حماية إضافية مع 2FA' },
+  1510→                      { title: 'مراقبة 24/7', desc: 'رصد الأنشطة المشبوهة بالذكاء الاصطناعي' },
+  1511→                      { title: 'نسخ احتياطي تلقائي', desc: 'حفظ بياناتك بشكل دوري وآمن' },
+  1512→                    ].map((item, i) => (
+  1513→                      <motion.div
+  1514→                        key={item.title}
+  1515→                        initial={{ opacity: 0, x: 20 }}
+  1516→                        whileInView={{ opacity: 1, x: 0 }}
+  1517→                        viewport={{ once: true }}
+  1518→                        transition={{ delay: i * 0.1 }}
+  1519→                        whileHover={{ x: -5 }}
+  1520→                        className="flex items-start gap-3 p-2 rounded-lg hover:bg-emerald-50/50 transition-colors"
+  1521→                      >
+  1522→                        <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200/50 flex items-center justify-center flex-shrink-0 mt-0.5">
+  1523→                          <Shield className="w-4 h-4 text-emerald-600" />
+  1524→                        </div>
+  1525→                        <div>
+  1526→                          <h4 className="font-bold text-foreground text-sm">{item.title}</h4>
+  1527→                          <p className="text-muted-foreground text-xs">{item.desc}</p>
+  1528→                        </div>
+  1529→                      </motion.div>
+  1530→                    ))}
+  1531→                  </div>
+  1532→                </motion.div>
+  1533→              </div>
+  1534→              <div className="flex-shrink-0">
+  1535→                <AnimatedSecurityIllustration />
+  1536→              </div>
+  1537→            </div>
+  1538→          </div>
+  1539→        </div>
+  1540→      </section>
+  1541→
+  1542→      {/* Testimonials */}
+  1543→      <TestimonialsSection />
+  1544→
+  1545→      {/* CTA Section */}
+  1546→      <section className="relative z-10 py-16 md:py-24">
+  1547→        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+  1548→          <motion.div
+  1549→            initial={{ opacity: 0, y: 30 }}
+  1550→            whileInView={{ opacity: 1, y: 0 }}
+  1551→            viewport={{ once: true }}
+  1552→          >
+  1553→            <motion.div
+  1554→              animate={{ y: [0, -8, 0] }}
+  1555→              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+  1556→              className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-emerald-200/30"
+  1557→            >
+  1558→              <Sparkles className="w-10 h-10 text-white" />
+  1559→            </motion.div>
+  1560→            <h2 className="text-3xl md:text-5xl font-black text-foreground mb-6">
+  1561→              جاهز لتنظيم <span className="gradient-text">جمعيتك؟</span>
+  1562→            </h2>
+  1563→            <p className="text-lg text-muted-foreground mb-8">
+  1564→              انضم إلى آلاف الجمعيات التي تثق بمنصتنا لإدارة أعمالها
+  1565→            </p>
+  1566→            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+  1567→              <motion.button
+  1568→                whileHover={{ scale: 1.05, boxShadow: '0 25px 50px -12px rgba(16,185,129,0.3)' }}
+  1569→                whileTap={{ scale: 0.95 }}
+  1570→                onClick={() => setCurrentPage('register')}
+  1571→                className="px-10 py-5 text-lg font-bold rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-xl shadow-emerald-200/25 flex items-center justify-center gap-2"
+  1572→              >
+  1573→                ابدأ مجاناً الآن
+  1574→                <ArrowLeft className="w-5 h-5" />
+  1575→              </motion.button>
+  1576→              <motion.button
+  1577→                whileHover={{ scale: 1.05 }}
+  1578→                whileTap={{ scale: 0.95 }}
+  1579→                className="px-10 py-5 text-lg font-bold rounded-2xl bg-white border-2 border-emerald-200 text-foreground hover:border-emerald-400 hover:text-emerald-600 transition-colors shadow-sm flex items-center justify-center gap-2"
+  1580→                onClick={() => {
+  1581→                  document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })
+  1582→                }}
+  1583→              >
+  1584→                <Play className="w-5 h-5" />
+  1585→                اطلب نسخة تجريبية
+  1586→              </motion.button>
+  1587→            </div>
+  1588→          </motion.div>
+  1589→        </div>
+  1590→      </section>
+  1591→
+  1592→      {/* Contact Section */}
+  1593→      <ContactSection />
+  1594→
+  1595→      {/* Newsletter */}
+  1596→      <NewsletterSection />
+  1597→
+  1598→      {/* Enhanced Footer */}
+  1599→      <EnhancedFooter />
+  1600→
+  1601→      {/* Scroll to Top */}
+  1602→      <ScrollToTop />
+  1603→    </div>
+  1604→  )
+  1605→}
+  1606→
