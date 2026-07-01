@@ -1,0 +1,10 @@
+{
+  "buildCommand": "prisma generate && next build",
+  "env": {
+    "DATABASE_URL": "file:/tmp/db.sqlite",
+    "ADMIN_EMAIL": "Hamadah@gmail.com",
+    "ADMIN_PASSWORD": "Hamadah77910",
+    "ADMIN_NAME": "مدير النظام",
+    "JWT_SECRET": "jamiat-pro-secret-key-2026-z3l3m-aldmar"
+  }
+}
