@@ -580,20 +580,6 @@ export default function Home() {
     if (currentPage === 'register' || currentPage === 'login') {
       return <AuthPage />
     }
-    // If user has a session token, try to restore session
-    if (typeof window !== 'undefined' && !sessionToken) {
-      const cookieToken = document.cookie.split('; ').find(c => c.startsWith('session_token='))?.split('=')[1]
-      if (cookieToken && !user) {
-        // Try to verify the token with the server
-        fetch('/api/auth/me', {
-          headers: { 'Authorization': `Bearer ${cookieToken}` }
-        }).then(res => res.json()).then(data => {
-          if (data.user) {
-            login(data.user, cookieToken)
-          }
-        }).catch(() => {})
-      }
-    }
     return <LandingPage />
   }
 
