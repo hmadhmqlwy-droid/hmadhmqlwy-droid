@@ -286,9 +286,6 @@ export default function Home() {
     document.documentElement.classList.add('dark')
     document.documentElement.dir = 'rtl'
     document.documentElement.lang = 'ar'
-
-    // Seed admin user on first load
-    fetch('/api/seed', { method: 'POST' }).catch(() => {})
   }, [])
 
   // Fetch notifications periodically
