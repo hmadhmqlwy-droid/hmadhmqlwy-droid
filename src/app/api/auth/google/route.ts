@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db, ensureDbInitialized } from '@/lib/db'
-import { v4 as uuidv4 } from 'uuid'
+import { signToken, type JWTPayload } from '@/lib/jwt'
 
 // Google OAuth - Sign in with Google
 export async function POST(request: NextRequest) {
@@ -13,111 +13,117 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'بيانات Google غير مكتملة' }, { status: 400 })
     }
 
-    // Check if user exists
-    let user = await db.user.findUnique({ 
-      where: { email },
-      include: { accounts: true }
-    })
+    let userId = ''
+    let userRole = 'user'
+    let userAvatar = picture || null
+    let userName = name
+    let twoFactorEnabled = false
 
-    if (user) {
-      // User exists - check if they have a Google account linked
-      const googleAccount = user.accounts.find(a => a.provider === 'google')
-      
-      if (!googleAccount) {
-        // Link Google account to existing user
-        await db.account.create({
-          data: {
-            userId: user.id,
-            provider: 'google',
-            providerAccountId: sub || email,
-            accessToken: token || null,
-          }
-        })
-      } else if (token) {
-        // Update the access token
-        await db.account.update({
-          where: { id: googleAccount.id },
-          data: { accessToken: token }
-        })
-      }
-
-      // Update last login and avatar
-      await db.user.update({
-        where: { id: user.id },
-        data: { 
-          lastLogin: new Date(),
-          avatar: picture || user.avatar,
-        }
+    try {
+      // Check if user exists
+      const existingUser = await db.user.findUnique({ 
+        where: { email },
+        include: { accounts: true }
       })
 
-      if (!user.isActive) {
-        return NextResponse.json({ error: 'الحساب معطل. تواصل مع الإدارة' }, { status: 403 })
-      }
-    } else {
-      // Create new user with Google account
-      user = await db.user.create({
-        data: {
-          name,
-          email,
-          avatar: picture || null,
-          role: 'user',
-          isActive: true,
-          accounts: {
-            create: {
+      if (existingUser) {
+        // User exists - check if they have a Google account linked
+        const googleAccount = existingUser.accounts.find(a => a.provider === 'google')
+        
+        if (!googleAccount) {
+          await db.account.create({
+            data: {
+              userId: existingUser.id,
               provider: 'google',
               providerAccountId: sub || email,
               accessToken: token || null,
             }
+          })
+        } else if (token) {
+          await db.account.update({
+            where: { id: googleAccount.id },
+            data: { accessToken: token }
+          })
+        }
+
+        await db.user.update({
+          where: { id: existingUser.id },
+          data: { 
+            lastLogin: new Date(),
+            avatar: picture || existingUser.avatar,
           }
-        },
-        include: { accounts: true }
-      })
+        })
+
+        if (!existingUser.isActive) {
+          return NextResponse.json({ error: 'الحساب معطل. تواصل مع الإدارة' }, { status: 403 })
+        }
+
+        userId = existingUser.id
+        userRole = existingUser.role
+        userAvatar = existingUser.avatar || picture
+        userName = existingUser.name
+        twoFactorEnabled = existingUser.twoFactorEnabled
+      } else {
+        // Create new user with Google account
+        const newUser = await db.user.create({
+          data: {
+            name,
+            email,
+            avatar: picture || null,
+            role: 'user',
+            isActive: true,
+            accounts: {
+              create: {
+                provider: 'google',
+                providerAccountId: sub || email,
+                accessToken: token || null,
+              }
+            }
+          },
+          include: { accounts: true }
+        })
+
+        userId = newUser.id
+        userRole = newUser.role
+        userAvatar = newUser.avatar || picture
+        userName = newUser.name
+        twoFactorEnabled = newUser.twoFactorEnabled
+      }
+    } catch (dbError) {
+      console.error('Google auth DB error:', dbError)
+      return NextResponse.json({ error: 'خطأ في قاعدة البيانات' }, { status: 500 })
     }
 
-    // Create session
-    const sessionToken = uuidv4()
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24h
-
-    await db.session.create({
-      data: {
-        userId: user.id,
-        token: sessionToken,
-        ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-        userAgent: request.headers.get('user-agent') || 'unknown',
-        expiresAt,
-      }
-    })
-
-    // Log successful login
-    await db.securityLog.create({
-      data: {
-        userId: user.id,
-        action: 'google_login',
-        details: 'تسجيل دخول عبر Google',
-        ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-        userAgent: request.headers.get('user-agent') || 'unknown',
-        severity: 'info',
-      }
-    })
+    // Create JWT token
+    const jwtPayload: JWTPayload = {
+      userId,
+      email,
+      name: userName,
+      role: userRole,
+      avatar: userAvatar || undefined,
+      twoFactorEnabled,
+    }
+    
+    const jwtToken = await signToken(jwtPayload)
 
     const response = NextResponse.json({
       user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        avatar: user.avatar || picture,
-        twoFactorEnabled: user.twoFactorEnabled,
+        id: userId,
+        name: userName,
+        email,
+        role: userRole,
+        avatar: userAvatar,
+        twoFactorEnabled,
       },
-      token: sessionToken,
+      token: jwtToken,
     })
 
-    // Set session cookie
-    response.cookies.set('session_token', sessionToken, {
+    response.cookies.set('session_token', jwtToken, {
       path: '/',
-      maxAge: 86400,
+      maxAge: 7 * 24 * 60 * 60,
       httpOnly: false,
       sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
     })
 
     return response

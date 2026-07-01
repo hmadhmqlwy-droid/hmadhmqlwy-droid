@@ -1,31 +1,59 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { verifyToken, type JWTPayload } from '@/lib/jwt'
 
-// Get user from session token in cookies or Authorization header
+// Get user from JWT token in cookies or Authorization header
 export async function getAuthUser(request: NextRequest): Promise<{ id: string; name: string; email: string; role: string; isActive: boolean } | null> {
   try {
-    // Try cookie first, then Authorization header
-    const token = request.cookies.get('session_token')?.value 
+    // Try JWT token first (from cookie or Authorization header)
+    const jwtToken = request.cookies.get('session_token')?.value 
       || request.headers.get('authorization')?.replace('Bearer ', '')
 
-    if (!token) return null
-
-    const session = await db.session.findUnique({
-      where: { token },
-      include: { user: { select: { id: true, name: true, email: true, role: true, isActive: true } } }
-    })
-
-    if (!session) return null
-    if (session.expiresAt < new Date()) {
-      // Session expired, clean up
-      await db.session.delete({ where: { id: session.id } })
-      return null
+    if (jwtToken) {
+      const payload = await verifyToken(jwtToken)
+      if (payload) {
+        return {
+          id: payload.userId,
+          name: payload.name,
+          email: payload.email,
+          role: payload.role,
+          isActive: true,
+        }
+      }
     }
-    if (!session.user.isActive) return null
 
-    return session.user
+    // Fallback: Try database session lookup
+    const sessionToken = request.cookies.get('session_token')?.value
+    if (sessionToken) {
+      try {
+        const session = await db.session.findUnique({
+          where: { token: sessionToken },
+          include: { user: { select: { id: true, name: true, email: true, role: true, isActive: true } } }
+        })
+
+        if (session && session.expiresAt > new Date() && session.user.isActive) {
+          return session.user
+        }
+      } catch (dbError) {
+        console.error('Session lookup error:', dbError)
+      }
+    }
+
+    return null
   } catch (error) {
     console.error('Auth middleware error:', error)
+    return null
+  }
+}
+
+// Get JWT payload directly
+export async function getJWTPayload(request: NextRequest): Promise<JWTPayload | null> {
+  try {
+    const token = request.cookies.get('session_token')?.value 
+      || request.headers.get('authorization')?.replace('Bearer ', '')
+    if (!token) return null
+    return await verifyToken(token)
+  } catch {
     return null
   }
 }
@@ -39,7 +67,7 @@ export async function requireAuth(request: NextRequest): Promise<{ user: NonNull
   return { user: user as NonNullable<typeof user> }
 }
 
-// Require admin role - returns user or error response
+// Require admin role
 export async function requireAdmin(request: NextRequest): Promise<{ user: NonNullable<Awaited<ReturnType<typeof getAuthUser>>> } | { error: NextResponse }> {
   const authResult = await requireAuth(request)
   if ('error' in authResult) return authResult
@@ -81,7 +109,6 @@ export async function requireAssociationRole(
     const userLevel = roleHierarchy[member.role as keyof typeof roleHierarchy] ?? -1
     const requiredLevel = roleHierarchy[minRole]
 
-    // Admin users bypass association role checks
     const user = await db.user.findUnique({ where: { id: userId } })
     if (user?.role === 'admin') return true
 

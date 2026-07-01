@@ -1,26 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db, ensureDbInitialized } from '@/lib/db'
+import { db } from '@/lib/db'
 import { getAuthUser } from '@/lib/auth-middleware'
 
 export async function POST(request: NextRequest) {
   try {
-    await ensureDbInitialized()
     const user = await getAuthUser(request)
     if (user) {
-      // Delete all sessions for this user
-      await db.session.deleteMany({ where: { userId: user.id } })
-
-      // Log logout
-      await db.securityLog.create({
-        data: {
-          userId: user.id,
-          action: 'logout',
-          details: 'تسجيل خروج',
-          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-          userAgent: request.headers.get('user-agent') || 'unknown',
-          severity: 'info',
-        }
-      })
+      // Try to delete sessions from database
+      try {
+        await db.session.deleteMany({ where: { userId: user.id } })
+      } catch (dbError) {
+        console.error('Session deletion error (non-critical):', dbError)
+      }
     }
 
     const response = NextResponse.json({ message: 'تم تسجيل الخروج بنجاح' })

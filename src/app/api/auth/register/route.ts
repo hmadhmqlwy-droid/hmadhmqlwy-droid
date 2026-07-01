@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db, ensureDbInitialized } from '@/lib/db'
 import { hashPassword } from '@/lib/auth'
-import { v4 as uuidv4 } from 'uuid'
+import { signToken, type JWTPayload } from '@/lib/jwt'
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'كلمة المرور يجب أن تكون 8 أحرف على الأقل' }, { status: 400 })
     }
 
-    // Password strength check - require at least 2 of 4 criteria
+    // Password strength check
     const hasUpperCase = /[A-Z]/.test(password)
     const hasLowerCase = /[a-z]/.test(password)
     const hasNumbers = /\d/.test(password)
@@ -41,12 +41,12 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
 
-    const existing = await db.user.findUnique({ where: { email } })
+    const existing = await db.user.findUnique({ where: { email: email.toLowerCase() } })
     if (existing) {
       return NextResponse.json({ error: 'البريد الإلكتروني مسجل مسبقاً' }, { status: 409 })
     }
 
-    // Hash password with bcrypt
+    // Hash password
     const hashedPassword = await hashPassword(password)
 
     const user = await db.user.create({
@@ -58,31 +58,32 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    // Create session for auto-login
-    const token = uuidv4()
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
+    // Create JWT token
+    const jwtPayload: JWTPayload = {
+      userId: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      twoFactorEnabled: user.twoFactorEnabled,
+    }
+    
+    const token = await signToken(jwtPayload)
 
-    await db.session.create({
-      data: {
-        userId: user.id,
-        token,
-        ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-        userAgent: request.headers.get('user-agent') || 'unknown',
-        expiresAt,
-      }
-    })
-
-    // Log registration
-    await db.securityLog.create({
-      data: {
-        userId: user.id,
-        action: 'register',
-        details: 'تسجيل حساب جديد',
-        ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-        userAgent: request.headers.get('user-agent') || 'unknown',
-        severity: 'info',
-      }
-    })
+    // Try to create session and log registration
+    try {
+      await db.securityLog.create({
+        data: {
+          userId: user.id,
+          action: 'register',
+          details: 'تسجيل حساب جديد',
+          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+          userAgent: request.headers.get('user-agent') || 'unknown',
+          severity: 'info',
+        }
+      })
+    } catch (logError) {
+      console.error('Security log error (non-critical):', logError)
+    }
 
     const response = NextResponse.json({
       user: {
@@ -95,17 +96,18 @@ export async function POST(request: NextRequest) {
       token,
     }, { status: 201 })
 
-    // Set session cookie
+    // Set JWT cookie
     response.cookies.set('session_token', token, {
       path: '/',
-      maxAge: 86400,
+      maxAge: 7 * 24 * 60 * 60,
       httpOnly: false,
       sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
     })
 
     return response
   } catch (error) {
     console.error('Register error:', error)
-    return NextResponse.json({ error: 'خطأ في الخادم' }, { status: 500 })
+    return NextResponse.json({ error: 'خطأ في الخادم. يرجى المحاولة لاحقاً' }, { status: 500 })
   }
 }

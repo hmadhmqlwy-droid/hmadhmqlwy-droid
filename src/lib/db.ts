@@ -32,20 +32,10 @@ async function initializeDb() {
     await db.user.count()
     globalForPrisma.dbInitialized = true
   } catch (error) {
-    console.log('Database not initialized, running setup...')
+    console.log('Database not initialized, creating tables...')
     try {
-      // Create tables using Prisma's internal push mechanism
-      const { execSync } = await import('child_process')
-      try {
-        execSync('npx prisma db push --accept-data-loss --skip-generate 2>&1', { 
-          timeout: 30000,
-          env: { ...process.env }
-        })
-      } catch (pushError) {
-        console.log('prisma db push failed, trying manual table creation...')
-        // Fallback: create tables manually using raw SQL
-        await createTablesManually()
-      }
+      // Go directly to manual table creation (skip execSync which doesn't work on Vercel)
+      await createTablesManually()
       
       // Seed admin user
       await seedAdmin()
@@ -54,13 +44,12 @@ async function initializeDb() {
       console.log('Database initialized successfully!')
     } catch (initError) {
       console.error('Database initialization failed:', initError)
-      // Don't throw - let the app continue, individual routes will handle errors
+      // Don't throw - let the app continue with fallback auth
     }
   }
 }
 
 async function createTablesManually() {
-  // Create tables for SQLite using raw SQL
   const statements = [
     `CREATE TABLE IF NOT EXISTS User (
       id TEXT PRIMARY KEY NOT NULL,
@@ -70,8 +59,8 @@ async function createTablesManually() {
       avatar TEXT,
       role TEXT NOT NULL DEFAULT 'user',
       twoFactorSecret TEXT,
-      twoFactorEnabled BOOLEAN NOT NULL DEFAULT false,
-      isActive BOOLEAN NOT NULL DEFAULT true,
+      twoFactorEnabled INTEGER NOT NULL DEFAULT 0,
+      isActive INTEGER NOT NULL DEFAULT 1,
       lastLogin DATETIME,
       createdAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       updatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -216,11 +205,12 @@ async function seedAdmin() {
       const { hashPassword } = await import('./auth')
       const hashedPassword = await hashPassword(adminPassword)
       
-      const { v4: uuidv4 } = await import('uuid')
+      // Use crypto.randomUUID() instead of uuid package
+      const id = crypto.randomUUID()
       
       await db.user.create({
         data: {
-          id: uuidv4(),
+          id,
           name: adminName,
           email: adminEmail,
           password: hashedPassword,

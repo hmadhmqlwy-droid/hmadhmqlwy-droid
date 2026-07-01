@@ -1,14 +1,15 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAppStore } from '@/store/app-store'
-import { Building2, Mail, Lock, User, Eye, EyeOff, Shield, ArrowLeft, Fingerprint, AlertCircle, Info, CheckCircle } from 'lucide-react'
+import { 
+  Mail, Lock, User, Eye, EyeOff, ArrowLeft, ArrowRight,
+  AlertCircle, Loader2, Check, Building2, Shield, Sparkles
+} from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
-import { Checkbox } from '@/components/ui/checkbox'
-import { AnimatedAuthIllustration } from './animated-illustrations'
 
 // Google SVG Icon
 function GoogleIcon() {
@@ -22,407 +23,394 @@ function GoogleIcon() {
   )
 }
 
+// Step types for the auth flow
+type AuthStep = 'email' | 'password' | 'register-name' | 'register-email' | 'register-password'
+
+// Animation variants
+const slideVariants = {
+  enter: (direction: number) => ({
+    x: direction > 0 ? 300 : -300,
+    opacity: 0,
+  }),
+  center: {
+    x: 0,
+    opacity: 1,
+  },
+  exit: (direction: number) => ({
+    x: direction < 0 ? 300 : -300,
+    opacity: 0,
+  }),
+}
+
 export function AuthPage() {
   const { setCurrentPage, login, showToast } = useAppStore()
-  const [mode, setMode] = useState<'login' | 'register'>('login')
-  const [showPassword, setShowPassword] = useState(false)
+  const [step, setStep] = useState<AuthStep>('email')
+  const [direction, setDirection] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   
-  // Login form
-  const [loginEmail, setLoginEmail] = useState('')
-  const [loginPassword, setLoginPassword] = useState('')
+  // Form fields
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [name, setName] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   
-  // Register form
-  const [regName, setRegName] = useState('')
-  const [regEmail, setRegEmail] = useState('')
-  const [regPassword, setRegPassword] = useState('')
-  const [regConfirm, setRegConfirm] = useState('')
-  const [googleLoading, setGoogleLoading] = useState(false)
+  // Password strength
+  const [passwordStrength, setPasswordStrength] = useState(0)
 
-  // Client-side user storage for Vercel serverless compatibility
-  const getUsers = (): Record<string, { id: string; name: string; email: string; password: string; role: string; isActive: boolean; twoFactorEnabled: boolean }> => {
-    if (typeof window === 'undefined') return {}
-    try {
-      const stored = localStorage.getItem('jamiat-pro-users')
-      if (stored) return JSON.parse(stored)
-    } catch {}
-    // Default admin user
-    const defaultUsers: Record<string, { id: string; name: string; email: string; password: string; role: string; isActive: boolean; twoFactorEnabled: boolean }> = {
-      'Hamadah@gmail.com': {
-        id: 'admin-001',
-        name: 'مدير النظام',
-        email: 'Hamadah@gmail.com',
-        password: 'Hamadah77910',
-        role: 'admin',
-        isActive: true,
-        twoFactorEnabled: false,
-      }
+  // Calculate password strength
+  useEffect(() => {
+    if (!password) {
+      setPasswordStrength(0)
+      return
     }
-    localStorage.setItem('jamiat-pro-users', JSON.stringify(defaultUsers))
-    return defaultUsers
+    let strength = 0
+    if (password.length >= 8) strength++
+    if (/[A-Z]/.test(password)) strength++
+    if (/[a-z]/.test(password)) strength++
+    if (/\d/.test(password)) strength++
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength++
+    setPasswordStrength(strength)
+  }, [password])
+
+  const goToStep = (newStep: AuthStep) => {
+    setDirection(newStep > step ? 1 : -1)
+    setStep(newStep)
+    setError('')
   }
 
-  const handleLogin = async () => {
-    setError('')
-    if (!loginEmail.trim() || !loginPassword.trim()) {
-      setError('البريد الإلكتروني وكلمة المرور مطلوبان')
+  const handleEmailSubmit = () => {
+    if (!email.trim()) {
+      setError('أدخل البريد الإلكتروني')
       return
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(loginEmail.trim())) {
+    if (!emailRegex.test(email)) {
       setError('صيغة البريد الإلكتروني غير صحيحة')
       return
     }
+    goToStep('password')
+  }
+
+  const handleLogin = async () => {
+    if (!password) {
+      setError('أدخل كلمة المرور')
+      return
+    }
+    
     setLoading(true)
+    setError('')
+    
     try {
-      // Try API first
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: loginEmail.trim(), password: loginPassword }),
+        body: JSON.stringify({ email, password }),
       })
+      
       const data = await res.json()
-      if (res.ok) {
-        login(data.user, data.token)
-        showToast('تم تسجيل الدخول بنجاح', 'success')
+      
+      if (!res.ok) {
+        setError(data.error || 'بيانات الدخول غير صحيحة')
         return
       }
-      // If API fails (serverless DB issue), try client-side auth
-      const users = getUsers()
-      const user = users[loginEmail.trim()]
-      if (user && user.password === loginPassword && user.isActive) {
-        login({
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          twoFactorEnabled: user.twoFactorEnabled,
-        }, `local-${user.id}-${Date.now()}`)
-        showToast('تم تسجيل الدخول بنجاح', 'success')
-        return
-      }
-      setError(data.error || 'بيانات الدخول غير صحيحة')
-    } catch {
-      // API completely unavailable - fallback to client-side auth
-      const users = getUsers()
-      const user = users[loginEmail.trim()]
-      if (user && user.password === loginPassword && user.isActive) {
-        login({
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          twoFactorEnabled: user.twoFactorEnabled,
-        }, `local-${user.id}-${Date.now()}`)
-        showToast('تم تسجيل الدخول بنجاح', 'success')
-        return
-      }
-      setError('بيانات الدخول غير صحيحة')
+      
+      login(data.user, data.token)
+      showToast('تم تسجيل الدخول بنجاح', 'success')
+    } catch (err) {
+      setError('حدث خطأ في الاتصال بالخادم')
     } finally {
       setLoading(false)
-    }
-  }
-
-  const handleGoogleLogin = async () => {
-    setError('')
-    setGoogleLoading(true)
-    try {
-      const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
-      
-      if (!googleClientId) {
-        setError('تسجيل الدخول عبر Google غير مفعل حالياً. يرجى استخدام البريد الإلكتروني')
-        setGoogleLoading(false)
-        return
-      }
-
-      if (typeof window !== 'undefined' && window.google) {
-        window.google.accounts.id.initialize({
-          client_id: googleClientId,
-          callback: async (response: any) => {
-            try {
-              const payload = JSON.parse(atob(response.credential.split('.')[1]))
-              const res = await fetch('/api/auth/google', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  token: response.credential,
-                  email: payload.email,
-                  name: payload.name,
-                  picture: payload.picture,
-                  sub: payload.sub,
-                }),
-              })
-              const data = await res.json()
-              if (!res.ok) {
-                setError(data.error || 'حدث خطأ')
-                return
-              }
-              login(data.user, data.token)
-              showToast('تم تسجيل الدخول عبر Google بنجاح', 'success')
-            } catch {
-              setError('خطأ في تسجيل الدخول عبر Google')
-            }
-          },
-        })
-        window.google.accounts.id.prompt()
-      } else {
-        setError('خدمة Google غير متاحة حالياً')
-      }
-    } catch {
-      setError('خطأ في الاتصال بـ Google')
-    } finally {
-      setGoogleLoading(false)
     }
   }
 
   const handleRegister = async () => {
-    setError('')
-    if (!regName.trim()) {
-      setError('الاسم الكامل مطلوب')
+    if (!name.trim()) {
+      setError('أدخل اسمك الكامل')
       return
     }
-    if (regName.trim().length < 2) {
+    if (name.trim().length < 2) {
       setError('الاسم يجب أن يكون حرفين على الأقل')
       return
     }
-    if (!regEmail.trim()) {
-      setError('البريد الإلكتروني مطلوب')
+    if (!email.trim()) {
+      setError('أدخل البريد الإلكتروني')
       return
     }
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(regEmail.trim())) {
+    if (!emailRegex.test(email)) {
       setError('صيغة البريد الإلكتروني غير صحيحة')
       return
     }
-    if (!regPassword) {
-      setError('كلمة المرور مطلوبة')
+    if (!password) {
+      setError('أدخل كلمة المرور')
       return
     }
-    if (regPassword !== regConfirm) {
-      setError('كلمات المرور غير متطابقة')
-      return
-    }
-    if (regPassword.length < 8) {
+    if (password.length < 8) {
       setError('كلمة المرور يجب أن تكون 8 أحرف على الأقل')
       return
     }
+    if (passwordStrength < 2) {
+      setError('كلمة المرور ضعيفة. أضف أحرف كبيرة وأرقام ورموز')
+      return
+    }
+    if (password !== confirmPassword) {
+      setError('كلمتا المرور غير متطابقتين')
+      return
+    }
+    
     setLoading(true)
+    setError('')
+    
     try {
-      // Try API first
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: regName.trim(), email: regEmail.trim(), password: regPassword }),
+        body: JSON.stringify({ name, email, password }),
       })
+      
       const data = await res.json()
-      if (res.ok) {
-        login(data.user, data.token)
-        showToast('تم إنشاء الحساب بنجاح', 'success')
+      
+      if (!res.ok) {
+        setError(data.error || 'فشل في إنشاء الحساب')
         return
       }
-      // If API fails, try client-side registration
-      const users = getUsers()
-      if (users[regEmail.trim()]) {
-        setError('البريد الإلكتروني مستخدم بالفعل')
-        return
-      }
-      const newUser = {
-        id: `user-${Date.now()}`,
-        name: regName.trim(),
-        email: regEmail.trim(),
-        password: regPassword,
-        role: 'user',
-        isActive: true,
-        twoFactorEnabled: false,
-      }
-      users[regEmail.trim()] = newUser
-      localStorage.setItem('jamiat-pro-users', JSON.stringify(users))
-      login({
-        id: newUser.id,
-        name: newUser.name,
-        email: newUser.email,
-        role: newUser.role,
-        twoFactorEnabled: newUser.twoFactorEnabled,
-      }, `local-${newUser.id}-${Date.now()}`)
+      
+      login(data.user, data.token)
       showToast('تم إنشاء الحساب بنجاح', 'success')
-    } catch {
-      // API completely unavailable - fallback to client-side registration
-      const users = getUsers()
-      if (users[regEmail.trim()]) {
-        setError('البريد الإلكتروني مستخدم بالفعل')
-        return
-      }
-      const newUser = {
-        id: `user-${Date.now()}`,
-        name: regName.trim(),
-        email: regEmail.trim(),
-        password: regPassword,
-        role: 'user',
-        isActive: true,
-        twoFactorEnabled: false,
-      }
-      users[regEmail.trim()] = newUser
-      localStorage.setItem('jamiat-pro-users', JSON.stringify(users))
-      login({
-        id: newUser.id,
-        name: newUser.name,
-        email: newUser.email,
-        role: newUser.role,
-        twoFactorEnabled: newUser.twoFactorEnabled,
-      }, `local-${newUser.id}-${Date.now()}`)
-      showToast('تم إنشاء الحساب بنجاح', 'success')
+    } catch (err) {
+      setError('حدث خطأ في الاتصال بالخادم')
     } finally {
       setLoading(false)
     }
   }
 
-  const getPasswordStrength = (pass: string) => {
-    let score = 0
-    if (pass.length >= 8) score++
-    if (/[A-Z]/.test(pass)) score++
-    if (/[a-z]/.test(pass)) score++
-    if (/\d/.test(pass)) score++
-    if (/[!@#$%^&*(),.?":{}|<>]/.test(pass)) score++
-    return score
+  const handleGoogleLogin = () => {
+    showToast('تسجيل الدخول بـ Google سيكون متاحاً قريباً', 'info')
   }
 
-  const strengthLabels = ['', 'ضعيفة جداً', 'ضعيفة', 'متوسطة', 'قوية', 'قوية جداً']
-  const strengthColors = ['', 'bg-red-500', 'bg-red-400', 'bg-amber-500', 'bg-emerald-400', 'bg-emerald-500']
+  const handleKeyDown = (e: React.KeyboardEvent, action: () => void) => {
+    if (e.key === 'Enter') action()
+  }
+
+  // Get the current step title and subtitle
+  const getStepInfo = () => {
+    switch (step) {
+      case 'email':
+        return { title: 'تسجيل الدخول', subtitle: 'استخدم حسابك في جمعياتبرو' }
+      case 'password':
+        return { title: 'مرحباً!', subtitle: email }
+      case 'register-name':
+        return { title: 'إنشاء حساب', subtitle: 'أدخل اسمك للبدء' }
+      case 'register-email':
+        return { title: 'إنشاء حساب', subtitle: 'أدخل بريدك الإلكتروني' }
+      case 'register-password':
+        return { title: 'إنشاء حساب', subtitle: 'اختر كلمة مرور قوية' }
+    }
+  }
+
+  const stepInfo = getStepInfo()
+
+  // Password strength colors
+  const strengthColors = ['bg-gray-200', 'bg-red-400', 'bg-orange-400', 'bg-yellow-400', 'bg-lime-400', 'bg-green-500']
+  const strengthLabels = ['', 'ضعيفة جداً', 'ضعيفة', 'متوسطة', 'جيدة', 'قوية']
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-emerald-50/50 via-white to-blue-50/50" dir="rtl">
-      {/* Background */}
-      <div className="absolute inset-0 gradient-mesh" />
-      <div className="absolute inset-0 opacity-[0.02]" style={{
-        backgroundImage: 'linear-gradient(rgba(16,185,129,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.2) 1px, transparent 1px)',
-        backgroundSize: '60px 60px'
-      }} />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-sky-50 flex items-center justify-center p-4" dir="rtl">
+      {/* Background decorations */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-0 w-96 h-96 bg-blue-100 rounded-full blur-3xl opacity-40 -translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-sky-100 rounded-full blur-3xl opacity-40 translate-x-1/2 translate-y-1/2" />
+        <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-indigo-100 rounded-full blur-3xl opacity-30 -translate-x-1/2 -translate-y-1/2" />
+      </div>
 
-      {/* Animated background orbs */}
       <motion.div
-        animate={{ x: [0, 50, 0], y: [0, -30, 0] }}
-        transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute top-1/4 right-1/4 w-64 h-64 rounded-full bg-emerald-200/30 blur-3xl"
-      />
-      <motion.div
-        animate={{ x: [0, -40, 0], y: [0, 40, 0] }}
-        transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute bottom-1/4 left-1/4 w-96 h-96 rounded-full bg-blue-200/20 blur-3xl"
-      />
-      <motion.div
-        animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
-        transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute top-1/2 left-1/2 w-72 h-72 rounded-full bg-violet-200/15 blur-3xl"
-      />
-
-      <div className="relative z-10 w-full max-w-5xl mx-4 flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
-        {/* Animated illustration side */}
-        <motion.div
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8 }}
-          className="hidden lg:flex flex-shrink-0"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="relative w-full max-w-md"
+      >
+        {/* Logo */}
+        <motion.div 
+          className="text-center mb-6"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2, duration: 0.4 }}
         >
-          <AnimatedAuthIllustration />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-sky-500 shadow-lg shadow-blue-200 mb-3">
+            <Building2 className="w-8 h-8 text-white" />
+          </div>
+          <h2 className="text-lg font-bold text-gray-800">جمعياتبرو</h2>
         </motion.div>
 
-        {/* Form Card */}
+        {/* Auth Card */}
         <motion.div
-          initial={{ opacity: 0, y: 20, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.5 }}
-          className="w-full max-w-md"
+          layout
+          className="bg-white rounded-2xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden"
         >
-          {/* Logo */}
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-8"
-          >
-            <div className="inline-flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
-                <Building2 className="w-6 h-6 text-white" />
-              </div>
-              <span className="text-2xl font-black text-foreground">جمعيات<span className="text-emerald-600">برو</span></span>
-            </div>
-          </motion.div>
+          {/* Card Header */}
+          <div className="px-8 pt-8 pb-2">
+            <AnimatePresence mode="wait" custom={direction}>
+              <motion.div
+                key={step}
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+              >
+                <h1 className="text-2xl font-bold text-gray-900 mb-1">
+                  {stepInfo.title}
+                </h1>
+                <p className="text-sm text-gray-500 mb-1">
+                  {stepInfo.subtitle}
+                </p>
+                
+                {/* Show user avatar on password step (like Google) */}
+                {step === 'password' && (
+                  <motion.div 
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="flex items-center gap-3 mt-3 p-3 bg-blue-50 rounded-xl"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-sky-500 flex items-center justify-center text-white font-bold text-sm">
+                      {email.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-800">{email}</p>
+                      <button 
+                        onClick={() => goToStep('email')}
+                        className="text-xs text-blue-600 hover:text-blue-700 hover:underline"
+                      >
+                        تغيير الحساب
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </motion.div>
+            </AnimatePresence>
+          </div>
 
-          {/* Card */}
-          <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 md:p-8 border border-gray-100 shadow-xl shadow-emerald-100/10">
-            <AnimatePresence mode="wait">
-              {mode === 'login' && (
-                <motion.div
-                  key="login"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <h2 className="text-2xl font-black text-foreground mb-2">مرحباً بعودتك</h2>
-                  <p className="text-muted-foreground text-sm mb-6">سجّل دخولك للوصول إلى لوحة التحكم</p>
-
+          {/* Card Body */}
+          <div className="px-8 py-4">
+            <AnimatePresence mode="wait" custom={direction}>
+              <motion.div
+                key={step}
+                custom={direction}
+                variants={slideVariants}
+                initial="enter"
+                animate="center"
+                exit="exit"
+                transition={{ duration: 0.3, ease: 'easeInOut' }}
+              >
+                {/* Error Message */}
+                <AnimatePresence>
                   {error && (
                     <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 text-red-500 text-sm mb-4"
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="flex items-center gap-2 p-3 mb-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm"
                     >
-                      <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                      {error}
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <span>{error}</span>
                     </motion.div>
                   )}
+                </AnimatePresence>
 
+                {/* Step: Email Input */}
+                {step === 'email' && (
                   <div className="space-y-4">
                     <div>
-                      <Label className="text-sm font-medium mb-1.5 block">البريد الإلكتروني</Label>
+                      <Label className="text-sm font-medium text-gray-700 mb-2 block">البريد الإلكتروني</Label>
                       <div className="relative">
-                        <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <Input
                           type="email"
-                          placeholder="أدخل بريدك الإلكتروني"
-                          value={loginEmail}
-                          onChange={(e) => setLoginEmail(e.target.value)}
-                          onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-                          className="pr-10 bg-background/50 border-border/50 focus:border-emerald-500"
+                          placeholder="example@email.com"
+                          value={email}
+                          onChange={(e) => { setEmail(e.target.value); setError('') }}
+                          onKeyDown={(e) => handleKeyDown(e, handleEmailSubmit)}
+                          className="pr-10 h-12 text-base rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 bg-gray-50/50 hover:bg-white transition-colors"
                           dir="ltr"
+                          autoFocus
                         />
                       </div>
                     </div>
 
+                    {/* Google Sign In */}
+                    <button
+                      onClick={handleGoogleLogin}
+                      className="w-full flex items-center justify-center gap-3 h-12 px-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700"
+                    >
+                      <GoogleIcon />
+                      تسجيل الدخول بحساب Google
+                    </button>
+
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <div className="w-full border-t border-gray-200" />
+                      </div>
+                      <div className="relative flex justify-center text-xs">
+                        <span className="px-3 bg-white text-gray-400">أو</span>
+                      </div>
+                    </div>
+
+                    <Button
+                      onClick={handleEmailSubmit}
+                      className="w-full h-12 text-base font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 transition-all shadow-md shadow-blue-200 hover:shadow-lg hover:shadow-blue-300"
+                      size="lg"
+                    >
+                      التالي
+                      <ArrowLeft className="w-4 h-4 mr-2" />
+                    </Button>
+
+                    <p className="text-center text-sm text-gray-500 mt-4">
+                      ليس لديك حساب؟{' '}
+                      <button 
+                        onClick={() => goToStep('register-name')}
+                        className="text-blue-600 font-semibold hover:text-blue-700 hover:underline"
+                      >
+                        إنشاء حساب
+                      </button>
+                    </p>
+                  </div>
+                )}
+
+                {/* Step: Password Input */}
+                {step === 'password' && (
+                  <div className="space-y-4">
                     <div>
-                      <Label className="text-sm font-medium mb-1.5 block">كلمة المرور</Label>
+                      <Label className="text-sm font-medium text-gray-700 mb-2 block">كلمة المرور</Label>
                       <div className="relative">
-                        <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <Input
                           type={showPassword ? 'text' : 'password'}
-                          placeholder="••••••••"
-                          value={loginPassword}
-                          onChange={(e) => setLoginPassword(e.target.value)}
-                          onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-                          className="pr-10 pl-10 bg-background/50 border-border/50 focus:border-emerald-500"
-                          dir="ltr"
+                          placeholder="أدخل كلمة المرور"
+                          value={password}
+                          onChange={(e) => { setPassword(e.target.value); setError('') }}
+                          onKeyDown={(e) => handleKeyDown(e, handleLogin)}
+                          className="pr-10 pl-10 h-12 text-base rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 bg-gray-50/50 hover:bg-white transition-colors"
+                          autoFocus
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                         >
-                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                         </button>
                       </div>
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <Checkbox id="remember" />
-                        <label htmlFor="remember" className="text-xs text-muted-foreground cursor-pointer">تذكرني</label>
-                      </div>
-                      <button 
-                        type="button"
-                        onClick={() => showToast('يرجى التواصل مع إدارة النظام لإعادة تعيين كلمة المرور', 'info')}
-                        className="text-xs text-emerald-500 hover:underline"
-                      >
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                        <span className="text-sm text-gray-600">تذكرني</span>
+                      </label>
+                      <button className="text-sm text-blue-600 hover:text-blue-700 hover:underline">
                         نسيت كلمة المرور؟
                       </button>
                     </div>
@@ -430,184 +418,202 @@ export function AuthPage() {
                     <Button
                       onClick={handleLogin}
                       disabled={loading}
-                      className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/25"
+                      className="w-full h-12 text-base font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 transition-all shadow-md shadow-blue-200 hover:shadow-lg hover:shadow-blue-300"
+                      size="lg"
                     >
                       {loading ? (
-                        <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                          className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
-                        />
+                        <Loader2 className="w-5 h-5 animate-spin" />
                       ) : (
                         <>
-                          <Shield className="w-4 h-4 ml-2" />
-                          تسجيل دخول آمن
+                          تسجيل الدخول
+                          <ArrowLeft className="w-4 h-4 mr-2" />
                         </>
                       )}
                     </Button>
+                  </div>
+                )}
 
-                    {/* Divider */}
+                {/* Step: Register - Name */}
+                {step === 'register-name' && (
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700 mb-2 block">الاسم الكامل</Label>
+                      <div className="relative">
+                        <User className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                        <Input
+                          type="text"
+                          placeholder="أدخل اسمك الكامل"
+                          value={name}
+                          onChange={(e) => { setName(e.target.value); setError('') }}
+                          onKeyDown={(e) => handleKeyDown(e, () => {
+                            if (name.trim().length >= 2) goToStep('register-email')
+                            else setError('الاسم يجب أن يكون حرفين على الأقل')
+                          })}
+                          className="pr-10 h-12 text-base rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 bg-gray-50/50 hover:bg-white transition-colors"
+                          autoFocus
+                        />
+                      </div>
+                    </div>
+
+                    {/* Google Sign Up */}
+                    <button
+                      onClick={handleGoogleLogin}
+                      className="w-full flex items-center justify-center gap-3 h-12 px-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700"
+                    >
+                      <GoogleIcon />
+                      التسجيل بحساب Google
+                    </button>
+
                     <div className="relative">
                       <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-border/30" />
+                        <div className="w-full border-t border-gray-200" />
                       </div>
                       <div className="relative flex justify-center text-xs">
-                        <span className="px-2 bg-card text-muted-foreground">أو</span>
+                        <span className="px-3 bg-white text-gray-400">أو</span>
                       </div>
                     </div>
 
-                    {/* Google Sign In - Only shown when configured */}
-                    {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
-                      <>
-                        <Button
-                          onClick={handleGoogleLogin}
-                          disabled={googleLoading}
-                          variant="outline"
-                          className="w-full py-3 bg-white hover:bg-gray-50 border-gray-200 rounded-xl font-bold flex items-center justify-center gap-3"
-                        >
-                          {googleLoading ? (
-                            <motion.div
-                              animate={{ rotate: 360 }}
-                              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                              className="w-5 h-5 border-2 border-gray-300 border-t-foreground rounded-full"
-                            />
-                          ) : (
-                            <>
-                              <GoogleIcon />
-                              <span>تسجيل الدخول بـ Google</span>
-                            </>
-                          )}
-                        </Button>
-                      </>
-                    )}
+                    <Button
+                      onClick={() => {
+                        if (name.trim().length >= 2) goToStep('register-email')
+                        else setError('الاسم يجب أن يكون حرفين على الأقل')
+                      }}
+                      className="w-full h-12 text-base font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 transition-all shadow-md shadow-blue-200 hover:shadow-lg hover:shadow-blue-300"
+                      size="lg"
+                    >
+                      التالي
+                      <ArrowLeft className="w-4 h-4 mr-2" />
+                    </Button>
 
-                    {/* Security notice */}
-                    <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200/50">
-                      <div className="flex items-start gap-2">
-                        <Shield className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-                        <div className="text-xs text-muted-foreground">
-                          <span className="text-emerald-600 font-bold">اتصال آمن ومشفر</span>
-                          <br />
-                          بياناتك محمية بتشفير AES-256 أثناء النقل والتخزين
-                        </div>
-                      </div>
-                    </div>
-
-                    <p className="text-center text-sm text-muted-foreground">
-                      ليس لديك حساب؟{' '}
-                      <button onClick={() => { setMode('register'); setError('') }} className="text-emerald-500 font-bold hover:underline">
-                        سجّل الآن
+                    <p className="text-center text-sm text-gray-500 mt-4">
+                      لديك حساب؟{' '}
+                      <button 
+                        onClick={() => goToStep('email')}
+                        className="text-blue-600 font-semibold hover:text-blue-700 hover:underline"
+                      >
+                        تسجيل الدخول
                       </button>
                     </p>
                   </div>
-                </motion.div>
-              )}
+                )}
 
-              {mode === 'register' && (
-                <motion.div
-                  key="register"
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <h2 className="text-2xl font-black text-foreground mb-2">إنشاء حساب جديد</h2>
-                  <p className="text-muted-foreground text-sm mb-6">أنشئ حسابك وابدأ بإدارة جمعيتك</p>
-
-                  {error && (
-                    <motion.div
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 text-red-500 text-sm mb-4"
-                    >
-                      <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                      {error}
-                    </motion.div>
-                  )}
-
+                {/* Step: Register - Email */}
+                {step === 'register-email' && (
                   <div className="space-y-4">
                     <div>
-                      <Label className="text-sm font-medium mb-1.5 block">الاسم الكامل</Label>
+                      <Label className="text-sm font-medium text-gray-700 mb-2 block">البريد الإلكتروني</Label>
                       <div className="relative">
-                        <User className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                        <Input
-                          placeholder="أحمد محمد"
-                          value={regName}
-                          onChange={(e) => setRegName(e.target.value)}
-                          className="pr-10 bg-background/50 border-border/50 focus:border-emerald-500"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <Label className="text-sm font-medium mb-1.5 block">البريد الإلكتروني</Label>
-                      <div className="relative">
-                        <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Mail className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <Input
                           type="email"
                           placeholder="example@email.com"
-                          value={regEmail}
-                          onChange={(e) => setRegEmail(e.target.value)}
-                          className="pr-10 bg-background/50 border-border/50 focus:border-emerald-500"
+                          value={email}
+                          onChange={(e) => { setEmail(e.target.value); setError('') }}
+                          onKeyDown={(e) => handleKeyDown(e, () => {
+                            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+                            if (emailRegex.test(email)) goToStep('register-password')
+                            else setError('صيغة البريد الإلكتروني غير صحيحة')
+                          })}
+                          className="pr-10 h-12 text-base rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 bg-gray-50/50 hover:bg-white transition-colors"
                           dir="ltr"
+                          autoFocus
                         />
                       </div>
                     </div>
 
+                    <Button
+                      onClick={() => {
+                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+                        if (emailRegex.test(email)) goToStep('register-password')
+                        else setError('صيغة البريد الإلكتروني غير صحيحة')
+                      }}
+                      className="w-full h-12 text-base font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 transition-all shadow-md shadow-blue-200 hover:shadow-lg hover:shadow-blue-300"
+                      size="lg"
+                    >
+                      التالي
+                      <ArrowLeft className="w-4 h-4 mr-2" />
+                    </Button>
+
+                    <button
+                      onClick={() => goToStep('register-name')}
+                      className="w-full text-sm text-gray-500 hover:text-gray-700 py-2"
+                    >
+                      <ArrowRight className="w-4 h-4 inline ml-1" />
+                      رجوع
+                    </button>
+                  </div>
+                )}
+
+                {/* Step: Register - Password */}
+                {step === 'register-password' && (
+                  <div className="space-y-4">
                     <div>
-                      <Label className="text-sm font-medium mb-1.5 block">كلمة المرور</Label>
+                      <Label className="text-sm font-medium text-gray-700 mb-2 block">كلمة المرور</Label>
                       <div className="relative">
-                        <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <Input
                           type={showPassword ? 'text' : 'password'}
                           placeholder="8 أحرف على الأقل"
-                          value={regPassword}
-                          onChange={(e) => setRegPassword(e.target.value)}
-                          className="pr-10 pl-10 bg-background/50 border-border/50 focus:border-emerald-500"
-                          dir="ltr"
+                          value={password}
+                          onChange={(e) => { setPassword(e.target.value); setError('') }}
+                          className="pr-10 pl-10 h-12 text-base rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 bg-gray-50/50 hover:bg-white transition-colors"
+                          autoFocus
                         />
                         <button
                           type="button"
                           onClick={() => setShowPassword(!showPassword)}
-                          className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                          className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                         >
-                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                         </button>
                       </div>
-                      {regPassword && (
+                      
+                      {/* Password Strength Indicator */}
+                      {password && (
                         <div className="mt-2">
-                          <div className="flex gap-1">
-                            {[1, 2, 3, 4, 5].map(i => (
+                          <div className="flex gap-1 mb-1">
+                            {[1, 2, 3, 4, 5].map((level) => (
                               <div
-                                key={i}
-                                className={`h-1.5 flex-1 rounded-full transition-colors ${
-                                  getPasswordStrength(regPassword) >= i ? strengthColors[getPasswordStrength(regPassword)] : 'bg-border'
+                                key={level}
+                                className={`h-1.5 flex-1 rounded-full transition-all duration-300 ${
+                                  level <= passwordStrength ? strengthColors[passwordStrength] : 'bg-gray-200'
                                 }`}
                               />
                             ))}
                           </div>
-                          <p className={`text-[10px] mt-1 ${getPasswordStrength(regPassword) >= 4 ? 'text-emerald-500' : getPasswordStrength(regPassword) >= 3 ? 'text-amber-500' : 'text-red-500'}`}>
-                            {strengthLabels[getPasswordStrength(regPassword)]}
+                          <p className={`text-xs ${
+                            passwordStrength <= 1 ? 'text-red-500' :
+                            passwordStrength <= 2 ? 'text-orange-500' :
+                            passwordStrength <= 3 ? 'text-yellow-600' :
+                            passwordStrength <= 4 ? 'text-lime-600' :
+                            'text-green-600'
+                          }`}>
+                            {strengthLabels[passwordStrength]}
                           </p>
                         </div>
                       )}
                     </div>
 
                     <div>
-                      <Label className="text-sm font-medium mb-1.5 block">تأكيد كلمة المرور</Label>
+                      <Label className="text-sm font-medium text-gray-700 mb-2 block">تأكيد كلمة المرور</Label>
                       <div className="relative">
-                        <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                        <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                         <Input
-                          type="password"
-                          placeholder="أعد كتابة كلمة المرور"
-                          value={regConfirm}
-                          onChange={(e) => setRegConfirm(e.target.value)}
-                          onKeyDown={(e) => e.key === 'Enter' && handleRegister()}
-                          className="pr-10 bg-background/50 border-border/50 focus:border-emerald-500"
-                          dir="ltr"
+                          type={showPassword ? 'text' : 'password'}
+                          placeholder="أعد إدخال كلمة المرور"
+                          value={confirmPassword}
+                          onChange={(e) => { setConfirmPassword(e.target.value); setError('') }}
+                          onKeyDown={(e) => handleKeyDown(e, handleRegister)}
+                          className="pr-10 h-12 text-base rounded-xl border-gray-200 focus:border-blue-500 focus:ring-blue-500/20 bg-gray-50/50 hover:bg-white transition-colors"
                         />
-                        {regConfirm && regPassword === regConfirm && (
-                          <CheckCircle className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-emerald-500" />
+                        {confirmPassword && (
+                          <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                            {password === confirmPassword ? (
+                              <Check className="w-5 h-5 text-green-500" />
+                            ) : (
+                              <AlertCircle className="w-5 h-5 text-red-400" />
+                            )}
+                          </div>
                         )}
                       </div>
                     </div>
@@ -615,76 +621,57 @@ export function AuthPage() {
                     <Button
                       onClick={handleRegister}
                       disabled={loading}
-                      className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold rounded-xl shadow-lg shadow-emerald-500/25"
+                      className="w-full h-12 text-base font-semibold rounded-xl bg-blue-600 hover:bg-blue-700 transition-all shadow-md shadow-blue-200 hover:shadow-lg hover:shadow-blue-300"
+                      size="lg"
                     >
                       {loading ? (
-                        <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                          className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
-                        />
+                        <Loader2 className="w-5 h-5 animate-spin" />
                       ) : (
                         'إنشاء الحساب'
                       )}
                     </Button>
 
-                    {/* Divider */}
-                    <div className="relative">
-                      <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-border/30" />
-                      </div>
-                      <div className="relative flex justify-center text-xs">
-                        <span className="px-2 bg-card text-muted-foreground">أو</span>
-                      </div>
-                    </div>
-
-                    {/* Google Sign Up - Only shown when configured */}
-                    {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
-                      <Button
-                        onClick={handleGoogleLogin}
-                        disabled={googleLoading}
-                        variant="outline"
-                        className="w-full py-3 bg-white hover:bg-gray-50 border-gray-200 rounded-xl font-bold flex items-center justify-center gap-3"
-                      >
-                        {googleLoading ? (
-                          <motion.div
-                            animate={{ rotate: 360 }}
-                            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                            className="w-5 h-5 border-2 border-gray-300 border-t-foreground rounded-full"
-                          />
-                        ) : (
-                          <>
-                            <GoogleIcon />
-                            <span>التسجيل بـ Google</span>
-                          </>
-                        )}
-                      </Button>
-                    )}
-
-                    <p className="text-center text-sm text-muted-foreground">
-                      لديك حساب؟{' '}
-                      <button onClick={() => { setMode('login'); setError('') }} className="text-emerald-600 font-bold hover:underline">
-                        سجّل دخول
-                      </button>
-                    </p>
+                    <button
+                      onClick={() => goToStep('register-email')}
+                      className="w-full text-sm text-gray-500 hover:text-gray-700 py-2"
+                    >
+                      <ArrowRight className="w-4 h-4 inline ml-1" />
+                      رجوع
+                    </button>
                   </div>
-                </motion.div>
-              )}
+                )}
+              </motion.div>
             </AnimatePresence>
           </div>
 
-          {/* Back button */}
-          <motion.button
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            onClick={() => setCurrentPage('landing')}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-emerald-500 mt-6 mx-auto transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            العودة للصفحة الرئيسية
-          </motion.button>
+          {/* Card Footer - Security badge */}
+          <div className="px-8 py-4 bg-gray-50/50 border-t border-gray-100">
+            <div className="flex items-center justify-center gap-2 text-xs text-gray-400">
+              <Shield className="w-3.5 h-3.5" />
+              <span>اتصال آمن ومشفّر</span>
+              <span>•</span>
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>جمعياتبرو</span>
+            </div>
+          </div>
         </motion.div>
-      </div>
+
+        {/* Back to home link */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.5 }}
+          className="text-center mt-6"
+        >
+          <button
+            onClick={() => setCurrentPage('landing')}
+            className="text-sm text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <ArrowRight className="w-4 h-4 inline ml-1" />
+            العودة إلى الصفحة الرئيسية
+          </button>
+        </motion.div>
+      </motion.div>
     </div>
   )
 }
