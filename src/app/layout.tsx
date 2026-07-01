@@ -29,11 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="ar" dir="rtl" suppressHydrationWarning className="dark">
-      <head>
-        {/* Google Identity Services */}
-        <script src="https://accounts.google.com/gsi/client" async defer></script>
-      </head>
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
       >

@@ -5,7 +5,8 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import { Shield, Users, Building2, Calendar, BarChart3, ChevronDown, Sparkles, Lock, Eye, Fingerprint, 
   Phone, Mail, MapPin, Send, ArrowLeft, ChevronRight, Globe, Star, CheckCircle2, 
   Monitor, Smartphone, Database, Cloud, Cpu, Headphones, Clock, Award, Zap,
-  Facebook, Twitter, Instagram, Youtube, MessageCircle, Play, ArrowUp
+  Facebook, Twitter, Instagram, Youtube, MessageCircle, Play, ArrowUp,
+  Heart, Target, Lightbulb, Rocket, TrendingUp, Settings, BookOpen, Layers
 } from 'lucide-react'
 import { useAppStore } from '@/store/app-store'
 import { AnimatedHeroIllustration, AnimatedSecurityIllustration, AnimatedDashboardIllustration, AnimatedMembersIllustration, AnimatedEventsIllustration, AnimatedFinanceIllustration } from './animated-illustrations'
@@ -16,7 +17,7 @@ function seededRandom(seed: number) {
   return x - Math.floor(x)
 }
 
-// Particle component for 3D background
+// Particle component for light background
 function Particles() {
   const [mounted, setMounted] = useState(false)
 
@@ -25,15 +26,16 @@ function Particles() {
   }, [])
 
   const particles = useState(() =>
-    Array.from({ length: 50 }, (_, i) => ({
+    Array.from({ length: 30 }, (_, i) => ({
       id: i,
       x: Math.round(seededRandom(i * 7 + 1) * 100 * 10000) / 10000,
       y: Math.round(seededRandom(i * 13 + 2) * 100 * 10000) / 10000,
-      size: Math.round((seededRandom(i * 17 + 3) * 4 + 1) * 10000) / 10000,
+      size: Math.round((seededRandom(i * 17 + 3) * 6 + 2) * 10000) / 10000,
       duration: seededRandom(i * 23 + 4) * 20 + 10,
       delay: seededRandom(i * 31 + 5) * 5,
       animX1: Math.round((seededRandom(i * 37 + 6) * 50 - 25) * 10000) / 10000,
       animX2: Math.round((seededRandom(i * 41 + 7) * 100 - 50) * 10000) / 10000,
+      color: ['rgba(16,185,129,0.12)', 'rgba(6,182,212,0.1)', 'rgba(139,92,246,0.08)', 'rgba(245,158,11,0.08)'][i % 4],
     }))
   )[0]
 
@@ -44,12 +46,12 @@ function Particles() {
       {particles.map(p => (
         <motion.div
           key={p.id}
-          className="absolute rounded-full bg-emerald-400/20"
-          style={{ left: `${p.x}%`, top: `${p.y}%`, width: p.size, height: p.size }}
+          className="absolute rounded-full"
+          style={{ left: `${p.x}%`, top: `${p.y}%`, width: p.size, height: p.size, background: p.color }}
           animate={{
             y: [0, -200, -400],
             x: [0, p.animX1, p.animX2],
-            opacity: [0, 0.6, 0],
+            opacity: [0, 0.8, 0],
             scale: [0.5, 1, 0.5],
           }}
           transition={{
@@ -82,7 +84,7 @@ function FloatingCard({ icon: Icon, title, desc, delay, color, illustration }: {
     >
       <div className={`glass-card rounded-2xl p-6 cursor-pointer preserve-3d card-3d group h-full`}>
         {illustration && (
-          <div className="mb-3 flex justify-center overflow-hidden rounded-xl bg-background/20 py-2">
+          <div className="mb-3 flex justify-center overflow-hidden rounded-xl bg-emerald-50/50 py-2">
             {illustration}
           </div>
         )}
@@ -126,10 +128,10 @@ function StatsCounter() {
   }, [])
 
   const stats = [
-    { label: 'جمعية مسجلة', value: counts.associations.toLocaleString('ar-SA'), icon: Building2, color: 'text-emerald-500' },
-    { label: 'عضو فعّال', value: counts.members.toLocaleString('ar-SA'), icon: Users, color: 'text-cyan-500' },
-    { label: 'فعالية منفذة', value: counts.events.toLocaleString('ar-SA'), icon: Calendar, color: 'text-amber-500' },
-    { label: 'نسبة الأمان', value: `${counts.security}%`, icon: Shield, color: 'text-teal-500' },
+    { label: 'جمعية مسجلة', value: counts.associations.toLocaleString('ar-SA'), icon: Building2, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+    { label: 'عضو فعّال', value: counts.members.toLocaleString('ar-SA'), icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
+    { label: 'فعالية منفذة', value: counts.events.toLocaleString('ar-SA'), icon: Calendar, color: 'text-amber-600', bg: 'bg-amber-50' },
+    { label: 'نسبة الأمان', value: `${counts.security}%`, icon: Shield, color: 'text-violet-600', bg: 'bg-violet-50' },
   ]
 
   return (
@@ -140,11 +142,11 @@ function StatsCounter() {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.8 + i * 0.1 }}
-          className="glass-card rounded-xl p-4 md:p-5 text-center"
+          className={`${stat.bg} rounded-2xl p-5 text-center border border-white/60 shadow-sm`}
         >
-          <stat.icon className={`w-6 h-6 mx-auto mb-2 ${stat.color}`} />
+          <stat.icon className={`w-7 h-7 mx-auto mb-2 ${stat.color}`} />
           <div className={`text-2xl md:text-3xl font-bold ${stat.color} animate-count-up`}>{stat.value}</div>
-          <div className="text-xs md:text-sm text-muted-foreground mt-1">{stat.label}</div>
+          <div className="text-xs md:text-sm text-muted-foreground mt-1 font-medium">{stat.label}</div>
         </motion.div>
       ))}
     </div>
@@ -152,7 +154,7 @@ function StatsCounter() {
 }
 
 // ============================================
-// HERO SLIDER (Like Gama Systems)
+// HERO SLIDER (Light Theme)
 // ============================================
 function HeroSlider() {
   const [current, setCurrent] = useState(0)
@@ -206,7 +208,7 @@ function HeroSlider() {
             exit={{ opacity: 0, y: -30 }}
             transition={{ duration: 0.5 }}
           >
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card text-emerald-400 text-sm font-medium mb-6">
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/60 text-emerald-700 text-sm font-medium mb-6">
               <Sparkles className="w-4 h-4" />
               {slides[current].badge}
             </span>
@@ -224,7 +226,7 @@ function HeroSlider() {
           >
             <span className="text-foreground">{slides[current].title1}</span>
             <br />
-            <span className="bg-gradient-to-l from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
+            <span className="gradient-text">
               {slides[current].title2}
             </span>
           </motion.h1>
@@ -253,10 +255,10 @@ function HeroSlider() {
             className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
           >
             <motion.button
-              whileHover={{ scale: 1.05, boxShadow: '0 20px 40px -12px rgba(16,185,129,0.4)' }}
+              whileHover={{ scale: 1.05, boxShadow: '0 20px 40px -12px rgba(16,185,129,0.3)' }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setCurrentPage('register')}
-              className="px-8 py-4 text-base font-bold rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-xl shadow-emerald-500/25 transition-all flex items-center justify-center gap-2"
+              className="px-8 py-4 text-base font-bold rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-xl shadow-emerald-500/20 transition-all flex items-center justify-center gap-2"
             >
               {slides[current].cta}
               <ArrowLeft className="w-5 h-5" />
@@ -265,7 +267,7 @@ function HeroSlider() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => setCurrentPage('login')}
-              className="px-8 py-4 text-base font-bold rounded-2xl glass-card text-foreground hover:text-emerald-500 transition-colors"
+              className="px-8 py-4 text-base font-bold rounded-2xl bg-white border-2 border-emerald-200 text-foreground hover:border-emerald-400 hover:text-emerald-600 transition-colors shadow-sm"
             >
               {slides[current].ctaSecondary}
             </motion.button>
@@ -278,8 +280,8 @@ function HeroSlider() {
             <button
               key={i}
               onClick={() => setCurrent(i)}
-              className={`h-2 rounded-full transition-all duration-500 ${
-                i === current ? 'w-8 bg-emerald-500' : 'w-2 bg-emerald-500/30 hover:bg-emerald-500/50'
+              className={`h-2.5 rounded-full transition-all duration-500 ${
+                i === current ? 'w-10 bg-emerald-500' : 'w-2.5 bg-emerald-300 hover:bg-emerald-400'
               }`}
             />
           ))}
@@ -310,7 +312,218 @@ function HeroSlider() {
 }
 
 // ============================================
-// PRODUCTS/SERVICES SECTION (Like Gama Systems)
+// ABOUT PLATFORM SECTION
+// ============================================
+function AboutSection() {
+  const { setCurrentPage } = useAppStore()
+  
+  const highlights = [
+    {
+      icon: Rocket,
+      title: 'بداية سهلة وسريعة',
+      desc: 'ابدأ باستخدام المنصة في دقائق معدودة دون الحاجة لتدريب معقد. واجهة بسيطة وبديهية تناسب جميع المستويات التقنية.',
+      color: 'from-emerald-500 to-teal-500',
+      bg: 'bg-emerald-50',
+    },
+    {
+      icon: Shield,
+      title: 'أمان بلا تنازلات',
+      desc: 'نظام حماية متعدد الطبقات مع تشفير AES-256 وتحقق ثنائي ومراقبة ذكية على مدار الساعة لحماية بياناتك الحساسة.',
+      color: 'from-blue-500 to-indigo-500',
+      bg: 'bg-blue-50',
+    },
+    {
+      icon: TrendingUp,
+      title: 'تقارير ذكية وتحليلات',
+      desc: 'لوحات تحكم تفاعلية وتقارير مالية شاملة مع رسوم بيانية حية وتحليلات ذكية تدعم قراراتك الإدارية.',
+      color: 'from-violet-500 to-purple-500',
+      bg: 'bg-violet-50',
+    },
+    {
+      icon: Users,
+      title: 'إدارة أعضاء متقدمة',
+      desc: 'نظام شامل لإدارة الأعضاء يتضمن تحديد الأدوار والصلاحيات وتتبع الحضور والمشاركة وتواصل فعّال.',
+      color: 'from-amber-500 to-orange-500',
+      bg: 'bg-amber-50',
+    },
+  ]
+
+  return (
+    <section className="relative z-10 py-20 md:py-28" id="about">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Section Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-16"
+        >
+          <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200/50 text-emerald-700 text-sm font-bold mb-6">
+            <Lightbulb className="w-4 h-4" />
+            عن منصة جمعياتبرو
+          </span>
+          <h2 className="text-3xl md:text-5xl font-black text-foreground mb-6">
+            منصة واحدة لـ<span className="gradient-text">كل احتياجاتك</span>
+          </h2>
+          <p className="text-muted-foreground text-lg max-w-3xl mx-auto leading-relaxed">
+            جمعياتبرو هي منصة سحابية متكاملة صُممت خصيصاً لإدارة الجمعيات والمؤسسات غير الربحية في المملكة العربية السعودية. نوفر لك أدوات احترافية تبسّط العمليات اليومية وتعزز الإنتاجية مع ضمان أعلى معايير الأمان والجودة.
+          </p>
+        </motion.div>
+
+        {/* Main Content Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-16">
+          {/* Left: Animated Illustration */}
+          <motion.div
+            initial={{ opacity: 0, x: 40 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="relative"
+          >
+            <div className="relative bg-gradient-to-br from-emerald-50 via-white to-blue-50 rounded-3xl p-8 border border-emerald-100/50 shadow-lg shadow-emerald-100/30">
+              {/* Animated blobs */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-200/30 rounded-full blur-2xl animate-blob-1" />
+              <div className="absolute bottom-0 left-0 w-40 h-40 bg-blue-200/30 rounded-full blur-2xl animate-blob-2" />
+              
+              {/* Central animated graphic */}
+              <div className="relative z-10 flex items-center justify-center py-8">
+                <div className="relative w-64 h-64">
+                  {/* Rotating ring */}
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+                    className="absolute inset-0"
+                  >
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-lg shadow-emerald-200 flex items-center justify-center">
+                      <Building2 className="w-7 h-7 text-white" />
+                    </div>
+                    <div className="absolute bottom-0 right-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 shadow-lg shadow-blue-200 flex items-center justify-center">
+                      <Users className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="absolute bottom-0 left-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 shadow-lg shadow-amber-200 flex items-center justify-center">
+                      <Calendar className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="absolute top-1/2 right-0 -translate-y-1/2 w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-400 to-violet-600 shadow-lg shadow-violet-200 flex items-center justify-center">
+                      <BarChart3 className="w-6 h-6 text-white" />
+                    </div>
+                    <div className="absolute top-1/2 left-0 -translate-y-1/2 w-12 h-12 rounded-2xl bg-gradient-to-br from-rose-400 to-rose-600 shadow-lg shadow-rose-200 flex items-center justify-center">
+                      <Shield className="w-6 h-6 text-white" />
+                    </div>
+                  </motion.div>
+                  {/* Center pulsing icon */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <motion.div
+                      animate={{ scale: [1, 1.08, 1] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                      className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-2xl shadow-emerald-300/50"
+                    >
+                      <Sparkles className="w-10 h-10 text-white" />
+                    </motion.div>
+                  </div>
+                  {/* Decorative circles */}
+                  <svg className="absolute inset-0 w-full h-full" viewBox="0 0 256 256" fill="none">
+                    <circle cx="128" cy="128" r="115" stroke="rgba(16,185,129,0.15)" strokeWidth="1.5" strokeDasharray="8 12" />
+                    <circle cx="128" cy="128" r="90" stroke="rgba(6,182,212,0.1)" strokeWidth="1" strokeDasharray="4 8" />
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Right: Feature List */}
+          <motion.div
+            initial={{ opacity: 0, x: -40 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="flex flex-col justify-center"
+          >
+            <div className="space-y-5">
+              {highlights.map((item, i) => (
+                <motion.div
+                  key={item.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.1 * i }}
+                  whileHover={{ x: -8, scale: 1.01 }}
+                  className={`${item.bg} rounded-2xl p-5 border border-white/60 shadow-sm flex items-start gap-4 group cursor-default`}
+                >
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform duration-300`}>
+                    <item.icon className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-foreground text-base mb-1">{item.title}</h4>
+                    <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+            
+            <motion.div
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.5 }}
+              className="mt-8 flex gap-3"
+            >
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setCurrentPage('register')}
+                className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-sm shadow-lg shadow-emerald-200 flex items-center gap-2"
+              >
+                ابدأ مجاناً
+                <ArrowLeft className="w-4 h-4" />
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="px-6 py-3 rounded-xl bg-white border-2 border-emerald-200 text-emerald-700 font-bold text-sm hover:border-emerald-400 transition-colors shadow-sm"
+                onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+              >
+                تواصل معنا
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        </div>
+
+        {/* Animated Feature Cards Row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+          {[
+            { icon: Layers, title: 'نظام متعدد الطبقات', desc: 'بنية تحتية قوية تدعم النمو', color: 'from-emerald-500 to-teal-500' },
+            { icon: Target, title: 'دقة في التنفيذ', desc: 'أدوات مصممة بعناية فائقة', color: 'from-blue-500 to-indigo-500' },
+            { icon: Heart, title: 'تصميم يراعي المستخدم', desc: 'تجربة استخدام سلسة وممتعة', color: 'from-rose-500 to-pink-500' },
+            { icon: BookOpen, title: 'دعم وتوثيق شامل', desc: 'فريق دعم ومستندات مفصلة', color: 'from-amber-500 to-orange-500' },
+          ].map((item, i) => (
+            <motion.div
+              key={item.title}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              whileHover={{ y: -5, scale: 1.03 }}
+              className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm hover:shadow-md transition-shadow text-center group"
+            >
+              <motion.div
+                animate={{ y: [0, -5, 0] }}
+                transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut', delay: i * 0.5 }}
+                className={`w-14 h-14 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center mx-auto mb-3 shadow-md group-hover:scale-110 transition-transform`}
+              >
+                <item.icon className="w-7 h-7 text-white" />
+              </motion.div>
+              <h4 className="font-bold text-foreground text-sm mb-1">{item.title}</h4>
+              <p className="text-muted-foreground text-xs">{item.desc}</p>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// ============================================
+// PRODUCTS/SERVICES SECTION (Light Theme)
 // ============================================
 function ProductsSection() {
   const [activeTab, setActiveTab] = useState('management')
@@ -354,12 +567,12 @@ function ProductsSection() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card text-cyan-400 text-sm font-medium mb-4">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-200/50 text-blue-700 text-sm font-medium mb-4">
             <Sparkles className="w-4 h-4" />
             حلولنا المتكاملة
           </span>
           <h2 className="text-3xl md:text-4xl font-black text-foreground mb-4">
-            منتجات وخدمات <span className="text-emerald-500">احترافية</span>
+            منتجات وخدمات <span className="gradient-text">احترافية</span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             نقدم مجموعة شاملة من الحلول التقنية المتكاملة لتلبية احتياجات مؤسستك
@@ -376,8 +589,8 @@ function ProductsSection() {
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 ${
                 activeTab === tab.id
-                  ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25'
-                  : 'glass-card text-muted-foreground hover:text-foreground'
+                  ? 'bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-200'
+                  : 'bg-white border border-gray-200 text-muted-foreground hover:border-emerald-300 hover:text-emerald-600 shadow-sm'
               }`}
             >
               <tab.icon className="w-4 h-4" />
@@ -405,7 +618,7 @@ function ProductsSection() {
                 whileHover={{ y: -8, scale: 1.02 }}
                 className="perspective-container"
               >
-                <div className="glass-card rounded-2xl overflow-hidden card-3d group h-full">
+                <div className="bg-white rounded-2xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl transition-shadow card-3d group h-full">
                   {/* Product Image/Animation Header */}
                   <div className={`h-48 bg-gradient-to-br ${product.color} relative overflow-hidden`}>
                     {/* Animated mesh background */}
@@ -453,7 +666,7 @@ function ProductsSection() {
                         </div>
                       ))}
                     </div>
-                    <button className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-sm hover:shadow-lg hover:shadow-emerald-500/25 transition-all flex items-center justify-center gap-2">
+                    <button className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-sm hover:shadow-lg hover:shadow-emerald-200 transition-all flex items-center justify-center gap-2">
                       اطلب نسخة تجريبية
                       <ArrowLeft className="w-4 h-4" />
                     </button>
@@ -469,20 +682,20 @@ function ProductsSection() {
 }
 
 // ============================================
-// WHY US / ADVANTAGES SECTION (Like Gama)
+// WHY US / ADVANTAGES SECTION (Light)
 // ============================================
 function WhyUsSection() {
   const advantages = [
-    { icon: Shield, title: 'أمان متقدم', desc: 'تشفير AES-256 مع حماية متعددة الطبقات ومراقبة 24/7', color: 'text-emerald-500 bg-emerald-500/10' },
-    { icon: Headphones, title: 'دعم فني متواصل', desc: 'فريق دعم فني متخصص جاهز لمساعدتك على مدار الساعة', color: 'text-cyan-500 bg-cyan-500/10' },
-    { icon: Award, title: 'جودة معتمدة', desc: 'برامج معتمدة من هيئة الزكاة والضريبة والجمارك السعودية', color: 'text-amber-500 bg-amber-500/10' },
-    { icon: Zap, title: 'أداء فائق', desc: 'تقنيات حديثة تضمن سرعة وأداء ممتاز في جميع الأوقات', color: 'text-violet-500 bg-violet-500/10' },
-    { icon: Cloud, title: 'سحابي 100%', desc: 'اعمل من أي مكان وأي جهاز مع مزامنة تلقائية للبيانات', color: 'text-rose-500 bg-rose-500/10' },
-    { icon: Clock, title: 'تحديثات مستمرة', desc: 'تحديثات دورية مجانية مع ميزات جديدة باستمرار', color: 'text-teal-500 bg-teal-500/10' },
+    { icon: Shield, title: 'أمان متقدم', desc: 'تشفير AES-256 مع حماية متعددة الطبقات ومراقبة 24/7', color: 'text-emerald-600 bg-emerald-50 border-emerald-200/50' },
+    { icon: Headphones, title: 'دعم فني متواصل', desc: 'فريق دعم فني متخصص جاهز لمساعدتك على مدار الساعة', color: 'text-blue-600 bg-blue-50 border-blue-200/50' },
+    { icon: Award, title: 'جودة معتمدة', desc: 'برامج معتمدة من هيئة الزكاة والضريبة والجمارك السعودية', color: 'text-amber-600 bg-amber-50 border-amber-200/50' },
+    { icon: Zap, title: 'أداء فائق', desc: 'تقنيات حديثة تضمن سرعة وأداء ممتاز في جميع الأوقات', color: 'text-violet-600 bg-violet-50 border-violet-200/50' },
+    { icon: Cloud, title: 'سحابي 100%', desc: 'اعمل من أي مكان وأي جهاز مع مزامنة تلقائية للبيانات', color: 'text-cyan-600 bg-cyan-50 border-cyan-200/50' },
+    { icon: Clock, title: 'تحديثات مستمرة', desc: 'تحديثات دورية مجانية مع ميزات جديدة باستمرار', color: 'text-rose-600 bg-rose-50 border-rose-200/50' },
   ]
 
   return (
-    <section className="relative z-10 py-16 md:py-24">
+    <section className="relative z-10 py-16 md:py-24 bg-gradient-to-b from-emerald-50/30 to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
           {/* Animated illustration */}
@@ -499,14 +712,14 @@ function WhyUsSection() {
                 transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
                 className="absolute inset-0"
               >
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                  <Shield className="w-7 h-7 text-emerald-500" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center shadow-sm">
+                  <Shield className="w-7 h-7 text-emerald-600" />
                 </div>
-                <div className="absolute bottom-0 left-0 w-14 h-14 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
-                  <Globe className="w-6 h-6 text-cyan-500" />
+                <div className="absolute bottom-0 left-0 w-14 h-14 rounded-2xl bg-blue-50 border border-blue-200 flex items-center justify-center shadow-sm">
+                  <Globe className="w-6 h-6 text-blue-600" />
                 </div>
-                <div className="absolute bottom-0 right-0 w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-                  <Award className="w-6 h-6 text-amber-500" />
+                <div className="absolute bottom-0 right-0 w-14 h-14 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center shadow-sm">
+                  <Award className="w-6 h-6 text-amber-600" />
                 </div>
               </motion.div>
               {/* Center icon */}
@@ -514,15 +727,15 @@ function WhyUsSection() {
                 <motion.div
                   animate={{ scale: [1, 1.05, 1] }}
                   transition={{ duration: 3, repeat: Infinity }}
-                  className="w-24 h-24 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-2xl shadow-emerald-500/30"
+                  className="w-24 h-24 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-2xl shadow-emerald-200/50"
                 >
                   <Building2 className="w-12 h-12 text-white" />
                 </motion.div>
               </div>
               {/* Decorative ring */}
               <svg className="absolute inset-0 w-full h-full" viewBox="0 0 320 320" fill="none">
-                <circle cx="160" cy="160" r="140" stroke="rgba(16,185,129,0.1)" strokeWidth="1" strokeDasharray="8 12" />
-                <circle cx="160" cy="160" r="110" stroke="rgba(6,182,212,0.1)" strokeWidth="1" strokeDasharray="4 8" />
+                <circle cx="160" cy="160" r="140" stroke="rgba(16,185,129,0.12)" strokeWidth="1.5" strokeDasharray="8 12" />
+                <circle cx="160" cy="160" r="110" stroke="rgba(6,182,212,0.08)" strokeWidth="1" strokeDasharray="4 8" />
               </svg>
             </div>
           </motion.div>
@@ -534,14 +747,14 @@ function WhyUsSection() {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-sm font-medium mb-4">
+              <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/50 text-emerald-700 text-sm font-medium mb-4">
                 <Star className="w-4 h-4" />
                 لماذا نحن؟
               </span>
               <h2 className="text-3xl md:text-4xl font-black text-foreground mb-6">
-                مميزات تجعلنا <span className="text-emerald-500">الخيار الأول</span>
+                مميزات تجعلنا <span className="gradient-text">الخيار الأول</span>
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {advantages.map((adv, i) => (
                   <motion.div
                     key={adv.title}
@@ -549,9 +762,10 @@ function WhyUsSection() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: i * 0.1 }}
-                    className="flex items-start gap-3 p-3 rounded-xl hover:bg-emerald-500/5 transition-colors"
+                    whileHover={{ x: -5 }}
+                    className={`flex items-start gap-3 p-3 rounded-xl border ${adv.color} transition-all cursor-default`}
                   >
-                    <div className={`w-10 h-10 rounded-xl ${adv.color} flex items-center justify-center flex-shrink-0`}>
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0`}>
                       <adv.icon className="w-5 h-5" />
                     </div>
                     <div>
@@ -570,7 +784,7 @@ function WhyUsSection() {
 }
 
 // ============================================
-// PARTNERS/CLIENTS CAROUSEL
+// PARTNERS/CLIENTS CAROUSEL (Light)
 // ============================================
 function PartnersCarousel() {
   const partners = [
@@ -581,7 +795,7 @@ function PartnersCarousel() {
   ]
 
   return (
-    <section className="relative z-10 py-12 border-y border-border/30">
+    <section className="relative z-10 py-12 bg-gray-50/50 border-y border-gray-100">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -592,15 +806,15 @@ function PartnersCarousel() {
           <p className="text-sm text-muted-foreground font-medium">يثق بنا أكثر من 1,250 مؤسسة وجمعية في المملكة</p>
         </motion.div>
         <div className="overflow-hidden relative">
-          <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-l from-transparent to-background z-10" />
-          <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-r from-transparent to-background z-10" />
+          <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-l from-transparent to-gray-50/80 z-10" />
+          <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-r from-transparent to-gray-50/80 z-10" />
           <motion.div
             animate={{ x: [0, -1200] }}
             transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
             className="flex gap-8 items-center"
           >
             {[...partners, ...partners].map((partner, i) => (
-              <div key={i} className="flex-shrink-0 glass-card rounded-xl px-6 py-3 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors cursor-default">
+              <div key={i} className="flex-shrink-0 bg-white rounded-xl px-6 py-3 text-sm font-medium text-muted-foreground hover:text-emerald-600 hover:shadow-md transition-all cursor-default border border-gray-100 shadow-sm">
                 {partner}
               </div>
             ))}
@@ -612,7 +826,7 @@ function PartnersCarousel() {
 }
 
 // ============================================
-// CONTACT SECTION (Like Gama Systems)
+// CONTACT SECTION (Light Theme)
 // ============================================
 function ContactSection() {
   const [formData, setFormData] = useState({ name: '', email: '', phone: '', subject: '', message: '' })
@@ -631,14 +845,14 @@ function ContactSection() {
   }, [])
 
   const contactInfo = [
-    { icon: MapPin, title: 'العنوان', value: 'جدة - حي الفيحاء - مركز العريفي التجاري', color: 'text-emerald-500 bg-emerald-500/10' },
-    { icon: Phone, title: 'الهاتف', value: '+966 56 746 1842', color: 'text-cyan-500 bg-cyan-500/10' },
-    { icon: Mail, title: 'البريد الإلكتروني', value: 'info@jamiat-pro.com', color: 'text-amber-500 bg-amber-500/10' },
-    { icon: Clock, title: 'ساعات العمل', value: 'الأحد - الخميس: 8 صباحاً - 5 مساءً', color: 'text-violet-500 bg-violet-500/10' },
+    { icon: MapPin, title: 'العنوان', value: 'جدة - حي الفيحاء - مركز العريفي التجاري', color: 'text-emerald-600 bg-emerald-50' },
+    { icon: Phone, title: 'الهاتف', value: '+966 56 746 1842', color: 'text-blue-600 bg-blue-50' },
+    { icon: Mail, title: 'البريد الإلكتروني', value: 'info@jamiat-pro.com', color: 'text-amber-600 bg-amber-50' },
+    { icon: Clock, title: 'ساعات العمل', value: 'الأحد - الخميس: 8 صباحاً - 5 مساءً', color: 'text-violet-600 bg-violet-50' },
   ]
 
   return (
-    <section className="relative z-10 py-16 md:py-24" id="contact">
+    <section className="relative z-10 py-16 md:py-24 bg-gradient-to-b from-white to-emerald-50/20" id="contact">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -646,12 +860,12 @@ function ContactSection() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card text-amber-400 text-sm font-medium mb-4">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-50 border border-amber-200/50 text-amber-700 text-sm font-medium mb-4">
             <Phone className="w-4 h-4" />
             تواصل معنا
           </span>
           <h2 className="text-3xl md:text-4xl font-black text-foreground mb-4">
-            نحن هنا <span className="text-emerald-500">لمساعدتك</span>
+            نحن هنا <span className="gradient-text">لمساعدتك</span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             يرجى الاتصال بنا باستخدام أحد البيانات التالية أو أرسل رسالتك عبر النموذج
@@ -666,7 +880,7 @@ function ContactSection() {
             viewport={{ once: true }}
             className="lg:col-span-3"
           >
-            <div className="glass-card rounded-2xl p-6 md:p-8">
+            <div className="bg-white rounded-2xl p-6 md:p-8 border border-gray-100 shadow-sm">
               <h3 className="text-xl font-bold text-foreground mb-6">أرسل لنا رسالة</h3>
               <form onSubmit={handleSubmit} className="space-y-4" dir="rtl">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -677,7 +891,7 @@ function ContactSection() {
                       value={formData.name}
                       onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                       placeholder="أدخل اسمك"
-                      className="w-full px-4 py-2.5 rounded-xl bg-background/50 border border-border/50 text-foreground text-sm focus:border-emerald-500/50 focus:outline-none transition-colors"
+                      className="w-full px-4 py-2.5 rounded-xl bg-gray-50/80 border border-gray-200 text-foreground text-sm focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 focus:outline-none transition-all"
                       required
                     />
                   </div>
@@ -688,7 +902,7 @@ function ContactSection() {
                       value={formData.email}
                       onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                       placeholder="example@email.com"
-                      className="w-full px-4 py-2.5 rounded-xl bg-background/50 border border-border/50 text-foreground text-sm focus:border-emerald-500/50 focus:outline-none transition-colors"
+                      className="w-full px-4 py-2.5 rounded-xl bg-gray-50/80 border border-gray-200 text-foreground text-sm focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 focus:outline-none transition-all"
                       dir="ltr"
                       required
                     />
@@ -702,7 +916,7 @@ function ContactSection() {
                       value={formData.phone}
                       onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                       placeholder="+966 5X XXX XXXX"
-                      className="w-full px-4 py-2.5 rounded-xl bg-background/50 border border-border/50 text-foreground text-sm focus:border-emerald-500/50 focus:outline-none transition-colors"
+                      className="w-full px-4 py-2.5 rounded-xl bg-gray-50/80 border border-gray-200 text-foreground text-sm focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 focus:outline-none transition-all"
                       dir="ltr"
                     />
                   </div>
@@ -713,7 +927,7 @@ function ContactSection() {
                       value={formData.subject}
                       onChange={(e) => setFormData(prev => ({ ...prev, subject: e.target.value }))}
                       placeholder="موضوع الرسالة"
-                      className="w-full px-4 py-2.5 rounded-xl bg-background/50 border border-border/50 text-foreground text-sm focus:border-emerald-500/50 focus:outline-none transition-colors"
+                      className="w-full px-4 py-2.5 rounded-xl bg-gray-50/80 border border-gray-200 text-foreground text-sm focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 focus:outline-none transition-all"
                       required
                     />
                   </div>
@@ -725,7 +939,7 @@ function ContactSection() {
                     onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
                     placeholder="اكتب رسالتك هنا..."
                     rows={5}
-                    className="w-full px-4 py-2.5 rounded-xl bg-background/50 border border-border/50 text-foreground text-sm focus:border-emerald-500/50 focus:outline-none transition-colors resize-none"
+                    className="w-full px-4 py-2.5 rounded-xl bg-gray-50/80 border border-gray-200 text-foreground text-sm focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 focus:outline-none transition-all resize-none"
                     required
                   />
                 </div>
@@ -734,7 +948,7 @@ function ContactSection() {
                   whileTap={{ scale: 0.98 }}
                   type="submit"
                   disabled={sending}
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-sm hover:shadow-lg hover:shadow-emerald-500/25 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-sm hover:shadow-lg hover:shadow-emerald-200 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                 >
                   {sending ? (
                     <motion.div
@@ -772,7 +986,7 @@ function ContactSection() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="glass-card rounded-xl p-4 flex items-start gap-3"
+                className="bg-white rounded-xl p-4 flex items-start gap-3 border border-gray-100 shadow-sm"
               >
                 <div className={`w-10 h-10 rounded-xl ${info.color} flex items-center justify-center flex-shrink-0`}>
                   <info.icon className="w-5 h-5" />
@@ -785,8 +999,8 @@ function ContactSection() {
             ))}
 
             {/* Map Placeholder */}
-            <div className="glass-card rounded-xl overflow-hidden h-48 relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 flex items-center justify-center">
+            <div className="bg-white rounded-xl overflow-hidden h-48 relative border border-gray-100 shadow-sm">
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-50 to-blue-50 flex items-center justify-center">
                 <div className="text-center">
                   <MapPin className="w-8 h-8 text-emerald-500 mx-auto mb-2" />
                   <p className="text-sm text-muted-foreground">جدة - المملكة العربية السعودية</p>
@@ -801,26 +1015,26 @@ function ContactSection() {
               <motion.div
                 animate={{ scale: [1, 1.5, 1], opacity: [0.3, 0, 0.3] }}
                 transition={{ duration: 2, repeat: Infinity, delay: 0.5 }}
-                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full border-2 border-emerald-500/30"
+                className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-12 h-12 rounded-full border-2 border-emerald-400/30"
               />
             </div>
 
             {/* Social Links */}
-            <div className="glass-card rounded-xl p-4">
+            <div className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
               <h4 className="font-bold text-foreground text-sm mb-3">تابعنا</h4>
               <div className="flex gap-2">
                 {[
-                  { icon: Twitter, color: 'hover:bg-sky-500/10 hover:text-sky-500' },
-                  { icon: Instagram, color: 'hover:bg-pink-500/10 hover:text-pink-500' },
-                  { icon: Facebook, color: 'hover:bg-blue-500/10 hover:text-blue-500' },
-                  { icon: Youtube, color: 'hover:bg-red-500/10 hover:text-red-500' },
-                  { icon: MessageCircle, color: 'hover:bg-green-500/10 hover:text-green-500' },
+                  { icon: Twitter, color: 'hover:bg-sky-50 hover:text-sky-500 hover:border-sky-200' },
+                  { icon: Instagram, color: 'hover:bg-pink-50 hover:text-pink-500 hover:border-pink-200' },
+                  { icon: Facebook, color: 'hover:bg-blue-50 hover:text-blue-500 hover:border-blue-200' },
+                  { icon: Youtube, color: 'hover:bg-red-50 hover:text-red-500 hover:border-red-200' },
+                  { icon: MessageCircle, color: 'hover:bg-green-50 hover:text-green-500 hover:border-green-200' },
                 ].map((social, i) => (
                   <motion.button
                     key={i}
                     whileHover={{ scale: 1.1, y: -2 }}
                     whileTap={{ scale: 0.9 }}
-                    className={`w-9 h-9 rounded-lg glass-card flex items-center justify-center text-muted-foreground transition-all ${social.color}`}
+                    className={`w-9 h-9 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-muted-foreground transition-all ${social.color}`}
                   >
                     <social.icon className="w-4 h-4" />
                   </motion.button>
@@ -835,7 +1049,7 @@ function ContactSection() {
 }
 
 // ============================================
-// NEWSLETTER SECTION
+// NEWSLETTER SECTION (Light)
 // ============================================
 function NewsletterSection() {
   const [email, setEmail] = useState('')
@@ -857,24 +1071,24 @@ function NewsletterSection() {
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="relative glass-card rounded-3xl p-8 md:p-12 overflow-hidden"
+          className="relative bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-600 rounded-3xl p-8 md:p-12 overflow-hidden shadow-2xl shadow-emerald-200/30"
         >
           {/* Background decoration */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <motion.div
               animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
               transition={{ duration: 15, repeat: Infinity }}
-              className="absolute w-40 h-40 rounded-full bg-emerald-500/10 -top-10 -left-10"
+              className="absolute w-40 h-40 rounded-full bg-white/10 -top-10 -left-10"
             />
             <motion.div
               animate={{ x: [0, -20, 0], y: [0, 30, 0] }}
               transition={{ duration: 12, repeat: Infinity }}
-              className="absolute w-32 h-32 rounded-full bg-cyan-500/10 -bottom-10 -right-10"
+              className="absolute w-32 h-32 rounded-full bg-white/10 -bottom-10 -right-10"
             />
             <motion.div
               animate={{ scale: [1, 1.3, 1] }}
               transition={{ duration: 6, repeat: Infinity }}
-              className="absolute w-20 h-20 rounded-full bg-amber-500/5 top-1/2 left-1/2"
+              className="absolute w-20 h-20 rounded-full bg-white/5 top-1/2 left-1/2"
             />
           </div>
 
@@ -882,14 +1096,14 @@ function NewsletterSection() {
             <motion.div
               animate={{ y: [0, -5, 0] }}
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-              className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-emerald-500/30"
+              className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mx-auto mb-6 border border-white/20"
             >
               <Mail className="w-8 h-8 text-white" />
             </motion.div>
-            <h3 className="text-2xl md:text-3xl font-black text-foreground mb-3">
+            <h3 className="text-2xl md:text-3xl font-black text-white mb-3">
               اشترك في القائمة البريدية
             </h3>
-            <p className="text-muted-foreground mb-6 max-w-lg mx-auto">
+            <p className="text-white/80 mb-6 max-w-lg mx-auto">
               احصل على آخر العروض والمقالات والتحديثات مباشرة في بريدك الإلكتروني
             </p>
             <form onSubmit={handleSubscribe} className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto" dir="rtl">
@@ -898,7 +1112,7 @@ function NewsletterSection() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="أدخل بريدك الإلكتروني"
-                className="flex-1 px-4 py-3 rounded-xl bg-background/50 border border-border/50 text-foreground text-sm focus:border-emerald-500/50 focus:outline-none transition-colors"
+                className="flex-1 px-4 py-3 rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 text-white placeholder:text-white/60 text-sm focus:border-white/60 focus:outline-none transition-colors"
                 dir="ltr"
                 required
               />
@@ -906,7 +1120,7 @@ function NewsletterSection() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 type="submit"
-                className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-sm hover:shadow-lg hover:shadow-emerald-500/25 transition-all flex items-center gap-2 justify-center"
+                className="px-6 py-3 rounded-xl bg-white text-emerald-700 font-bold text-sm hover:shadow-lg transition-all flex items-center gap-2 justify-center"
               >
                 {subscribed ? (
                   <>
@@ -929,7 +1143,7 @@ function NewsletterSection() {
 }
 
 // ============================================
-// TESTIMONIALS SECTION
+// TESTIMONIALS SECTION (Light)
 // ============================================
 function TestimonialsSection() {
   const testimonials = [
@@ -939,7 +1153,7 @@ function TestimonialsSection() {
   ]
 
   return (
-    <section className="relative z-10 py-16 md:py-24">
+    <section className="relative z-10 py-16 md:py-24 bg-gradient-to-b from-emerald-50/20 to-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -947,12 +1161,12 @@ function TestimonialsSection() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-card text-violet-400 text-sm font-medium mb-4">
+          <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-violet-50 border border-violet-200/50 text-violet-700 text-sm font-medium mb-4">
             <Star className="w-4 h-4" />
             آراء العملاء
           </span>
           <h2 className="text-3xl md:text-4xl font-black text-foreground mb-4">
-            ماذا يقول <span className="text-emerald-500">عملاؤنا</span>
+            ماذا يقول <span className="gradient-text">عملاؤنا</span>
           </h2>
         </motion.div>
 
@@ -965,7 +1179,7 @@ function TestimonialsSection() {
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
               whileHover={{ y: -5 }}
-              className="glass-card rounded-2xl p-6"
+              className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
             >
               <div className="flex items-center gap-1 mb-4">
                 {Array.from({ length: t.rating }).map((_, j) => (
@@ -974,7 +1188,7 @@ function TestimonialsSection() {
               </div>
               <p className="text-muted-foreground text-sm leading-relaxed mb-4">{t.text}</p>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-sm">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-sm shadow-md">
                   {t.name.charAt(0)}
                 </div>
                 <div>
@@ -991,13 +1205,13 @@ function TestimonialsSection() {
 }
 
 // ============================================
-// ENHANCED FOOTER (Like Gama Systems)
+// ENHANCED FOOTER (Light)
 // ============================================
 function EnhancedFooter() {
   const { setCurrentPage } = useAppStore()
   
   return (
-    <footer className="relative z-10 border-t border-border/30" dir="rtl">
+    <footer className="relative z-10 bg-gray-900 text-white" dir="rtl">
       {/* Main Footer */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
@@ -1007,22 +1221,22 @@ function EnhancedFooter() {
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
                 <Building2 className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-foreground">جمعيات<span className="text-emerald-500">برو</span></span>
+              <span className="text-xl font-bold">جمعيات<span className="text-emerald-400">برو</span></span>
             </div>
-            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+            <p className="text-sm text-gray-400 leading-relaxed mb-4">
               منصة متكاملة لإدارة الجمعيات والمؤسسات بتقنيات حديثة وأمان متقدم. نقدم حلولاً تقنية وفق أعلى مستويات الجودة.
             </p>
             <div className="flex gap-2">
               {[
-                { icon: Twitter, color: 'hover:bg-sky-500/10 hover:text-sky-500' },
-                { icon: Instagram, color: 'hover:bg-pink-500/10 hover:text-pink-500' },
-                { icon: Facebook, color: 'hover:bg-blue-500/10 hover:text-blue-500' },
-                { icon: Youtube, color: 'hover:bg-red-500/10 hover:text-red-500' },
+                { icon: Twitter, color: 'hover:bg-sky-500/20 hover:text-sky-400' },
+                { icon: Instagram, color: 'hover:bg-pink-500/20 hover:text-pink-400' },
+                { icon: Facebook, color: 'hover:bg-blue-500/20 hover:text-blue-400' },
+                { icon: Youtube, color: 'hover:bg-red-500/20 hover:text-red-400' },
               ].map((social, i) => (
                 <motion.button
                   key={i}
                   whileHover={{ scale: 1.1, y: -2 }}
-                  className={`w-9 h-9 rounded-lg glass-card flex items-center justify-center text-muted-foreground transition-all ${social.color}`}
+                  className={`w-9 h-9 rounded-lg bg-gray-800 flex items-center justify-center text-gray-400 transition-all ${social.color}`}
                 >
                   <social.icon className="w-4 h-4" />
                 </motion.button>
@@ -1032,7 +1246,7 @@ function EnhancedFooter() {
 
           {/* Quick Links */}
           <div>
-            <h4 className="font-bold text-foreground mb-4">روابط سريعة</h4>
+            <h4 className="font-bold text-white mb-4">روابط سريعة</h4>
             <ul className="space-y-2">
               {[
                 { label: 'الرئيسية', page: 'landing' },
@@ -1044,7 +1258,7 @@ function EnhancedFooter() {
                 <li key={link.label}>
                   <button
                     onClick={() => setCurrentPage(link.page as any)}
-                    className="text-sm text-muted-foreground hover:text-emerald-500 transition-colors flex items-center gap-1"
+                    className="text-sm text-gray-400 hover:text-emerald-400 transition-colors flex items-center gap-1"
                   >
                     <ChevronRight className="w-3 h-3" />
                     {link.label}
@@ -1056,7 +1270,7 @@ function EnhancedFooter() {
 
           {/* Services */}
           <div>
-            <h4 className="font-bold text-foreground mb-4">خدماتنا</h4>
+            <h4 className="font-bold text-white mb-4">خدماتنا</h4>
             <ul className="space-y-2">
               {[
                 'إدارة موارد المؤسسات',
@@ -1066,7 +1280,7 @@ function EnhancedFooter() {
                 'الاستشارات البرمجية',
               ].map(service => (
                 <li key={service}>
-                  <span className="text-sm text-muted-foreground hover:text-emerald-500 transition-colors cursor-default flex items-center gap-1">
+                  <span className="text-sm text-gray-400 hover:text-emerald-400 transition-colors cursor-default flex items-center gap-1">
                     <ChevronRight className="w-3 h-3" />
                     {service}
                   </span>
@@ -1077,23 +1291,23 @@ function EnhancedFooter() {
 
           {/* Contact */}
           <div>
-            <h4 className="font-bold text-foreground mb-4">معلومات التواصل</h4>
+            <h4 className="font-bold text-white mb-4">معلومات التواصل</h4>
             <div className="space-y-3">
               <div className="flex items-start gap-2">
-                <MapPin className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
-                <span className="text-sm text-muted-foreground">جدة - حي الفيحاء - مركز العريفي التجاري</span>
+                <MapPin className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
+                <span className="text-sm text-gray-400">جدة - حي الفيحاء - مركز العريفي التجاري</span>
               </div>
               <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                <span className="text-sm text-muted-foreground" dir="ltr">+966 56 746 1842</span>
+                <Phone className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                <span className="text-sm text-gray-400" dir="ltr">+966 56 746 1842</span>
               </div>
               <div className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                <span className="text-sm text-muted-foreground">info@jamiat-pro.com</span>
+                <Mail className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                <span className="text-sm text-gray-400">info@jamiat-pro.com</span>
               </div>
               <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                <span className="text-sm text-muted-foreground">أحد - خميس: 8ص - 5م</span>
+                <Clock className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                <span className="text-sm text-gray-400">أحد - خميس: 8ص - 5م</span>
               </div>
             </div>
           </div>
@@ -1101,15 +1315,15 @@ function EnhancedFooter() {
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-border/20 py-6">
+      <div className="border-t border-gray-800 py-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-muted-foreground text-center md:text-right">
-            جميع الحقوق محفوظة © 2026 جمعياتبرو | تطوير: <span className="text-cyan-400 font-bold">زعيم الدمار</span>
+          <p className="text-sm text-gray-400 text-center md:text-right">
+            جميع الحقوق محفوظة © 2026 جمعياتبرو | تطوير: <span className="text-emerald-400 font-bold">زعيم الدمار</span>
           </p>
-          <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <button className="hover:text-emerald-500 transition-colors">سياسة الخصوصية</button>
+          <div className="flex items-center gap-4 text-sm text-gray-400">
+            <button className="hover:text-emerald-400 transition-colors">سياسة الخصوصية</button>
             <span>|</span>
-            <button className="hover:text-emerald-500 transition-colors">الشروط والأحكام</button>
+            <button className="hover:text-emerald-400 transition-colors">الشروط والأحكام</button>
           </div>
         </div>
       </div>
@@ -1139,7 +1353,7 @@ function ScrollToTop() {
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="fixed bottom-6 left-6 z-50 w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-xl shadow-emerald-500/30 flex items-center justify-center"
+          className="fixed bottom-6 left-6 z-50 w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white shadow-xl shadow-emerald-200/30 flex items-center justify-center"
         >
           <ArrowUp className="w-5 h-5" />
         </motion.button>
@@ -1160,7 +1374,7 @@ export function LandingPage() {
 
   const features = [
     { icon: Building2, title: 'إدارة الجمعيات', desc: 'إنشاء وإدارة جمعياتك بكفاءة عالية مع تتبع شامل لجميع الأنشطة والعمليات', color: 'bg-emerald-500', delay: 0.2, illustration: <AnimatedHeroIllustration /> },
-    { icon: Users, title: 'إدارة الأعضاء', desc: 'نظام متكامل لإدارة الأعضاء مع تحديد الأدوار والصلاحيات ومتابعة الحضور', color: 'bg-cyan-500', delay: 0.3, illustration: <AnimatedMembersIllustration /> },
+    { icon: Users, title: 'إدارة الأعضاء', desc: 'نظام متكامل لإدارة الأعضاء مع تحديد الأدوار والصلاحيات ومتابعة الحضور', color: 'bg-blue-500', delay: 0.3, illustration: <AnimatedMembersIllustration /> },
     { icon: Calendar, title: 'الفعاليات والأنشطة', desc: 'تنظيم ومتابعة الفعاليات والأنشطة مع إدارة الحجوزات والميزانيات', color: 'bg-amber-500', delay: 0.4, illustration: <AnimatedEventsIllustration /> },
     { icon: BarChart3, title: 'التقارير المالية', desc: 'تقارير مالية شاملة مع رسوم بيانية تفاعلية وتحليلات متقدمة', color: 'bg-teal-500', delay: 0.5, illustration: <AnimatedFinanceIllustration /> },
     { icon: Shield, title: 'حماية متقدمة', desc: 'نظام أمان متعدد الطبقات مع تشفير البيانات والتحقق الثنائي', color: 'bg-violet-500', delay: 0.6, illustration: <AnimatedSecurityIllustration /> },
@@ -1168,16 +1382,21 @@ export function LandingPage() {
   ]
 
   return (
-    <div ref={heroRef} className="relative min-h-screen overflow-hidden" dir="rtl">
-      {/* Background Effects */}
-      <div className="absolute inset-0 gradient-mesh-dark" />
+    <div ref={heroRef} className="relative min-h-screen overflow-hidden bg-white" dir="rtl">
+      {/* Background Effects - Light */}
+      <div className="absolute inset-0 gradient-mesh" />
       <Particles />
       
-      {/* Grid Pattern */}
+      {/* Grid Pattern - Light */}
       <div className="absolute inset-0 opacity-[0.03]" style={{
-        backgroundImage: 'linear-gradient(rgba(16,185,129,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.3) 1px, transparent 1px)',
+        backgroundImage: 'linear-gradient(rgba(16,185,129,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.2) 1px, transparent 1px)',
         backgroundSize: '60px 60px'
       }} />
+
+      {/* Floating decorative blobs */}
+      <div className="absolute top-20 left-10 w-72 h-72 bg-emerald-200/20 rounded-full blur-3xl animate-blob-1" />
+      <div className="absolute top-1/2 right-10 w-96 h-96 bg-blue-200/15 rounded-full blur-3xl animate-blob-2" />
+      <div className="absolute bottom-20 left-1/3 w-64 h-64 bg-violet-200/10 rounded-full blur-3xl animate-blob-1" />
 
       {/* Hero Section with Slider */}
       <motion.section style={{ y: heroY, opacity: heroOpacity }} className="relative z-10">
@@ -1189,17 +1408,17 @@ export function LandingPage() {
             className="flex items-center justify-between mb-16 md:mb-24"
           >
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/20">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-200/30">
                 <Building2 className="w-5 h-5 text-white" />
               </div>
-              <span className="text-xl font-bold text-foreground">جمعيات<span className="text-emerald-500">برو</span></span>
+              <span className="text-xl font-bold text-foreground">جمعيات<span className="text-emerald-600">برو</span></span>
             </div>
             <div className="flex items-center gap-3">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setCurrentPage('login')}
-                className="px-4 py-2 text-sm font-medium text-foreground hover:text-emerald-500 transition-colors"
+                className="px-4 py-2 text-sm font-medium text-foreground hover:text-emerald-600 transition-colors"
               >
                 تسجيل الدخول
               </motion.button>
@@ -1207,7 +1426,7 @@ export function LandingPage() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setCurrentPage('register')}
-                className="px-5 py-2.5 text-sm font-bold rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 transition-shadow"
+                className="px-5 py-2.5 text-sm font-bold rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-lg shadow-emerald-200/30 hover:shadow-emerald-200/50 transition-shadow"
               >
                 ابدأ مجاناً
               </motion.button>
@@ -1239,7 +1458,7 @@ export function LandingPage() {
             className="text-center mb-12 md:mb-16"
           >
             <h2 className="text-3xl md:text-4xl font-black text-foreground mb-4">
-              كل ما تحتاجه <span className="text-emerald-500">في مكان واحد</span>
+              كل ما تحتاجه <span className="gradient-text">في مكان واحد</span>
             </h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
               منصة شاملة توفر لك جميع الأدوات اللازمة لإدارة جمعيتك باحترافية
@@ -1254,6 +1473,9 @@ export function LandingPage() {
         </div>
       </section>
 
+      {/* About Platform Section */}
+      <AboutSection />
+
       {/* Products Section (Like Gama) */}
       <ProductsSection />
 
@@ -1264,9 +1486,9 @@ export function LandingPage() {
       <PartnersCarousel />
 
       {/* Security Section with animated illustration */}
-      <section className="relative z-10 py-16 md:py-24">
+      <section className="relative z-10 py-16 md:py-24 bg-gradient-to-b from-white to-emerald-50/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="glass-card rounded-3xl p-8 md:p-12">
+          <div className="bg-white rounded-3xl p-8 md:p-12 border border-gray-100 shadow-sm">
             <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-16">
               <div className="flex-1">
                 <motion.div
@@ -1274,12 +1496,12 @@ export function LandingPage() {
                   whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }}
                 >
-                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 text-sm font-medium mb-4">
+                  <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/50 text-emerald-700 text-sm font-medium mb-4">
                     <Lock className="w-4 h-4" />
                     أمان من الدرجة الأولى
                   </span>
                   <h2 className="text-3xl md:text-4xl font-black text-foreground mb-6">
-                    حماية <span className="text-emerald-500">شاملة</span> لبياناتك
+                    حماية <span className="gradient-text">شاملة</span> لبياناتك
                   </h2>
                   <div className="space-y-4">
                     {[
@@ -1294,10 +1516,11 @@ export function LandingPage() {
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: i * 0.1 }}
-                        className="flex items-start gap-3"
+                        whileHover={{ x: -5 }}
+                        className="flex items-start gap-3 p-2 rounded-lg hover:bg-emerald-50/50 transition-colors"
                       >
-                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <Shield className="w-4 h-4 text-emerald-500" />
+                        <div className="w-8 h-8 rounded-lg bg-emerald-50 border border-emerald-200/50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Shield className="w-4 h-4 text-emerald-600" />
                         </div>
                         <div>
                           <h4 className="font-bold text-foreground text-sm">{item.title}</h4>
@@ -1330,22 +1553,22 @@ export function LandingPage() {
             <motion.div
               animate={{ y: [0, -8, 0] }}
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-              className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-emerald-500/30"
+              className="w-20 h-20 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto mb-6 shadow-2xl shadow-emerald-200/30"
             >
               <Sparkles className="w-10 h-10 text-white" />
             </motion.div>
             <h2 className="text-3xl md:text-5xl font-black text-foreground mb-6">
-              جاهز لتنظيم <span className="text-emerald-500">جمعيتك؟</span>
+              جاهز لتنظيم <span className="gradient-text">جمعيتك؟</span>
             </h2>
             <p className="text-lg text-muted-foreground mb-8">
               انضم إلى آلاف الجمعيات التي تثق بمنصتنا لإدارة أعمالها
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <motion.button
-                whileHover={{ scale: 1.05, boxShadow: '0 25px 50px -12px rgba(16,185,129,0.4)' }}
+                whileHover={{ scale: 1.05, boxShadow: '0 25px 50px -12px rgba(16,185,129,0.3)' }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setCurrentPage('register')}
-                className="px-10 py-5 text-lg font-bold rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-xl shadow-emerald-500/25 flex items-center justify-center gap-2"
+                className="px-10 py-5 text-lg font-bold rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-600 text-white shadow-xl shadow-emerald-200/25 flex items-center justify-center gap-2"
               >
                 ابدأ مجاناً الآن
                 <ArrowLeft className="w-5 h-5" />
@@ -1353,7 +1576,7 @@ export function LandingPage() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-10 py-5 text-lg font-bold rounded-2xl glass-card text-foreground hover:text-emerald-500 transition-colors flex items-center justify-center gap-2"
+                className="px-10 py-5 text-lg font-bold rounded-2xl bg-white border-2 border-emerald-200 text-foreground hover:border-emerald-400 hover:text-emerald-600 transition-colors shadow-sm flex items-center justify-center gap-2"
                 onClick={() => {
                   document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })
                 }}

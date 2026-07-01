@@ -190,11 +190,11 @@ export function AuthPage() {
   const strengthColors = ['', 'bg-red-500', 'bg-red-400', 'bg-amber-500', 'bg-emerald-400', 'bg-emerald-500']
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden" dir="rtl">
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-gradient-to-br from-emerald-50/50 via-white to-blue-50/50" dir="rtl">
       {/* Background */}
-      <div className="absolute inset-0 gradient-mesh-dark" />
-      <div className="absolute inset-0 opacity-[0.03]" style={{
-        backgroundImage: 'linear-gradient(rgba(16,185,129,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.3) 1px, transparent 1px)',
+      <div className="absolute inset-0 gradient-mesh" />
+      <div className="absolute inset-0 opacity-[0.02]" style={{
+        backgroundImage: 'linear-gradient(rgba(16,185,129,0.2) 1px, transparent 1px), linear-gradient(90deg, rgba(16,185,129,0.2) 1px, transparent 1px)',
         backgroundSize: '60px 60px'
       }} />
 
@@ -202,12 +202,17 @@ export function AuthPage() {
       <motion.div
         animate={{ x: [0, 50, 0], y: [0, -30, 0] }}
         transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute top-1/4 right-1/4 w-64 h-64 rounded-full bg-emerald-500/5 blur-3xl"
+        className="absolute top-1/4 right-1/4 w-64 h-64 rounded-full bg-emerald-200/30 blur-3xl"
       />
       <motion.div
         animate={{ x: [0, -40, 0], y: [0, 40, 0] }}
         transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
-        className="absolute bottom-1/4 left-1/4 w-96 h-96 rounded-full bg-teal-500/5 blur-3xl"
+        className="absolute bottom-1/4 left-1/4 w-96 h-96 rounded-full bg-blue-200/20 blur-3xl"
+      />
+      <motion.div
+        animate={{ x: [0, 30, 0], y: [0, -20, 0] }}
+        transition={{ duration: 18, repeat: Infinity, ease: 'easeInOut' }}
+        className="absolute top-1/2 left-1/2 w-72 h-72 rounded-full bg-violet-200/15 blur-3xl"
       />
 
       <div className="relative z-10 w-full max-w-5xl mx-4 flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
@@ -238,12 +243,12 @@ export function AuthPage() {
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center">
                 <Building2 className="w-6 h-6 text-white" />
               </div>
-              <span className="text-2xl font-black text-foreground">جمعيات<span className="text-emerald-500">برو</span></span>
+              <span className="text-2xl font-black text-foreground">جمعيات<span className="text-emerald-600">برو</span></span>
             </div>
           </motion.div>
 
           {/* Card */}
-          <div className="glass-card rounded-2xl p-6 md:p-8">
+          <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-6 md:p-8 border border-gray-100 shadow-xl shadow-emerald-100/10">
             <AnimatePresence mode="wait">
               {mode === 'login' && (
                 <motion.div
@@ -350,33 +355,37 @@ export function AuthPage() {
                       </div>
                     </div>
 
-                    {/* Google Sign In */}
-                    <Button
-                      onClick={handleGoogleLogin}
-                      disabled={googleLoading}
-                      variant="outline"
-                      className="w-full py-3 bg-background hover:bg-accent border-border/50 rounded-xl font-bold flex items-center justify-center gap-3"
-                    >
-                      {googleLoading ? (
-                        <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                          className="w-5 h-5 border-2 border-border border-t-foreground rounded-full"
-                        />
-                      ) : (
-                        <>
-                          <GoogleIcon />
-                          <span>تسجيل الدخول بـ Google</span>
-                        </>
-                      )}
-                    </Button>
+                    {/* Google Sign In - Only shown when configured */}
+                    {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+                      <>
+                        <Button
+                          onClick={handleGoogleLogin}
+                          disabled={googleLoading}
+                          variant="outline"
+                          className="w-full py-3 bg-white hover:bg-gray-50 border-gray-200 rounded-xl font-bold flex items-center justify-center gap-3"
+                        >
+                          {googleLoading ? (
+                            <motion.div
+                              animate={{ rotate: 360 }}
+                              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                              className="w-5 h-5 border-2 border-gray-300 border-t-foreground rounded-full"
+                            />
+                          ) : (
+                            <>
+                              <GoogleIcon />
+                              <span>تسجيل الدخول بـ Google</span>
+                            </>
+                          )}
+                        </Button>
+                      </>
+                    )}
 
                     {/* Security notice */}
-                    <div className="p-3 rounded-lg bg-emerald-500/5 border border-emerald-500/10">
+                    <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200/50">
                       <div className="flex items-start gap-2">
-                        <Shield className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
+                        <Shield className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
                         <div className="text-xs text-muted-foreground">
-                          <span className="text-emerald-500 font-bold">اتصال آمن ومشفر</span>
+                          <span className="text-emerald-600 font-bold">اتصال آمن ومشفر</span>
                           <br />
                           بياناتك محمية بتشفير AES-256 أثناء النقل والتخزين
                         </div>
@@ -528,30 +537,32 @@ export function AuthPage() {
                       </div>
                     </div>
 
-                    {/* Google Sign Up */}
-                    <Button
-                      onClick={handleGoogleLogin}
-                      disabled={googleLoading}
-                      variant="outline"
-                      className="w-full py-3 bg-background hover:bg-accent border-border/50 rounded-xl font-bold flex items-center justify-center gap-3"
-                    >
-                      {googleLoading ? (
-                        <motion.div
-                          animate={{ rotate: 360 }}
-                          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                          className="w-5 h-5 border-2 border-border border-t-foreground rounded-full"
-                        />
-                      ) : (
-                        <>
-                          <GoogleIcon />
-                          <span>التسجيل بـ Google</span>
-                        </>
-                      )}
-                    </Button>
+                    {/* Google Sign Up - Only shown when configured */}
+                    {process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID && (
+                      <Button
+                        onClick={handleGoogleLogin}
+                        disabled={googleLoading}
+                        variant="outline"
+                        className="w-full py-3 bg-white hover:bg-gray-50 border-gray-200 rounded-xl font-bold flex items-center justify-center gap-3"
+                      >
+                        {googleLoading ? (
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                            className="w-5 h-5 border-2 border-gray-300 border-t-foreground rounded-full"
+                          />
+                        ) : (
+                          <>
+                            <GoogleIcon />
+                            <span>التسجيل بـ Google</span>
+                          </>
+                        )}
+                      </Button>
+                    )}
 
                     <p className="text-center text-sm text-muted-foreground">
                       لديك حساب؟{' '}
-                      <button onClick={() => { setMode('login'); setError('') }} className="text-emerald-500 font-bold hover:underline">
+                      <button onClick={() => { setMode('login'); setError('') }} className="text-emerald-600 font-bold hover:underline">
                         سجّل دخول
                       </button>
                     </p>

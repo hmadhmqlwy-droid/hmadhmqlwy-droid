@@ -30,7 +30,7 @@ function TopInfoBar() {
   if (!isVisible) return null
 
   return (
-    <div className="bg-[#0a1628] text-white text-xs relative z-50" dir="rtl">
+    <div className="bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 text-white text-xs relative z-50" dir="rtl">
       <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-9">
         {/* Right side - Social icons */}
         <div className="flex items-center gap-3">
