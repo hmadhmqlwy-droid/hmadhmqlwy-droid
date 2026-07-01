@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { hashPassword } from '@/lib/auth'
+import { v4 as uuidv4 } from 'uuid'
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,6 +10,17 @@ export async function POST(request: NextRequest) {
 
     if (!name || !email || !password) {
       return NextResponse.json({ error: 'جميع الحقول مطلوبة' }, { status: 400 })
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
+      return NextResponse.json({ error: 'صيغة البريد الإلكتروني غير صحيحة' }, { status: 400 })
+    }
+
+    // Validate name length
+    if (name.trim().length < 2) {
+      return NextResponse.json({ error: 'الاسم يجب أن يكون حرفين على الأقل' }, { status: 400 })
     }
 
     if (password.length < 8) {
@@ -38,10 +50,24 @@ export async function POST(request: NextRequest) {
 
     const user = await db.user.create({
       data: {
-        name,
-        email,
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
         password: hashedPassword,
         role: 'user',
+      }
+    })
+
+    // Create session for auto-login
+    const token = uuidv4()
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
+
+    await db.session.create({
+      data: {
+        userId: user.id,
+        token,
+        ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+        userAgent: request.headers.get('user-agent') || 'unknown',
+        expiresAt,
       }
     })
 
@@ -57,15 +83,26 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       user: {
         id: user.id,
         name: user.name,
         email: user.email,
         role: user.role,
         twoFactorEnabled: user.twoFactorEnabled,
-      }
+      },
+      token,
     }, { status: 201 })
+
+    // Set session cookie
+    response.cookies.set('session_token', token, {
+      path: '/',
+      maxAge: 86400,
+      httpOnly: false,
+      sameSite: 'lax',
+    })
+
+    return response
   } catch (error) {
     console.error('Register error:', error)
     return NextResponse.json({ error: 'خطأ في الخادم' }, { status: 500 })

@@ -22,7 +22,7 @@ function GoogleIcon() {
 }
 
 export function AuthPage() {
-  const { setCurrentPage, login } = useAppStore()
+  const { setCurrentPage, login, showToast } = useAppStore()
   const [mode, setMode] = useState<'login' | 'register'>('login')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -41,19 +41,24 @@ export function AuthPage() {
 
   const handleLogin = async () => {
     setError('')
+    if (!loginEmail.trim() || !loginPassword.trim()) {
+      setError('البريد الإلكتروني وكلمة المرور مطلوبان')
+      return
+    }
     setLoading(true)
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: loginEmail, password: loginPassword }),
+        body: JSON.stringify({ email: loginEmail.trim(), password: loginPassword }),
       })
       const data = await res.json()
       if (!res.ok) {
         setError(data.error || 'حدث خطأ')
         return
       }
-      login(data.user)
+      login(data.user, data.token)
+      showToast('تم تسجيل الدخول بنجاح', 'success')
     } catch {
       setError('خطأ في الاتصال بالخادم')
     } finally {
@@ -65,14 +70,11 @@ export function AuthPage() {
     setError('')
     setGoogleLoading(true)
     try {
-      // Use Google Identity Services (GIS) via popup
       const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID
       
       if (!googleClientId) {
-        // Fallback: manual Google OAuth flow
-        const redirectUri = `${window.location.origin}/api/auth/google`
-        const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${googleClientId}&redirect_uri=${redirectUri}&response_type=token&scope=email profile`
-        window.location.href = googleAuthUrl
+        setError('تسجيل الدخول عبر Google غير مفعل حالياً. يرجى استخدام البريد الإلكتروني')
+        setGoogleLoading(false)
         return
       }
 
@@ -82,7 +84,6 @@ export function AuthPage() {
           client_id: googleClientId,
           callback: async (response: any) => {
             try {
-              // Decode JWT token
               const payload = JSON.parse(atob(response.credential.split('.')[1]))
               const res = await fetch('/api/auth/google', {
                 method: 'POST',
@@ -100,7 +101,8 @@ export function AuthPage() {
                 setError(data.error || 'حدث خطأ')
                 return
               }
-              login(data.user)
+              login(data.user, data.token)
+              showToast('تم تسجيل الدخول عبر Google بنجاح', 'success')
             } catch {
               setError('خطأ في تسجيل الدخول عبر Google')
             }
@@ -119,6 +121,18 @@ export function AuthPage() {
 
   const handleRegister = async () => {
     setError('')
+    if (!regName.trim()) {
+      setError('الاسم الكامل مطلوب')
+      return
+    }
+    if (!regEmail.trim()) {
+      setError('البريد الإلكتروني مطلوب')
+      return
+    }
+    if (!regPassword) {
+      setError('كلمة المرور مطلوبة')
+      return
+    }
     if (regPassword !== regConfirm) {
       setError('كلمات المرور غير متطابقة')
       return
@@ -132,15 +146,15 @@ export function AuthPage() {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: regName, email: regEmail, password: regPassword }),
+        body: JSON.stringify({ name: regName.trim(), email: regEmail.trim(), password: regPassword }),
       })
       const data = await res.json()
       if (!res.ok) {
         setError(data.error || 'حدث خطأ')
         return
       }
-      // Auto login after register
-      login(data.user)
+      login(data.user, data.token)
+      showToast('تم إنشاء الحساب بنجاح', 'success')
     } catch {
       setError('خطأ في الاتصال بالخادم')
     } finally {
@@ -238,6 +252,7 @@ export function AuthPage() {
                         placeholder="أدخل بريدك الإلكتروني"
                         value={loginEmail}
                         onChange={(e) => setLoginEmail(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
                         className="pr-10 bg-background/50 border-border/50 focus:border-emerald-500"
                         dir="ltr"
                       />
@@ -258,6 +273,7 @@ export function AuthPage() {
                         dir="ltr"
                       />
                       <button
+                        type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                       >
@@ -271,7 +287,13 @@ export function AuthPage() {
                       <Checkbox id="remember" />
                       <label htmlFor="remember" className="text-xs text-muted-foreground cursor-pointer">تذكرني</label>
                     </div>
-                    <button className="text-xs text-emerald-500 hover:underline">نسيت كلمة المرور؟</button>
+                    <button 
+                      type="button"
+                      onClick={() => showToast('يرجى التواصل مع إدارة النظام لإعادة تعيين كلمة المرور', 'info')}
+                      className="text-xs text-emerald-500 hover:underline"
+                    >
+                      نسيت كلمة المرور؟
+                    </button>
                   </div>
 
                   <Button
@@ -403,13 +425,14 @@ export function AuthPage() {
                       <Lock className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                       <Input
                         type={showPassword ? 'text' : 'password'}
-                        placeholder="8 أحرف على الأقل (أحرف كبيرة وصغيرة وأرقام ورموز)"
+                        placeholder="8 أحرف على الأقل"
                         value={regPassword}
                         onChange={(e) => setRegPassword(e.target.value)}
                         className="pr-10 pl-10 bg-background/50 border-border/50 focus:border-emerald-500"
                         dir="ltr"
                       />
                       <button
+                        type="button"
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                       >
@@ -445,6 +468,7 @@ export function AuthPage() {
                         placeholder="أعد كتابة كلمة المرور"
                         value={regConfirm}
                         onChange={(e) => setRegConfirm(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleRegister()}
                         className="pr-10 bg-background/50 border-border/50 focus:border-emerald-500"
                         dir="ltr"
                       />

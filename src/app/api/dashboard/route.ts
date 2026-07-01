@@ -1,8 +1,12 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { requireAuth } from '@/lib/auth-middleware'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const authResult = await requireAuth(request)
+    if ('error' in authResult) return authResult.error
+
     const [
       totalAssociations,
       activeAssociations,

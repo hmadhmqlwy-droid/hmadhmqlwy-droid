@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { useAppStore } from '@/store/app-store'
-import { Building2, Plus, Search, Filter, MapPin, Users, Calendar, MoreVertical, Edit, Trash2, Eye, Phone, Mail, Globe, Award, ChevronDown, X } from 'lucide-react'
+import { Building2, Plus, Search, Filter, MapPin, Users, Calendar, Trash2, Eye, Phone, Mail, Globe, Award, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -40,7 +40,7 @@ const categoryIcons: Record<string, string> = {
 }
 
 export function AssociationsPage() {
-  const { user } = useAppStore()
+  const { user, showToast } = useAppStore()
   const [associations, setAssociations] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -48,6 +48,7 @@ export function AssociationsPage() {
   const [showCreate, setShowCreate] = useState(false)
   const [selectedAssoc, setSelectedAssoc] = useState<any>(null)
   const [showDetail, setShowDetail] = useState(false)
+  const [createLoading, setCreateLoading] = useState(false)
 
   // Create form
   const [form, setForm] = useState({
@@ -64,12 +65,27 @@ export function AssociationsPage() {
       if (res.ok) {
         const data = await res.json()
         setAssociations(data)
+      } else if (res.status === 401) {
+        showToast('يجب تسجيل الدخول أولاً', 'error')
       }
-    } catch (e) { console.error(e) }
+    } catch (e) { 
+      console.error(e)
+      showToast('خطأ في تحميل الجمعيات', 'error')
+    }
     finally { setLoading(false) }
   }
 
   const handleCreate = async () => {
+    if (!form.name.trim()) {
+      showToast('اسم الجمعية مطلوب', 'error')
+      return
+    }
+    if (!form.description.trim()) {
+      showToast('وصف الجمعية مطلوب', 'error')
+      return
+    }
+    
+    setCreateLoading(true)
     try {
       const res = await fetch('/api/associations', {
         method: 'POST',
@@ -80,8 +96,43 @@ export function AssociationsPage() {
         setShowCreate(false)
         setForm({ name: '', nameEn: '', description: '', category: 'خيري', phone: '', email: '', website: '', address: '', city: '', licenseNumber: '', taxId: '', foundedDate: '' })
         fetchAssociations()
+        showToast('تم إنشاء الجمعية بنجاح', 'success')
+      } else {
+        const data = await res.json()
+        showToast(data.error || 'خطأ في إنشاء الجمعية', 'error')
       }
-    } catch (e) { console.error(e) }
+    } catch (e) { 
+      console.error(e)
+      showToast('خطأ في الاتصال بالخادم', 'error')
+    } finally {
+      setCreateLoading(false)
+    }
+  }
+
+  const handleDelete = async (assocId: string, assocName: string) => {
+    if (!confirm(`هل أنت متأكد من حذف "${assocName}"؟ سيتم حذف جميع الأعضاء والفعاليات والمعاملات المرتبطة.`)) return
+    try {
+      const res = await fetch(`/api/associations?associationId=${assocId}`, { method: 'DELETE' })
+      if (res.ok) {
+        showToast('تم حذف الجمعية بنجاح', 'success')
+        setShowDetail(false)
+        fetchAssociations()
+      } else {
+        const data = await res.json()
+        showToast(data.error || 'خطأ في حذف الجمعية', 'error')
+      }
+    } catch (e) { 
+      console.error(e)
+      showToast('خطأ في الاتصال بالخادم', 'error')
+    }
+  }
+
+  const canDelete = (assoc: any) => {
+    if (!user) return false
+    if (user.role === 'admin') return true
+    // Check if user is president of this association
+    const membership = assoc.members?.find((m: any) => m.userId === user.id)
+    return membership?.role === 'president'
   }
 
   const filtered = associations.filter(a => {
@@ -178,8 +229,12 @@ export function AssociationsPage() {
                 <Label>تاريخ التأسيس</Label>
                 <Input type="date" value={form.foundedDate} onChange={e => setForm({ ...form, foundedDate: e.target.value })} className="mt-1" dir="ltr" />
               </div>
-              <Button onClick={handleCreate} className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl">
-                إنشاء الجمعية
+              <Button 
+                onClick={handleCreate} 
+                disabled={createLoading}
+                className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl"
+              >
+                {createLoading ? 'جارٍ الإنشاء...' : 'إنشاء الجمعية'}
               </Button>
             </div>
           </DialogContent>
@@ -235,6 +290,15 @@ export function AssociationsPage() {
                         {statusLabels[assoc.status] || assoc.status}
                       </Badge>
                     </div>
+                    {canDelete(assoc) && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); handleDelete(assoc.id, assoc.name) }}
+                        className="absolute top-3 left-3 p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:text-red-500 hover:bg-red-500/20 transition-colors"
+                        title="حذف الجمعية"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                   {/* Card Body */}
                   <div className="p-4">
@@ -326,6 +390,16 @@ export function AssociationsPage() {
                     <div className="text-xs text-muted-foreground">معاملة</div>
                   </div>
                 </div>
+                {canDelete(selectedAssoc) && (
+                  <Button 
+                    onClick={() => handleDelete(selectedAssoc.id, selectedAssoc.name)}
+                    variant="outline"
+                    className="w-full border-red-500/30 text-red-500 hover:bg-red-500/10 font-bold rounded-xl"
+                  >
+                    <Trash2 className="w-4 h-4 ml-2" />
+                    حذف الجمعية
+                  </Button>
+                )}
               </div>
             </>
           )}

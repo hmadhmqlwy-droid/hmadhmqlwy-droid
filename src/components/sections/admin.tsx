@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { useAppStore } from '@/store/app-store'
-import { Shield, Users, Building2, Activity, Server, UserCheck, UserX, Crown, Mail, Calendar, Search, Download, AlertTriangle, CheckCircle, Clock, BarChart3 } from 'lucide-react'
+import { Shield, Users, Building2, Activity, Server, UserCheck, UserX, Crown, Mail, Calendar, Search, Download, AlertTriangle, CheckCircle, Clock, BarChart3, Lock } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -28,42 +28,104 @@ interface AdminStats {
 }
 
 export function AdminPage() {
-  const { user } = useAppStore()
+  const { user, setCurrentPage, showToast } = useAppStore()
   const [data, setData] = useState<AdminStats | null>(null)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+
+  // Block non-admin users completely
+  if (user?.role !== 'admin') {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4" dir="rtl">
+        <div className="w-20 h-20 rounded-2xl bg-red-500/10 flex items-center justify-center">
+          <Lock className="w-10 h-10 text-red-500" />
+        </div>
+        <h2 className="text-2xl font-black text-foreground">غير مصرح بالوصول</h2>
+        <p className="text-muted-foreground text-sm">هذه الصفحة متاحة فقط للمديرين</p>
+        <Button 
+          onClick={() => setCurrentPage('dashboard')}
+          className="bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl"
+        >
+          العودة للوحة التحكم
+        </Button>
+      </div>
+    )
+  }
 
   useEffect(() => { fetchAdminData() }, [])
 
   const fetchAdminData = async () => {
     try {
       const res = await fetch('/api/admin')
-      if (res.ok) setData(await res.json())
-    } catch (e) { console.error(e) }
+      if (res.ok) {
+        setData(await res.json())
+      } else if (res.status === 401) {
+        showToast('يجب تسجيل الدخول أولاً', 'error')
+      } else if (res.status === 403) {
+        showToast('ليس لديك صلاحية للوصول لهذه الصفحة', 'error')
+      }
+    } catch (e) { 
+      console.error(e)
+      showToast('خطأ في تحميل البيانات', 'error')
+    }
     finally { setLoading(false) }
   }
 
   const handleToggleActive = async (userId: string, currentActive: boolean) => {
     try {
-      await fetch('/api/admin', {
+      const res = await fetch('/api/admin', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, action: { isActive: !currentActive } }),
       })
-      fetchAdminData()
-    } catch (e) { console.error(e) }
+      if (res.ok) {
+        showToast(currentActive ? 'تم تعطيل المستخدم' : 'تم تفعيل المستخدم', 'success')
+        fetchAdminData()
+      } else {
+        const data = await res.json()
+        showToast(data.error || 'خطأ في تحديث المستخدم', 'error')
+      }
+    } catch (e) { 
+      console.error(e)
+      showToast('خطأ في الاتصال', 'error')
+    }
   }
 
-  const handleDeleteUser = async (userId: string) => {
-    if (!confirm('هل أنت متأكد من حذف هذا المستخدم؟')) return
+  const handleDeleteUser = async (userId: string, userName: string) => {
+    if (!confirm(`هل أنت متأكد من حذف المستخدم "${userName}"؟ هذا الإجراء لا يمكن التراجع عنه.`)) return
     try {
-      await fetch(`/api/admin?userId=${userId}`, { method: 'DELETE' })
-      fetchAdminData()
-    } catch (e) { console.error(e) }
+      const res = await fetch(`/api/admin?userId=${userId}`, { method: 'DELETE' })
+      if (res.ok) {
+        showToast('تم حذف المستخدم بنجاح', 'success')
+        fetchAdminData()
+      } else {
+        const data = await res.json()
+        showToast(data.error || 'خطأ في حذف المستخدم', 'error')
+      }
+    } catch (e) { 
+      console.error(e)
+      showToast('خطأ في الاتصال', 'error')
+    }
   }
 
   const handleExport = async (type: string) => {
-    window.open(`/api/export?type=${type}&format=csv`, '_blank')
+    try {
+      const res = await fetch(`/api/export?type=${type}&format=csv`)
+      if (res.ok) {
+        const blob = await res.blob()
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${type}_report.csv`
+        a.click()
+        URL.revokeObjectURL(url)
+        showToast('تم تصدير التقرير بنجاح', 'success')
+      } else {
+        showToast('خطأ في تصدير التقرير', 'error')
+      }
+    } catch (e) {
+      showToast('خطأ في تصدير التقرير', 'error')
+    }
   }
 
   if (loading) return (
@@ -109,16 +171,6 @@ export function AdminPage() {
           </Button>
         </div>
       </div>
-
-      {/* Admin Notice */}
-      {user?.role !== 'admin' && (
-        <div className="glass-card rounded-2xl p-4 border-amber-500/30">
-          <div className="flex items-center gap-2 text-amber-500">
-            <AlertTriangle className="w-5 h-5" />
-            <span className="font-bold text-sm">هذه الصفحة متاحة فقط للمديرين</span>
-          </div>
-        </div>
-      )}
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -188,15 +240,17 @@ export function AdminPage() {
                     variant="ghost"
                     size="sm"
                     className={`text-xs ${u.isActive ? 'text-red-400 hover:text-red-500' : 'text-emerald-400 hover:text-emerald-500'}`}
+                    title={u.isActive ? 'تعطيل المستخدم' : 'تفعيل المستخدم'}
                   >
                     {u.isActive ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
                   </Button>
                   {u.role !== 'admin' && (
                     <Button
-                      onClick={() => handleDeleteUser(u.id)}
+                      onClick={() => handleDeleteUser(u.id, u.name)}
                       variant="ghost"
                       size="sm"
                       className="text-xs text-red-400 hover:text-red-500"
+                      title="حذف المستخدم"
                     >
                       <UserX className="w-4 h-4" />
                     </Button>

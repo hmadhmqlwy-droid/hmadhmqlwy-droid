@@ -17,7 +17,50 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
+
+// Toast Component
+function Toast() {
+  const { toast, clearToast } = useAppStore()
+  
+  useEffect(() => {
+    if (toast) {
+      const timer = setTimeout(clearToast, 4000)
+      return () => clearTimeout(timer)
+    }
+  }, [toast, clearToast])
+
+  if (!toast) return null
+
+  const colors = {
+    success: 'bg-emerald-500 border-emerald-600',
+    error: 'bg-red-500 border-red-600',
+    info: 'bg-cyan-500 border-cyan-600',
+  }
+  const icons = {
+    success: Check,
+    error: XCircle,
+    info: Info,
+  }
+  const Icon = icons[toast.type]
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -50, x: '-50%' }}
+      animate={{ opacity: 1, y: 0, x: '-50%' }}
+      exit={{ opacity: 0, y: -50, x: '-50%' }}
+      className="fixed top-4 left-1/2 z-[100] max-w-md w-full"
+    >
+      <div className={`mx-4 px-4 py-3 rounded-xl border ${colors[toast.type]} text-white shadow-lg flex items-center gap-3`}>
+        <Icon className="w-5 h-5 flex-shrink-0" />
+        <span className="text-sm font-medium flex-1">{toast.message}</span>
+        <button onClick={clearToast} className="text-white/70 hover:text-white">
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+    </motion.div>
+  )
+}
 
 // Notification Panel Component
 function NotificationPanel() {
@@ -216,7 +259,7 @@ function Sidebar() {
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-sm font-bold text-foreground truncate">{user?.name || 'المستخدم'}</div>
-              <div className="text-[10px] text-muted-foreground truncate">{user?.email || ''}</div>
+              <div className="text-[10px] text-muted-foreground truncate">{user?.role === 'admin' ? 'مدير النظام' : user?.role === 'manager' ? 'مشرف' : 'مستخدم'}</div>
             </div>
           </motion.div>
         )}
@@ -279,7 +322,7 @@ function TopBar() {
 }
 
 export default function Home() {
-  const { currentPage, isAuthenticated, theme } = useAppStore()
+  const { currentPage, isAuthenticated, theme, sidebarOpen } = useAppStore()
 
   // Set dark theme by default
   useEffect(() => {
@@ -301,7 +344,7 @@ export default function Home() {
       } catch {}
     }
     fetchNotifs()
-    const interval = setInterval(fetchNotifs, 30000) // every 30s
+    const interval = setInterval(fetchNotifs, 30000)
     return () => clearInterval(interval)
   }, [isAuthenticated])
 
@@ -329,8 +372,9 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background" dir="rtl">
+      <Toast />
       <Sidebar />
-      <div className="transition-all duration-300" style={{ marginRight: isAuthenticated ? (useAppStore.getState().sidebarOpen ? 260 : 72) : 0 }}>
+      <div className="transition-all duration-300" style={{ marginRight: sidebarOpen ? 260 : 72 }}>
         <TopBar />
         <main className="p-4 md:p-6 max-w-7xl mx-auto">
           <AnimatePresence mode="wait">

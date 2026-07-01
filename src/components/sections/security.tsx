@@ -12,6 +12,7 @@ const actionLabels: Record<string, string> = {
   login: 'تسجيل دخول',
   logout: 'تسجيل خروج',
   login_failed: 'محاولة دخول فاشلة',
+  google_login: 'تسجيل دخول عبر Google',
   password_change: 'تغيير كلمة المرور',
   '2fa_enable': 'تفعيل التحقق الثنائي',
   '2fa_disable': 'تعطيل التحقق الثنائي',
@@ -34,20 +35,55 @@ const severityIcons: Record<string, any> = {
 }
 
 export function SecurityPage() {
-  const { user } = useAppStore()
+  const { user, setUser, showToast } = useAppStore()
   const [logs, setLogs] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(user?.twoFactorEnabled || false)
+  const [twoFactorLoading, setTwoFactorLoading] = useState(false)
 
-  useEffect(() => { fetchLogs() }, [])
+  useEffect(() => { 
+    fetchLogs()
+    setTwoFactorEnabled(user?.twoFactorEnabled || false)
+  }, [user?.twoFactorEnabled])
 
   const fetchLogs = async () => {
     try {
       const res = await fetch('/api/security')
       if (res.ok) setLogs(await res.json())
-    } catch (e) { console.error(e) }
+      else if (res.status === 401) {
+        showToast('يجب تسجيل الدخول أولاً', 'error')
+      }
+    } catch (e) { 
+      console.error(e)
+    }
     finally { setLoading(false) }
+  }
+
+  const handleToggle2FA = async () => {
+    setTwoFactorLoading(true)
+    try {
+      const res = await fetch('/api/security', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ twoFactorEnabled: !twoFactorEnabled }),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setTwoFactorEnabled(data.twoFactorEnabled)
+        if (data.user && user) {
+          setUser({ ...user, twoFactorEnabled: data.twoFactorEnabled })
+        }
+        showToast(data.twoFactorEnabled ? 'تم تفعيل التحقق الثنائي' : 'تم تعطيل التحقق الثنائي', 'success')
+      } else {
+        const data = await res.json()
+        showToast(data.error || 'خطأ في تحديث التحقق الثنائي', 'error')
+      }
+    } catch (e) {
+      showToast('خطأ في الاتصال بالخادم', 'error')
+    } finally {
+      setTwoFactorLoading(false)
+    }
   }
 
   const filtered = logs.filter(l => 
@@ -60,7 +96,7 @@ export function SecurityPage() {
 
   function calculateSecurityScore() {
     let score = 60
-    if (user?.twoFactorEnabled || twoFactorEnabled) score += 20
+    if (twoFactorEnabled) score += 20
     if (logs.filter(l => l.severity === 'critical').length === 0) score += 10
     if (logs.filter(l => l.action === 'login_failed').length < 3) score += 10
     return Math.min(score, 100)
@@ -113,7 +149,13 @@ export function SecurityPage() {
                'حسابك يحتاج إلى تحسينات أمنية فورية. فعّل التحقق الثنائي فوراً.'}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <SecurityCheck label="التحقق الثنائي" enabled={twoFactorEnabled} icon={Fingerprint} onToggle={() => setTwoFactorEnabled(!twoFactorEnabled)} />
+              <SecurityCheck 
+                label="التحقق الثنائي" 
+                enabled={twoFactorEnabled} 
+                icon={Fingerprint} 
+                onToggle={handleToggle2FA}
+                loading={twoFactorLoading}
+              />
               <SecurityCheck label="كلمة مرور قوية" enabled={true} icon={Key} />
               <SecurityCheck label="جلسة آمنة" enabled={true} icon={Lock} />
               <SecurityCheck label="تنبيهات الأمان" enabled={true} icon={Bell} />
@@ -194,7 +236,7 @@ export function SecurityPage() {
   )
 }
 
-function SecurityCheck({ label, enabled, icon: Icon, onToggle }: { label: string; enabled: boolean; icon: any; onToggle?: () => void }) {
+function SecurityCheck({ label, enabled, icon: Icon, onToggle, loading }: { label: string; enabled: boolean; icon: any; onToggle?: () => void; loading?: boolean }) {
   return (
     <div className="flex items-center gap-3 p-3 rounded-xl bg-background/30">
       <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${enabled ? 'bg-emerald-500/10' : 'bg-muted'}`}>
@@ -206,7 +248,8 @@ function SecurityCheck({ label, enabled, icon: Icon, onToggle }: { label: string
       {onToggle ? (
         <button
           onClick={onToggle}
-          className={`w-10 h-5 rounded-full transition-colors ${enabled ? 'bg-emerald-500' : 'bg-muted'}`}
+          disabled={loading}
+          className={`w-10 h-5 rounded-full transition-colors ${enabled ? 'bg-emerald-500' : 'bg-muted'} ${loading ? 'opacity-50' : ''}`}
         >
           <motion.div
             animate={{ x: enabled ? 20 : 2 }}

@@ -125,6 +125,13 @@ export const translations = {
     systemHealth: 'صحة النظام',
     // Footer
     copyright: '© 2026 جمعياتبرو - جميع الحقوق محفوظة',
+    // Toast messages
+    successCreate: 'تم الإنشاء بنجاح',
+    successDelete: 'تم الحذف بنجاح',
+    successUpdate: 'تم التحديث بنجاح',
+    errorGeneric: 'حدث خطأ غير متوقع',
+    confirmDelete: 'هل أنت متأكد من الحذف؟',
+    noPermission: 'ليس لديك صلاحية لهذا الإجراء',
   },
   en: {
     dashboard: 'Dashboard',
@@ -207,6 +214,12 @@ export const translations = {
     manageUsers: 'Manage Users',
     systemHealth: 'System Health',
     copyright: '© 2026 JamaatPro - All Rights Reserved',
+    successCreate: 'Created successfully',
+    successDelete: 'Deleted successfully',
+    successUpdate: 'Updated successfully',
+    errorGeneric: 'An unexpected error occurred',
+    confirmDelete: 'Are you sure you want to delete?',
+    noPermission: 'You do not have permission for this action',
   }
 }
 
@@ -216,6 +229,7 @@ interface AppState {
   user: User | null
   isAuthenticated: boolean
   isLoading: boolean
+  sessionToken: string | null
 
   // Association
   selectedAssociation: Association | null
@@ -229,11 +243,12 @@ interface AppState {
   sidebarOpen: boolean
   theme: 'light' | 'dark'
   lang: Lang
+  toast: { message: string; type: 'success' | 'error' | 'info' } | null
 
   // Actions
   setCurrentPage: (page: Page) => void
   setUser: (user: User | null) => void
-  login: (user: User) => void
+  login: (user: User, token?: string) => void
   logout: () => void
   setSelectedAssociation: (assoc: Association | null) => void
   setAssociations: (assocs: Association[]) => void
@@ -246,6 +261,8 @@ interface AppState {
   setUnreadCount: (count: number) => void
   addNotification: (notif: Notification) => void
   markAllRead: () => void
+  showToast: (message: string, type?: 'success' | 'error' | 'info') => void
+  clearToast: () => void
 }
 
 export const useAppStore = create<AppState>((set, get) => ({
@@ -253,6 +270,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   user: null,
   isAuthenticated: false,
   isLoading: false,
+  sessionToken: null,
   selectedAssociation: null,
   associations: [],
   notifications: [],
@@ -260,11 +278,26 @@ export const useAppStore = create<AppState>((set, get) => ({
   sidebarOpen: true,
   theme: 'dark',
   lang: 'ar',
+  toast: null,
 
   setCurrentPage: (page) => set({ currentPage: page }),
   setUser: (user) => set({ user }),
-  login: (user) => set({ user, isAuthenticated: true, currentPage: 'dashboard' }),
-  logout: () => set({ user: null, isAuthenticated: false, currentPage: 'landing', selectedAssociation: null, notifications: [], unreadCount: 0 }),
+  login: (user, token) => {
+    // Store token in cookie for API calls
+    if (token && typeof document !== 'undefined') {
+      document.cookie = `session_token=${token}; path=/; max-age=86400; SameSite=Lax`
+    }
+    set({ user, isAuthenticated: true, currentPage: 'dashboard', sessionToken: token || null })
+  },
+  logout: () => {
+    // Clear session cookie
+    if (typeof document !== 'undefined') {
+      document.cookie = 'session_token=; path=/; max-age=0'
+    }
+    // Call logout API to invalidate session
+    fetch('/api/auth/logout', { method: 'POST' }).catch(() => {})
+    set({ user: null, isAuthenticated: false, currentPage: 'landing', selectedAssociation: null, notifications: [], unreadCount: 0, sessionToken: null })
+  },
   setSelectedAssociation: (assoc) => set({ selectedAssociation: assoc }),
   setAssociations: (assocs) => set({ associations: assocs }),
   setSidebarOpen: (open) => set({ sidebarOpen: open }),
@@ -298,4 +331,6 @@ export const useAppStore = create<AppState>((set, get) => ({
     notifications: state.notifications.map(n => ({ ...n, read: true })),
     unreadCount: 0,
   })),
+  showToast: (message, type = 'info') => set({ toast: { message, type } }),
+  clearToast: () => set({ toast: null }),
 }))

@@ -1,11 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { requireAuth, requireAdmin } from '@/lib/auth-middleware'
 
 export async function GET(request: NextRequest) {
   try {
+    const authResult = await requireAuth(request)
+    if ('error' in authResult) return authResult.error
+
     const { searchParams } = new URL(request.url)
-    const type = searchParams.get('type') || 'associations' // associations, members, events, transactions, security
-    const format = searchParams.get('format') || 'csv' // csv, json
+    const type = searchParams.get('type') || 'associations'
+    const format = searchParams.get('format') || 'csv'
+
+    // Security logs export requires admin
+    if (type === 'security' && authResult.user.role !== 'admin') {
+      return NextResponse.json({ error: 'تصدير سجلات الأمان متاح فقط للمديرين' }, { status: 403 })
+    }
 
     let data: any[] = []
     let headers: string[] = []
@@ -62,13 +71,24 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: 'نوع التقرير غير معروف' }, { status: 400 })
     }
 
+    // Audit log for export
+    await db.auditLog.create({
+      data: {
+        userId: authResult.user.id,
+        action: 'data_export',
+        resource: type,
+        details: `تصدير بيانات ${type} بصيغة ${format}`,
+        ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+      }
+    })
+
     // Export as JSON
     if (format === 'json') {
       return NextResponse.json(data)
     }
 
     // Export as CSV
-    const BOM = '\uFEFF' // UTF-8 BOM for Arabic support in Excel
+    const BOM = '\uFEFF'
     let rows: string[][] = []
 
     switch (type) {

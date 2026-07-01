@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { useAppStore } from '@/store/app-store'
-import { Calendar, Plus, Search, MapPin, Clock, Users, DollarSign, Building2, Tag } from 'lucide-react'
+import { Calendar, Plus, Search, MapPin, Clock, Users, DollarSign, Building2, Tag, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -16,12 +16,13 @@ const statusLabels: Record<string, string> = { upcoming: 'قادمة', ongoing: 
 const statusColors: Record<string, string> = { upcoming: 'bg-cyan-500/10 text-cyan-500', ongoing: 'bg-emerald-500/10 text-emerald-500', completed: 'bg-muted text-muted-foreground', cancelled: 'bg-red-500/10 text-red-500' }
 
 export function EventsPage() {
-  const { user } = useAppStore()
+  const { user, showToast } = useAppStore()
   const [events, setEvents] = useState<any[]>([])
   const [associations, setAssociations] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [showCreate, setShowCreate] = useState(false)
+  const [createLoading, setCreateLoading] = useState(false)
   const [form, setForm] = useState({ associationId: '', title: '', description: '', location: '', startDate: '', endDate: '', maxAttendees: '', budget: '', category: 'ندوة' })
 
   useEffect(() => { fetchEvents(); fetchAssociations() }, [])
@@ -42,14 +43,57 @@ export function EventsPage() {
   }
 
   const handleCreate = async () => {
+    if (!form.associationId) {
+      showToast('يرجى اختيار الجمعية', 'error')
+      return
+    }
+    if (!form.title.trim()) {
+      showToast('عنوان الفعالية مطلوب', 'error')
+      return
+    }
+    if (!form.startDate) {
+      showToast('تاريخ البدء مطلوب', 'error')
+      return
+    }
+
+    setCreateLoading(true)
     try {
       const res = await fetch('/api/events', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       })
-      if (res.ok) { setShowCreate(false); fetchEvents() }
-    } catch (e) { console.error(e) }
+      if (res.ok) {
+        setShowCreate(false)
+        setForm({ associationId: '', title: '', description: '', location: '', startDate: '', endDate: '', maxAttendees: '', budget: '', category: 'ندوة' })
+        fetchEvents()
+        showToast('تم إنشاء الفعالية بنجاح', 'success')
+      } else {
+        const data = await res.json()
+        showToast(data.error || 'خطأ في إنشاء الفعالية', 'error')
+      }
+    } catch (e) { 
+      console.error(e)
+      showToast('خطأ في الاتصال بالخادم', 'error')
+    } finally {
+      setCreateLoading(false)
+    }
+  }
+
+  const handleDelete = async (eventId: string, eventTitle: string) => {
+    if (!confirm(`هل أنت متأكد من حذف "${eventTitle}"؟`)) return
+    try {
+      const res = await fetch(`/api/events?eventId=${eventId}`, { method: 'DELETE' })
+      if (res.ok) {
+        showToast('تم حذف الفعالية بنجاح', 'success')
+        fetchEvents()
+      } else {
+        const data = await res.json()
+        showToast(data.error || 'خطأ في حذف الفعالية', 'error')
+      }
+    } catch (e) {
+      showToast('خطأ في الاتصال بالخادم', 'error')
+    }
   }
 
   const filtered = events.filter(e => e.title.includes(search))
@@ -100,7 +144,9 @@ export function EventsPage() {
                 <div><Label>الحد الأقصى للحضور</Label><Input type="number" value={form.maxAttendees} onChange={e => setForm({ ...form, maxAttendees: e.target.value })} placeholder="100" className="mt-1" dir="ltr" /></div>
                 <div><Label>الميزانية (ر.س)</Label><Input type="number" value={form.budget} onChange={e => setForm({ ...form, budget: e.target.value })} placeholder="50000" className="mt-1" dir="ltr" /></div>
               </div>
-              <Button onClick={handleCreate} className="w-full bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold rounded-xl">إنشاء الفعالية</Button>
+              <Button onClick={handleCreate} disabled={createLoading} className="w-full bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold rounded-xl">
+                {createLoading ? 'جارٍ الإنشاء...' : 'إنشاء الفعالية'}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -120,13 +166,22 @@ export function EventsPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.05 }}
               whileHover={{ y: -4, transition: { duration: 0.2 } }}
-              className="glass-card rounded-2xl overflow-hidden cursor-pointer"
+              className="glass-card rounded-2xl overflow-hidden"
             >
               <div className="h-24 bg-gradient-to-br from-amber-500/20 via-orange-500/10 to-yellow-500/20 relative flex items-center justify-center">
                 <Calendar className="w-10 h-10 text-amber-500/50" />
                 <span className={`absolute top-3 left-3 px-2 py-0.5 rounded-full text-xs font-medium ${statusColors[event.status] || 'bg-muted'}`}>
                   {statusLabels[event.status] || event.status}
                 </span>
+                {(user?.role === 'admin') && (
+                  <button
+                    onClick={() => handleDelete(event.id, event.title)}
+                    className="absolute top-3 right-3 p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:text-red-500 hover:bg-red-500/20 transition-colors"
+                    title="حذف الفعالية"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                )}
               </div>
               <div className="p-4">
                 <h3 className="font-bold text-foreground mb-1 truncate">{event.title}</h3>

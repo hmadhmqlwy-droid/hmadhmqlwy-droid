@@ -18,6 +18,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'بيانات الدخول غير صحيحة' }, { status: 401 })
     }
 
+    // If user has no password (Google OAuth user), they can't login with password
+    if (!user.password) {
+      return NextResponse.json({ 
+        error: 'هذا الحساب مسجل عبر Google. يرجى استخدام زر تسجيل الدخول بـ Google' 
+      }, { status: 401 })
+    }
+
     // Verify password with bcrypt
     const isValid = await verifyPassword(password, user.password)
     if (!isValid) {
@@ -71,7 +78,7 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       user: {
         id: user.id,
         name: user.name,
@@ -82,6 +89,16 @@ export async function POST(request: NextRequest) {
       },
       token,
     })
+
+    // Set session cookie
+    response.cookies.set('session_token', token, {
+      path: '/',
+      maxAge: 86400, // 24h
+      httpOnly: false, // Need to read from client for API calls
+      sameSite: 'lax',
+    })
+
+    return response
   } catch (error) {
     console.error('Login error:', error)
     return NextResponse.json({ error: 'خطأ في الخادم' }, { status: 500 })

@@ -3,7 +3,7 @@
 import { motion } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { useAppStore } from '@/store/app-store'
-import { DollarSign, TrendingUp, TrendingDown, Plus, Search, Building2, ArrowUpLeft, ArrowDownLeft, Wallet, Receipt, PiggyBank } from 'lucide-react'
+import { DollarSign, TrendingUp, TrendingDown, Plus, Search, Building2, ArrowUpLeft, ArrowDownLeft, Wallet, Receipt, CheckCircle, XCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -11,17 +11,19 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
+import { Badge } from '@/components/ui/badge'
 
 const incomeCategories = ['اشتراكات', 'تبرعات', 'منح', 'إيرادات أخرى']
 const expenseCategories = ['رواتب', 'إيجار', 'صيانة', 'أنشطة', 'مصروفات أخرى']
 
 export function FinancePage() {
-  const { user } = useAppStore()
+  const { user, showToast } = useAppStore()
   const [transactions, setTransactions] = useState<any[]>([])
   const [associations, setAssociations] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [showCreate, setShowCreate] = useState(false)
+  const [createLoading, setCreateLoading] = useState(false)
   const [form, setForm] = useState({ associationId: '', type: 'income', category: 'اشتراكات', amount: '', description: '', date: '', reference: '' })
 
   useEffect(() => { fetchTransactions(); fetchAssociations() }, [])
@@ -42,21 +44,66 @@ export function FinancePage() {
   }
 
   const handleCreate = async () => {
+    if (!form.associationId) {
+      showToast('يرجى اختيار الجمعية', 'error')
+      return
+    }
+    if (!form.amount || parseFloat(form.amount) <= 0) {
+      showToast('يرجى إدخال مبلغ صحيح', 'error')
+      return
+    }
+    if (!form.date) {
+      showToast('يرجى إدخال التاريخ', 'error')
+      return
+    }
+
+    setCreateLoading(true)
     try {
       const res = await fetch('/api/transactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...form, approvedBy: user?.id }),
       })
-      if (res.ok) { setShowCreate(false); fetchTransactions() }
-    } catch (e) { console.error(e) }
+      if (res.ok) {
+        setShowCreate(false)
+        setForm({ associationId: '', type: 'income', category: 'اشتراكات', amount: '', description: '', date: '', reference: '' })
+        fetchTransactions()
+        showToast('تم إضافة المعاملة بنجاح', 'success')
+      } else {
+        const data = await res.json()
+        showToast(data.error || 'خطأ في إضافة المعاملة', 'error')
+      }
+    } catch (e) { 
+      console.error(e)
+      showToast('خطأ في الاتصال بالخادم', 'error')
+    } finally {
+      setCreateLoading(false)
+    }
+  }
+
+  const handleApproveTransaction = async (transactionId: string, status: 'approved' | 'rejected') => {
+    try {
+      const res = await fetch('/api/transactions', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ transactionId, status }),
+      })
+      if (res.ok) {
+        showToast(status === 'approved' ? 'تمت الموافقة على المعاملة' : 'تم رفض المعاملة', 'success')
+        fetchTransactions()
+      } else {
+        const data = await res.json()
+        showToast(data.error || 'خطأ في تحديث المعاملة', 'error')
+      }
+    } catch (e) {
+      showToast('خطأ في الاتصال بالخادم', 'error')
+    }
   }
 
   const totalIncome = transactions.filter(t => t.type === 'income').reduce((s, t) => s + t.amount, 0)
   const totalExpense = transactions.filter(t => t.type === 'expense').reduce((s, t) => s + t.amount, 0)
   const balance = totalIncome - totalExpense
 
-  // Chart data by category
   const incomeByCategory = transactions.filter(t => t.type === 'income').reduce((acc, t) => {
     acc[t.category] = (acc[t.category] || 0) + t.amount
     return acc
@@ -131,7 +178,9 @@ export function FinancePage() {
                 <div><Label>التاريخ *</Label><Input type="date" value={form.date} onChange={e => setForm({ ...form, date: e.target.value })} className="mt-1" dir="ltr" /></div>
                 <div><Label>المرجع</Label><Input value={form.reference} onChange={e => setForm({ ...form, reference: e.target.value })} placeholder="INV-001" className="mt-1" dir="ltr" /></div>
               </div>
-              <Button onClick={handleCreate} className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl">إضافة المعاملة</Button>
+              <Button onClick={handleCreate} disabled={createLoading} className="w-full bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl">
+                {createLoading ? 'جارٍ الإضافة...' : 'إضافة المعاملة'}
+              </Button>
             </div>
           </DialogContent>
         </Dialog>
@@ -140,9 +189,9 @@ export function FinancePage() {
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {[
-          { title: 'إجمالي الدخل', value: totalIncome, icon: TrendingUp, color: 'from-emerald-500 to-teal-600', iconBg: 'bg-emerald-500' },
-          { title: 'إجمالي المصروفات', value: totalExpense, icon: TrendingDown, color: 'from-red-500 to-rose-600', iconBg: 'bg-red-500' },
-          { title: 'الرصيد الصافي', value: balance, icon: Wallet, color: 'from-cyan-500 to-blue-600', iconBg: 'bg-cyan-500' },
+          { title: 'إجمالي الدخل', value: totalIncome, icon: TrendingUp, color: 'from-emerald-500 to-teal-600' },
+          { title: 'إجمالي المصروفات', value: totalExpense, icon: TrendingDown, color: 'from-red-500 to-rose-600' },
+          { title: 'الرصيد الصافي', value: balance, icon: Wallet, color: 'from-cyan-500 to-blue-600' },
         ].map((card, i) => (
           <motion.div key={card.title} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.1 }}
             whileHover={{ y: -4 }} className="glass-card rounded-2xl p-5">
@@ -191,12 +240,42 @@ export function FinancePage() {
                 {t.type === 'income' ? <ArrowUpLeft className="w-5 h-5 text-emerald-500" /> : <ArrowDownLeft className="w-5 h-5 text-red-500" />}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="font-bold text-foreground text-sm truncate">{t.description || t.category}</div>
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-foreground text-sm truncate">{t.description || t.category}</span>
+                  {t.status === 'pending' && (
+                    <Badge className="bg-amber-500/10 text-amber-500 text-[10px]">معلقة</Badge>
+                  )}
+                  {t.status === 'approved' && (
+                    <Badge className="bg-emerald-500/10 text-emerald-500 text-[10px]">معتمدة</Badge>
+                  )}
+                  {t.status === 'rejected' && (
+                    <Badge className="bg-red-500/10 text-red-500 text-[10px]">مرفوضة</Badge>
+                  )}
+                </div>
                 <div className="text-xs text-muted-foreground">{t.association?.name} • {t.category} • {new Date(t.date).toLocaleDateString('ar-SA')}</div>
               </div>
               <div className={`text-sm font-bold ${t.type === 'income' ? 'text-emerald-500' : 'text-red-500'}`}>
                 {t.type === 'income' ? '+' : '-'}{t.amount.toLocaleString('ar-SA')} ر.س
               </div>
+              {/* Approve/Reject buttons for pending transactions (admin/manager only) */}
+              {t.status === 'pending' && (user?.role === 'admin' || user?.role === 'manager') && (
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => handleApproveTransaction(t.id, 'approved')}
+                    className="p-1 rounded-lg text-emerald-500 hover:bg-emerald-500/10 transition-colors"
+                    title="موافقة"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleApproveTransaction(t.id, 'rejected')}
+                    className="p-1 rounded-lg text-red-500 hover:bg-red-500/10 transition-colors"
+                    title="رفض"
+                  >
+                    <XCircle className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
             </motion.div>
           ))}
         </div>

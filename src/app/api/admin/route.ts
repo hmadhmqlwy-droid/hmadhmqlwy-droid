@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { requireAdmin } from '@/lib/auth-middleware'
 
-// GET /api/admin - Get system overview for admin
+// GET /api/admin - Get system overview for admin (admin only)
 export async function GET(request: NextRequest) {
   try {
+    const authResult = await requireAdmin(request)
+    if ('error' in authResult) return authResult.error
+
     const [
       totalUsers,
       activeUsers,
@@ -59,14 +63,22 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// PATCH /api/admin - Update user role/status
+// PATCH /api/admin - Update user role/status (admin only)
 export async function PATCH(request: NextRequest) {
   try {
+    const authResult = await requireAdmin(request)
+    if ('error' in authResult) return authResult.error
+
     const body = await request.json()
     const { userId, action } = body // action: { role, isActive, twoFactorEnabled }
 
     if (!userId || !action) {
       return NextResponse.json({ error: 'معرف المستخدم والإجراء مطلوبان' }, { status: 400 })
+    }
+
+    // Prevent admin from demoting themselves
+    if (userId === authResult.user.id && action.role && action.role !== 'admin') {
+      return NextResponse.json({ error: 'لا يمكنك إزالة صلاحيات المدير من نفسك' }, { status: 400 })
     }
 
     const updateData: any = {}
@@ -82,7 +94,7 @@ export async function PATCH(request: NextRequest) {
     // Audit log
     await db.auditLog.create({
       data: {
-        userId,
+        userId: authResult.user.id,
         action: 'admin_user_update',
         resource: 'User',
         resourceId: userId,
@@ -107,14 +119,22 @@ export async function PATCH(request: NextRequest) {
   }
 }
 
-// DELETE /api/admin - Delete user
+// DELETE /api/admin - Delete user (admin only)
 export async function DELETE(request: NextRequest) {
   try {
+    const authResult = await requireAdmin(request)
+    if ('error' in authResult) return authResult.error
+
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get('userId')
 
     if (!userId) {
       return NextResponse.json({ error: 'معرف المستخدم مطلوب' }, { status: 400 })
+    }
+
+    // Prevent deleting yourself
+    if (userId === authResult.user.id) {
+      return NextResponse.json({ error: 'لا يمكنك حذف حسابك الخاص' }, { status: 400 })
     }
 
     // Prevent deleting last admin
@@ -129,6 +149,7 @@ export async function DELETE(request: NextRequest) {
 
     await db.auditLog.create({
       data: {
+        userId: authResult.user.id,
         action: 'admin_user_delete',
         resource: 'User',
         resourceId: userId,

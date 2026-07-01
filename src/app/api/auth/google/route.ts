@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
+import { v4 as uuidv4 } from 'uuid'
 
 // Google OAuth - Sign in with Google
 export async function POST(request: NextRequest) {
@@ -73,7 +74,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Create session
-    const { v4: uuidv4 } = require('uuid')
     const sessionToken = uuidv4()
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24h
 
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
       }
     })
 
-    return NextResponse.json({
+    const response = NextResponse.json({
       user: {
         id: user.id,
         name: user.name,
@@ -110,6 +110,16 @@ export async function POST(request: NextRequest) {
       },
       token: sessionToken,
     })
+
+    // Set session cookie
+    response.cookies.set('session_token', sessionToken, {
+      path: '/',
+      maxAge: 86400,
+      httpOnly: false,
+      sameSite: 'lax',
+    })
+
+    return response
   } catch (error) {
     console.error('Google auth error:', error)
     return NextResponse.json({ error: 'خطأ في تسجيل الدخول عبر Google' }, { status: 500 })
