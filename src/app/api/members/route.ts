@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db, ensureDbInitialized } from '@/lib/db'
 import { requireAuth, requireAssociationRole } from '@/lib/auth-middleware'
 
 // GET /api/members - Get members for an association
 export async function GET(request: NextRequest) {
   try {
+    await ensureDbInitialized()
     const authResult = await requireAuth(request)
     if ('error' in authResult) return authResult.error
 

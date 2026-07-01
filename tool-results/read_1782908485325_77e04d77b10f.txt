@@ -1,0 +1,1425 @@
+     1→'use client'
+     2→
+     3→import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion'
+     4→import { useEffect, useRef, useState, useCallback } from 'react'
+     5→import { Shield, Users, Building2, Calendar, BarChart3, ChevronDown, Sparkles, Lock, Eye, Fingerprint,
+     6→  Phone, Mail, MapPin, Send, ArrowLeft, ChevronRight, Globe, Star, CheckCircle2,
+     7→  Monitor, Smartphone, Database, Cloud, Cpu, Headphones, Clock, Award, Zap,
+     8→  Facebook, Twitter, Instagram, Youtube, MessageCircle, Play, ArrowUp,
+     9→  Heart, Target, Lightbulb, Rocket, TrendingUp, Settings, BookOpen, Layers,
+    10→  ArrowRight, BadgeCheck, Palette, Code2, Server, Wifi, Layers3, PenTool, BarChart2,
+    11→  UserCheck, FileText, Bell, ShieldCheck, Activity, PieChart, Download
+    12→} from 'lucide-react'
+    13→import { useAppStore } from '@/store/app-store'
+    14→import { AnimatedHeroIllustration, AnimatedSecurityIllustration, AnimatedDashboardIllustration, AnimatedMembersIllustration, AnimatedEventsIllustration, AnimatedFinanceIllustration } from './animated-illustrations'
+    15→
+    16→// ============================================
+    17→// ANIMATED SVG ILLUSTRATIONS
+    18→// ============================================
+    19→
+    20→function AnimatedPhoneIllustration() {
+    21→  return (
+    22→    <div className="w-full h-full flex items-center justify-center" style={{ minHeight: 280 }}>
+    23→      <motion.div
+    24→        animate={{ y: [0, -10, 0], rotateY: [0, 5, -5, 0] }}
+    25→        transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}
+    26→        className="preserve-3d"
+    27→      >
+    28→        <svg width="260" height="280" viewBox="0 0 260 280" fill="none">
+    29→          <defs>
+    30→            <linearGradient id="phoneGrad" x1="0" y1="0" x2="1" y2="1">
+    31→              <stop offset="0%" stopColor="#6366f1" stopOpacity="0.3" />
+    32→              <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.1" />
+    33→            </linearGradient>
+    34→            <linearGradient id="screenGrad" x1="0" y1="0" x2="0" y2="1">
+    35→              <stop offset="0%" stopColor="#eef2ff" />
+    36→              <stop offset="100%" stopColor="#e0f2fe" />
+    37→            </linearGradient>
+    38→          </defs>
+    39→          {/* Phone body */}
+    40→          <rect x="60" y="10" width="140" height="260" rx="24" fill="url(#phoneGrad)" stroke="#6366f1" strokeWidth="2" opacity="0.8" />
+    41→          <rect x="70" y="40" width="120" height="195" rx="4" fill="url(#screenGrad)" />
+    42→          {/* Status bar */}
+    43→          <rect x="70" y="40" width="120" height="20" rx="4" fill="#6366f1" opacity="0.15" />
+    44→          <circle cx="82" cy="50" r="3" fill="#6366f1" opacity="0.4" />
+    45→          <rect x="90" y="48" width="30" height="4" rx="2" fill="#6366f1" opacity="0.3" />
+    46→          {/* App cards */}
+    47→          <motion.g animate={{ y: [0, -2, 0] }} transition={{ duration: 3, repeat: Infinity }}>
+    48→            <rect x="78" y="68" width="104" height="35" rx="8" fill="#6366f1" opacity="0.12" />
+    49→            <circle cx="95" cy="85" r="8" fill="#6366f1" opacity="0.3" />
+    50→            <rect x="110" y="79" width="40" height="4" rx="2" fill="#6366f1" opacity="0.25" />
+    51→            <rect x="110" y="87" width="30" height="3" rx="1.5" fill="#06b6d4" opacity="0.25" />
+    52→          </motion.g>
+    53→          <motion.g animate={{ y: [0, -3, 0] }} transition={{ duration: 4, repeat: Infinity, delay: 0.5 }}>
+    54→            <rect x="78" y="110" width="50" height="45" rx="8" fill="#ec4899" opacity="0.1" />
+    55→            <BarChart2 x="85" y="118" width="36" height="30" fill="#ec4899" opacity="0.3" />
+    56→          </motion.g>
+    57→          <motion.g animate={{ y: [0, -2, 0] }} transition={{ duration: 3.5, repeat: Infinity, delay: 1 }}>
+    58→            <rect x="132" y="110" width="50" height="45" rx="8" fill="#06b6d4" opacity="0.1" />
+    59→            <Users x="139" y="118" width="36" height="30" fill="#06b6d4" opacity="0.3" />
+    60→          </motion.g>
+    61→          <motion.g animate={{ y: [0, -2, 0] }} transition={{ duration: 3, repeat: Infinity, delay: 1.5 }}>
+    62→            <rect x="78" y="162" width="104" height="30" rx="6" fill="#10b981" opacity="0.1" />
+    63→            <CheckCircle2 x="88" y="169" width="14" height="14" fill="#10b981" opacity="0.4" />
+    64→            <rect x="110" y="172" width="50" height="4" rx="2" fill="#10b981" opacity="0.25" />
+    65→            <rect x="110" y="179" width="35" height="3" rx="1.5" fill="#10b981" opacity="0.2" />
+    66→          </motion.g>
+    67→          {/* Bottom nav */}
+    68→          <rect x="70" y="200" width="120" height="35" rx="0" fill="#6366f1" opacity="0.06" />
+    69→          {[0,1,2,3,4].map(i => (
+    70→            <circle key={`nav-${i}`} cx={85 + i * 24} cy="218" r="4" fill="#6366f1" opacity={i === 0 ? 0.5 : 0.15} />
+    71→          ))}
+    72→          {/* Notch */}
+    73→          <rect x="105" y="15" width="50" height="6" rx="3" fill="#6366f1" opacity="0.2" />
+    74→          {/* Floating notification */}
+    75→          <motion.g animate={{ y: [0, -8, 0], opacity: [0.7, 1, 0.7] }} transition={{ duration: 3, repeat: Infinity, delay: 2 }}>
+    76→            <rect x="180" y="60" width="70" height="28" rx="8" fill="white" stroke="#6366f1" strokeWidth="1" opacity="0.9" />
+    77→            <circle cx="194" cy="74" r="5" fill="#ec4899" opacity="0.4" />
+    78→            <rect x="204" y="70" width="35" height="4" rx="2" fill="#1a1a2e" opacity="0.3" />
+    79→          </motion.g>
+    80→        </svg>
+    81→      </motion.div>
+    82→    </div>
+    83→  )
+    84→}
+    85→
+    86→function AnimatedTeamIllustration() {
+    87→  return (
+    88→    <div className="w-full h-full flex items-center justify-center" style={{ minHeight: 260 }}>
+    89→      <motion.div
+    90→        animate={{ scale: [1, 1.02, 1], rotateY: [0, 3, -3, 0] }}
+    91→        transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+    92→        className="preserve-3d"
+    93→      >
+    94→        <svg width="280" height="260" viewBox="0 0 280 260" fill="none">
+    95→          <defs>
+    96→            <linearGradient id="teamGrad" x1="0" y1="0" x2="1" y2="1">
+    97→              <stop offset="0%" stopColor="#6366f1" stopOpacity="0.2" />
+    98→              <stop offset="100%" stopColor="#ec4899" stopOpacity="0.1" />
+    99→            </linearGradient>
+   100→          </defs>
+   101→          {/* Central person */}
+   102→          <circle cx="140" cy="70" r="22" fill="#6366f1" opacity="0.3" />
+   103→          <circle cx="140" cy="70" r="15" fill="#6366f1" opacity="0.5" />
+   104→          <path d="M110 130 Q140 100 170 130 L170 160 Q140 170 110 160 Z" fill="#6366f1" opacity="0.25" />
+   105→          {/* Connected people */}
+   106→          {[
+   107→            { x: 50, y: 90, c: '#06b6d4', delay: 0 },
+   108→            { x: 230, y: 90, c: '#ec4899', delay: 0.5 },
+   109→            { x: 50, y: 180, c: '#10b981', delay: 1 },
+   110→            { x: 230, y: 180, c: '#f59e0b', delay: 1.5 },
+   111→            { x: 140, y: 210, c: '#8b5cf6', delay: 2 },
+   112→          ].map((p, i) => (
+   113→            <g key={`team-${i}`}>
+   114→              <motion.line
+   115→                x1="140" y1="100" x2={p.x} y2={p.y}
+   116→                stroke="#6366f1" strokeWidth="1.5" strokeDasharray="6 6"
+   117→                animate={{ opacity: [0.1, 0.3, 0.1] }}
+   118→                transition={{ duration: 3, repeat: Infinity, delay: p.delay }}
+   119→              />
+   120→              <motion.circle
+   121→                cx={p.x} cy={p.y} r="18"
+   122→                fill={p.c} opacity="0.15"
+   123→                animate={{ scale: [1, 1.15, 1] }}
+   124→                transition={{ duration: 3, repeat: Infinity, delay: p.delay }}
+   125→                style={{ transformOrigin: `${p.x}px ${p.y}px` }}
+   126→              />
+   127→              <circle cx={p.x} cy={p.y} r="12" fill={p.c} opacity="0.3" />
+   128→              <circle cx={p.x} cy={p.y - 4} r="5" fill={p.c} opacity="0.4" />
+   129→              <path d={`M${p.x - 6} ${p.y + 4} Q${p.x} ${p.y - 2} ${p.x + 6} ${p.y + 4}`} fill={p.c} opacity="0.25" />
+   130→            </g>
+   131→          ))}
+   132→          {/* Decorative dots */}
+   133→          {[
+   134→            { x: 80, y: 40 }, { x: 200, y: 40 }, { x: 80, y: 230 }, { x: 200, y: 230 },
+   135→          ].map((d, i) => (
+   136→            <motion.circle
+   137→              key={`dot-${i}`}
+   138→              cx={d.x} cy={d.y} r="3"
+   139→              fill="#6366f1" opacity="0.15"
+   140→              animate={{ y: [d.y, d.y - 10, d.y], opacity: [0.15, 0.3, 0.15] }}
+   141→              transition={{ duration: 4, repeat: Infinity, delay: i * 0.8 }}
+   142→            />
+   143→          ))}
+   144→        </svg>
+   145→      </motion.div>
+   146→    </div>
+   147→  )
+   148→}
+   149→
+   150→function AnimatedCloudIllustration() {
+   151→  return (
+   152→    <div className="w-full h-full flex items-center justify-center" style={{ minHeight: 240 }}>
+   153→      <motion.div
+   154→        animate={{ y: [0, -8, 0] }}
+   155→        transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+   156→      >
+   157→        <svg width="260" height="240" viewBox="0 0 260 240" fill="none">
+   158→          <defs>
+   159→            <linearGradient id="cloudGrad" x1="0" y1="0" x2="1" y2="1">
+   160→              <stop offset="0%" stopColor="#6366f1" stopOpacity="0.15" />
+   161→              <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.08" />
+   162→            </linearGradient>
+   163→          </defs>
+   164→          {/* Cloud shape */}
+   165→          <path d="M60 150 Q60 110 100 100 Q100 60 150 60 Q200 60 200 100 Q240 110 240 150 Z" fill="url(#cloudGrad)" stroke="#6366f1" strokeWidth="1.5" opacity="0.6" />
+   166→          {/* Server inside cloud */}
+   167→          {[0, 1, 2].map(i => (
+   168→            <g key={`srv-${i}`}>
+   169→              <rect x="100" y={100 + i * 22} width="60" height="18" rx="4" fill="white" stroke="#6366f1" strokeWidth="1" opacity="0.7" />
+   170→              <motion.circle
+   171→                cx="112" cy={109 + i * 22} r="3"
+   172→                fill="#10b981"
+   173→                animate={{ opacity: [0.3, 0.8, 0.3] }}
+   174→                transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.3 }}
+   175→              />
+   176→              <rect x="122" y={105 + i * 22} width="28" height="3" rx="1.5" fill="#6366f1" opacity="0.15" />
+   177→            </g>
+   178→          ))}
+   179→          {/* Arrows up/down */}
+   180→          <motion.g animate={{ y: [0, -5, 0] }} transition={{ duration: 2, repeat: Infinity }}>
+   181→            <path d="M130 85 L130 75 M125 80 L130 75 L135 80" stroke="#6366f1" strokeWidth="2" opacity="0.4" />
+   182→          </motion.g>
+   183→          <motion.g animate={{ y: [0, 5, 0] }} transition={{ duration: 2, repeat: Infinity, delay: 1 }}>
+   184→            <path d="M130 175 L130 185 M125 180 L130 185 L135 180" stroke="#06b6d4" strokeWidth="2" opacity="0.4" />
+   185→          </motion.g>
+   186→          {/* Shield badge */}
+   187→          <motion.g animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 3, repeat: Infinity }} style={{ transformOrigin: '200px 90px' }}>
+   188→            <path d="M200 75 L215 82 L215 95 Q215 105 200 110 Q185 105 185 95 L185 82 Z" fill="#6366f1" opacity="0.15" stroke="#6366f1" strokeWidth="1" />
+   189→            <CheckCircle2 x="191" y="83" width="18" height="18" fill="none" stroke="#6366f1" strokeWidth="1.5" opacity="0.5" />
+   190→          </motion.g>
+   191→        </svg>
+   192→      </motion.div>
+   193→    </div>
+   194→  )
+   195→}
+   196→
+   197→// ============================================
+   198→// SEEDED RANDOM FOR DETERMINISTIC SSR
+   199→// ============================================
+   200→function seededRandom(seed: number) {
+   201→  const x = Math.sin(seed) * 10000
+   202→  return x - Math.floor(x)
+   203→}
+   204→
+   205→// ============================================
+   206→// PARTICLE COMPONENT
+   207→// ============================================
+   208→function Particles() {
+   209→  const [mounted, setMounted] = useState(false)
+   210→
+   211→  useEffect(() => {
+   212→    requestAnimationFrame(() => setMounted(true))
+   213→  }, [])
+   214→
+   215→  const particles = useState(() =>
+   216→    Array.from({ length: 25 }, (_, i) => ({
+   217→      id: i,
+   218→      x: Math.round(seededRandom(i * 7 + 1) * 100 * 10000) / 10000,
+   219→      y: Math.round(seededRandom(i * 13 + 2) * 100 * 10000) / 10000,
+   220→      size: Math.round((seededRandom(i * 17 + 3) * 6 + 2) * 10000) / 10000,
+   221→      duration: seededRandom(i * 23 + 4) * 20 + 10,
+   222→      delay: seededRandom(i * 31 + 5) * 5,
+   223→      animX1: Math.round((seededRandom(i * 37 + 6) * 50 - 25) * 10000) / 10000,
+   224→      animX2: Math.round((seededRandom(i * 41 + 7) * 100 - 50) * 10000) / 10000,
+   225→      color: ['rgba(99,102,241,0.1)', 'rgba(6,182,212,0.08)', 'rgba(236,72,153,0.06)', 'rgba(245,158,11,0.06)'][i % 4],
+   226→    }))
+   227→  )[0]
+   228→
+   229→  if (!mounted) return null
+   230→
+   231→  return (
+   232→    <div className="absolute inset-0 overflow-hidden pointer-events-none">
+   233→      {particles.map(p => (
+   234→        <motion.div
+   235→          key={p.id}
+   236→          className="absolute rounded-full"
+   237→          style={{ left: `${p.x}%`, top: `${p.y}%`, width: p.size, height: p.size, background: p.color }}
+   238→          animate={{
+   239→            y: [0, -200, -400],
+   240→            x: [0, p.animX1, p.animX2],
+   241→            opacity: [0, 0.8, 0],
+   242→            scale: [0.5, 1, 0.5],
+   243→          }}
+   244→          transition={{
+   245→            duration: p.duration,
+   246→            delay: p.delay,
+   247→            repeat: Infinity,
+   248→            ease: 'linear',
+   249→          }}
+   250→        />
+   251→      ))}
+   252→    </div>
+   253→  )
+   254→}
+   255→
+   256→// ============================================
+   257→// FLOATING CARD WITH ANIMATED ILLUSTRATION
+   258→// ============================================
+   259→function FloatingCard({ icon: Icon, title, desc, delay, color, illustration }: { icon: any; title: string; desc: string; delay: number; color: string; illustration?: React.ReactNode }) {
+   260→  return (
+   261→    <motion.div
+   262→      initial={{ opacity: 0, y: 60, rotateX: -15 }}
+   263→      animate={{ opacity: 1, y: 0, rotateX: 0 }}
+   264→      transition={{ duration: 0.8, delay, ease: [0.23, 1, 0.32, 1] }}
+   265→      whileHover={{
+   266→        y: -12,
+   267→        rotateY: 5,
+   268→        rotateX: -5,
+   269→        scale: 1.03,
+   270→        transition: { duration: 0.3 }
+   271→      }}
+   272→      className="perspective-container"
+   273→    >
+   274→      <div className="glass-card rounded-2xl p-6 cursor-pointer preserve-3d card-3d group h-full">
+   275→        {illustration && (
+   276→          <div className="mb-3 flex justify-center overflow-hidden rounded-xl bg-indigo-50/50 py-2">
+   277→            {illustration}
+   278→          </div>
+   279→        )}
+   280→        <div className={`w-14 h-14 rounded-xl ${color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300`}>
+   281→          <Icon className="w-7 h-7 text-white" />
+   282→        </div>
+   283→        <h3 className="text-lg font-bold text-foreground mb-2">{title}</h3>
+   284→        <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+   285→      </div>
+   286→    </motion.div>
+   287→  )
+   288→}
+   289→
+   290→// ============================================
+   291→// STATS COUNTER
+   292→// ============================================
+   293→function StatsCounter() {
+   294→  const [counts, setCounts] = useState({ associations: 0, members: 0, events: 0, security: 0 })
+   295→
+   296→  useEffect(() => {
+   297→    const targets = { associations: 1250, members: 45800, events: 3200, security: 99.9 }
+   298→    const duration = 2000
+   299→    const steps = 60
+   300→    const interval = duration / steps
+   301→    let step = 0
+   302→
+   303→    const timer = setInterval(() => {
+   304→      step++
+   305→      const progress = step / steps
+   306→      const eased = 1 - Math.pow(1 - progress, 3)
+   307→
+   308→      setCounts({
+   309→        associations: Math.round(targets.associations * eased),
+   310→        members: Math.round(targets.members * eased),
+   311→        events: Math.round(targets.events * eased),
+   312→        security: Math.round(targets.security * eased * 10) / 10,
+   313→      })
+   314→
+   315→      if (step >= steps) clearInterval(timer)
+   316→    }, interval)
+   317→
+   318→    return () => clearInterval(timer)
+   319→  }, [])
+   320→
+   321→  const stats = [
+   322→    { label: 'جمعية مسجلة', value: counts.associations.toLocaleString('ar-SA'), icon: Building2, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+   323→    { label: 'عضو فعّال', value: counts.members.toLocaleString('ar-SA'), icon: Users, color: 'text-cyan-600', bg: 'bg-cyan-50' },
+   324→    { label: 'فعالية منفذة', value: counts.events.toLocaleString('ar-SA'), icon: Calendar, color: 'text-amber-600', bg: 'bg-amber-50' },
+   325→    { label: 'نسبة الأمان', value: `${counts.security}%`, icon: Shield, color: 'text-pink-600', bg: 'bg-pink-50' },
+   326→  ]
+   327→
+   328→  return (
+   329→    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+   330→      {stats.map((stat, i) => (
+   331→        <motion.div
+   332→          key={stat.label}
+   333→          initial={{ opacity: 0, y: 30 }}
+   334→          animate={{ opacity: 1, y: 0 }}
+   335→          transition={{ delay: 0.8 + i * 0.1 }}
+   336→          className={`${stat.bg} rounded-2xl p-5 text-center border border-white/60 shadow-sm`}
+   337→        >
+   338→          <stat.icon className={`w-7 h-7 mx-auto mb-2 ${stat.color}`} />
+   339→          <div className={`text-2xl md:text-3xl font-bold ${stat.color} animate-count-up`}>{stat.value}</div>
+   340→          <div className="text-xs md:text-sm text-muted-foreground mt-1 font-medium">{stat.label}</div>
+   341→        </motion.div>
+   342→      ))}
+   343→    </div>
+   344→  )
+   345→}
+   346→
+   347→// ============================================
+   348→// HERO SECTION
+   349→// ============================================
+   350→function HeroSection() {
+   351→  const [current, setCurrent] = useState(0)
+   352→  const { setCurrentPage } = useAppStore()
+   353→
+   354→  const slides = [
+   355→    {
+   356→      badge: 'منصة ذكية لإدارة الجمعيات',
+   357→      title1: 'منصة تنظيم',
+   358→      title2: 'الجمعيات الذكية',
+   359→      desc: 'أدِر جمعيتك بكفاءة واحترافية مع نظام متكامل يشمل إدارة الأعضاء والفعاليات والماليات مع حماية متقدمة من الدرجة الأولى',
+   360→      cta: 'ابدأ رحلتك الآن',
+   361→      ctaSecondary: 'لديك حساب؟ سجّل دخول',
+   362→      illustration: <AnimatedHeroIllustration />,
+   363→    },
+   364→    {
+   365→      badge: 'حلول متكاملة للمؤسسات',
+   366→      title1: 'نظام إدارة',
+   367→      title2: 'الموارد الشامل',
+   368→      desc: 'نظام متقدم لإدارة موارد مؤسستك بشكل شامل مع تقارير مالية دقيقة وتحليلات ذكية تساعدك على اتخاذ القرارات الصحيحة',
+   369→      cta: 'اكتشف المزيد',
+   370→      ctaSecondary: 'طلب نسخة تجريبية',
+   371→      illustration: <AnimatedDashboardIllustration />,
+   372→    },
+   373→    {
+   374→      badge: 'أمان من الدرجة الأولى',
+   375→      title1: 'حماية متقدمة',
+   376→      title2: 'لبياناتك الحساسة',
+   377→      desc: 'تشفير AES-256 مع تحقق ثنائي ومراقبة ذكية على مدار الساعة لضمان أمان بياناتك والامتثال لأعلى المعايير الدولية',
+   378→      cta: 'تعرّف على الأمان',
+   379→      ctaSecondary: 'تواصل معنا',
+   380→      illustration: <AnimatedSecurityIllustration />,
+   381→    },
+   382→  ]
+   383→
+   384→  useEffect(() => {
+   385→    const timer = setInterval(() => {
+   386→      setCurrent(prev => (prev + 1) % slides.length)
+   387→    }, 7000)
+   388→    return () => clearInterval(timer)
+   389→  }, [slides.length])
+   390→
+   391→  return (
+   392→    <section className="relative min-h-[90vh] flex items-center overflow-hidden">
+   393→      {/* Background gradient */}
+   394→      <div className="absolute inset-0 bg-gradient-to-br from-white via-indigo-50/30 to-cyan-50/20" />
+   395→      <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-200/20 rounded-full blur-3xl animate-blob-1" />
+   396→      <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-200/15 rounded-full blur-3xl animate-blob-2" />
+   397→      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-pink-100/10 rounded-full blur-3xl" />
+   398→      <Particles />
+   399→
+   400→      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full">
+   401→        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
+   402→          <div className="flex-1 text-center lg:text-right">
+   403→            <AnimatePresence mode="wait">
+   404→              <motion.div
+   405→                key={current}
+   406→                initial={{ opacity: 0, y: 30 }}
+   407→                animate={{ opacity: 1, y: 0 }}
+   408→                exit={{ opacity: 0, y: -30 }}
+   409→                transition={{ duration: 0.5 }}
+   410→              >
+   411→                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-200/60 text-indigo-700 text-sm font-medium mb-6">
+   412→                  <Sparkles className="w-4 h-4" />
+   413→                  {slides[current].badge}
+   414→                </span>
+   415→              </motion.div>
+   416→            </AnimatePresence>
+   417→
+   418→            <AnimatePresence mode="wait">
+   419→              <motion.h1
+   420→                key={`title-${current}`}
+   421→                initial={{ opacity: 0, y: 30 }}
+   422→                animate={{ opacity: 1, y: 0 }}
+   423→                exit={{ opacity: 0, y: -30 }}
+   424→                transition={{ duration: 0.5, delay: 0.1 }}
+   425→                className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-tight mb-6"
+   426→              >
+   427→                <span className="text-foreground">{slides[current].title1}</span>
+   428→                <br />
+   429→                <span className="gradient-text">{slides[current].title2}</span>
+   430→              </motion.h1>
+   431→            </AnimatePresence>
+   432→
+   433→            <AnimatePresence mode="wait">
+   434→              <motion.p
+   435→                key={`desc-${current}`}
+   436→                initial={{ opacity: 0, y: 30 }}
+   437→                animate={{ opacity: 1, y: 0 }}
+   438→                exit={{ opacity: 0, y: -30 }}
+   439→                transition={{ duration: 0.5, delay: 0.2 }}
+   440→                className="text-base md:text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0 mb-8 leading-relaxed"
+   441→              >
+   442→                {slides[current].desc}
+   443→              </motion.p>
+   444→            </AnimatePresence>
+   445→
+   446→            <AnimatePresence mode="wait">
+   447→              <motion.div
+   448→                key={`cta-${current}`}
+   449→                initial={{ opacity: 0, y: 30 }}
+   450→                animate={{ opacity: 1, y: 0 }}
+   451→                exit={{ opacity: 0, y: -30 }}
+   452→                transition={{ duration: 0.5, delay: 0.3 }}
+   453→                className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
+   454→              >
+   455→                <motion.button
+   456→                  whileHover={{ scale: 1.05, boxShadow: '0 20px 40px -12px rgba(99,102,241,0.3)' }}
+   457→                  whileTap={{ scale: 0.95 }}
+   458→                  onClick={() => setCurrentPage('register')}
+   459→                  className="px-8 py-4 text-base font-bold rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-xl shadow-indigo-500/20 transition-all flex items-center justify-center gap-2"
+   460→                >
+   461→                  {slides[current].cta}
+   462→                  <ArrowLeft className="w-5 h-5" />
+   463→                </motion.button>
+   464→                <motion.button
+   465→                  whileHover={{ scale: 1.05 }}
+   466→                  whileTap={{ scale: 0.95 }}
+   467→                  onClick={() => setCurrentPage('login')}
+   468→                  className="px-8 py-4 text-base font-bold rounded-2xl bg-white border-2 border-indigo-200 text-foreground hover:border-indigo-400 hover:text-indigo-600 transition-colors shadow-sm"
+   469→                >
+   470→                  {slides[current].ctaSecondary}
+   471→                </motion.button>
+   472→              </motion.div>
+   473→            </AnimatePresence>
+   474→
+   475→            {/* Slider indicators */}
+   476→            <div className="flex items-center gap-2 mt-8 justify-center lg:justify-start">
+   477→              {slides.map((_, i) => (
+   478→                <button
+   479→                  key={i}
+   480→                  onClick={() => setCurrent(i)}
+   481→                  className={`h-2.5 rounded-full transition-all duration-500 ${
+   482→                    i === current ? 'w-10 bg-indigo-500' : 'w-2.5 bg-indigo-300 hover:bg-indigo-400'
+   483→                  }`}
+   484→                />
+   485→              ))}
+   486→            </div>
+   487→          </div>
+   488→
+   489→          {/* Hero Animated Illustration */}
+   490→          <motion.div
+   491→            initial={{ opacity: 0, scale: 0.5, rotateY: -30 }}
+   492→            animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+   493→            transition={{ duration: 1, delay: 0.4 }}
+   494→            className="flex-shrink-0"
+   495→          >
+   496→            <AnimatePresence mode="wait">
+   497→              <motion.div
+   498→                key={`ill-${current}`}
+   499→                initial={{ opacity: 0, scale: 0.8, rotateY: -15 }}
+   500→                animate={{ opacity: 1, scale: 1, rotateY: 0 }}
+   501→                exit={{ opacity: 0, scale: 0.8, rotateY: 15 }}
+   502→                transition={{ duration: 0.5 }}
+   503→              >
+   504→                {slides[current].illustration}
+   505→              </motion.div>
+   506→            </AnimatePresence>
+   507→          </motion.div>
+   508→        </div>
+   509→      </div>
+   510→    </section>
+   511→  )
+   512→}
+   513→
+   514→// ============================================
+   515→// ABOUT PLATFORM SECTION
+   516→// ============================================
+   517→function AboutSection() {
+   518→  const { setCurrentPage } = useAppStore()
+   519→
+   520→  const highlights = [
+   521→    {
+   522→      icon: Rocket,
+   523→      title: 'بداية سهلة وسريعة',
+   524→      desc: 'ابدأ باستخدام المنصة في دقائق معدودة دون الحاجة لتدريب معقد. واجهة بسيطة وبديهية تناسب جميع المستويات التقنية.',
+   525→      color: 'from-indigo-500 to-violet-500',
+   526→      bg: 'bg-indigo-50',
+   527→    },
+   528→    {
+   529→      icon: Shield,
+   530→      title: 'أمان بلا تنازلات',
+   531→      desc: 'نظام حماية متعدد الطبقات مع تشفير AES-256 وتحقق ثنائي ومراقبة ذكية على مدار الساعة لحماية بياناتك الحساسة.',
+   532→      color: 'from-cyan-500 to-blue-500',
+   533→      bg: 'bg-cyan-50',
+   534→    },
+   535→    {
+   536→      icon: TrendingUp,
+   537→      title: 'تقارير ذكية وتحليلات',
+   538→      desc: 'لوحات تحكم تفاعلية وتقارير مالية شاملة مع رسوم بيانية حية وتحليلات ذكية تدعم قراراتك الإدارية.',
+   539→      color: 'from-pink-500 to-rose-500',
+   540→      bg: 'bg-pink-50',
+   541→    },
+   542→    {
+   543→      icon: Users,
+   544→      title: 'إدارة أعضاء متقدمة',
+   545→      desc: 'نظام شامل لإدارة الأعضاء يتضمن تحديد الأدوار والصلاحيات وتتبع الحضور والمشاركة وتواصل فعّال.',
+   546→      color: 'from-amber-500 to-orange-500',
+   547→      bg: 'bg-amber-50',
+   548→    },
+   549→  ]
+   550→
+   551→  return (
+   552→    <section className="relative z-10 py-20 md:py-28" id="about">
+   553→      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   554→        {/* Section Header */}
+   555→        <motion.div
+   556→          initial={{ opacity: 0, y: 30 }}
+   557→          whileInView={{ opacity: 1, y: 0 }}
+   558→          viewport={{ once: true }}
+   559→          className="text-center mb-16"
+   560→        >
+   561→          <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-indigo-50 to-cyan-50 border border-indigo-200/50 text-indigo-700 text-sm font-bold mb-6">
+   562→            <Lightbulb className="w-4 h-4" />
+   563→            عن منصة جمعياتبرو
+   564→          </span>
+   565→          <h2 className="text-3xl md:text-5xl font-black text-foreground mb-6">
+   566→            منصة واحدة لـ<span className="gradient-text">كل احتياجاتك</span>
+   567→          </h2>
+   568→          <p className="text-muted-foreground text-lg max-w-3xl mx-auto leading-relaxed">
+   569→            جمعياتبرو هي منصة سحابية متكاملة صُممت خصيصاً لإدارة الجمعيات والمؤسسات غير الربحية في المملكة العربية السعودية. نوفر لك أدوات احترافية تبسّط العمليات اليومية وتعزز الإنتاجية مع ضمان أعلى معايير الأمان والجودة.
+   570→          </p>
+   571→        </motion.div>
+   572→
+   573→        {/* Main Content Grid */}
+   574→        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 mb-16">
+   575→          {/* Left: Animated Illustration */}
+   576→          <motion.div
+   577→            initial={{ opacity: 0, x: 40 }}
+   578→            whileInView={{ opacity: 1, x: 0 }}
+   579→            viewport={{ once: true }}
+   580→            transition={{ duration: 0.6 }}
+   581→            className="relative"
+   582→          >
+   583→            <div className="relative bg-gradient-to-br from-indigo-50 via-white to-cyan-50 rounded-3xl p-8 border border-indigo-100/50 shadow-lg shadow-indigo-100/30">
+   584→              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-200/30 rounded-full blur-2xl animate-blob-1" />
+   585→              <div className="absolute bottom-0 left-0 w-40 h-40 bg-cyan-200/30 rounded-full blur-2xl animate-blob-2" />
+   586→              <div className="relative z-10 flex items-center justify-center py-8">
+   587→                <div className="relative w-64 h-64">
+   588→                  <motion.div
+   589→                    animate={{ rotate: 360 }}
+   590→                    transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+   591→                    className="absolute inset-0"
+   592→                  >
+   593→                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-400 to-indigo-600 shadow-lg shadow-indigo-200 flex items-center justify-center">
+   594→                      <Building2 className="w-7 h-7 text-white" />
+   595→                    </div>
+   596→                    <div className="absolute bottom-0 right-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-400 to-cyan-600 shadow-lg shadow-cyan-200 flex items-center justify-center">
+   597→                      <Users className="w-6 h-6 text-white" />
+   598→                    </div>
+   599→                    <div className="absolute bottom-0 left-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 shadow-lg shadow-amber-200 flex items-center justify-center">
+   600→                      <Calendar className="w-6 h-6 text-white" />
+   601→                    </div>
+   602→                    <div className="absolute top-1/2 right-0 -translate-y-1/2 w-12 h-12 rounded-2xl bg-gradient-to-br from-pink-400 to-pink-600 shadow-lg shadow-pink-200 flex items-center justify-center">
+   603→                      <BarChart3 className="w-6 h-6 text-white" />
+   604→                    </div>
+   605→                    <div className="absolute top-1/2 left-0 -translate-y-1/2 w-12 h-12 rounded-2xl bg-gradient-to-br from-emerald-400 to-emerald-600 shadow-lg shadow-emerald-200 flex items-center justify-center">
+   606→                      <Shield className="w-6 h-6 text-white" />
+   607→                    </div>
+   608→                  </motion.div>
+   609→                  <div className="absolute inset-0 flex items-center justify-center">
+   610→                    <motion.div
+   611→                      animate={{ scale: [1, 1.08, 1] }}
+   612→                      transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+   613→                      className="w-20 h-20 rounded-3xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-2xl shadow-indigo-300/50"
+   614→                    >
+   615→                      <Sparkles className="w-10 h-10 text-white" />
+   616→                    </motion.div>
+   617→                  </div>
+   618→                  <svg className="absolute inset-0 w-full h-full" viewBox="0 0 256 256" fill="none">
+   619→                    <circle cx="128" cy="128" r="115" stroke="rgba(99,102,241,0.15)" strokeWidth="1.5" strokeDasharray="8 12" />
+   620→                    <circle cx="128" cy="128" r="90" stroke="rgba(6,182,212,0.1)" strokeWidth="1" strokeDasharray="4 8" />
+   621→                  </svg>
+   622→                </div>
+   623→              </div>
+   624→            </div>
+   625→          </motion.div>
+   626→
+   627→          {/* Right: Feature List */}
+   628→          <motion.div
+   629→            initial={{ opacity: 0, x: -40 }}
+   630→            whileInView={{ opacity: 1, x: 0 }}
+   631→            viewport={{ once: true }}
+   632→            transition={{ duration: 0.6, delay: 0.2 }}
+   633→            className="flex flex-col justify-center"
+   634→          >
+   635→            <div className="space-y-5">
+   636→              {highlights.map((item, i) => (
+   637→                <motion.div
+   638→                  key={item.title}
+   639→                  initial={{ opacity: 0, y: 20 }}
+   640→                  whileInView={{ opacity: 1, y: 0 }}
+   641→                  viewport={{ once: true }}
+   642→                  transition={{ delay: 0.1 * i }}
+   643→                  whileHover={{ x: -8, scale: 1.01 }}
+   644→                  className={`${item.bg} rounded-2xl p-5 border border-white/60 shadow-sm flex items-start gap-4 group cursor-default`}
+   645→                >
+   646→                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${item.color} flex items-center justify-center flex-shrink-0 shadow-md group-hover:scale-110 transition-transform duration-300`}>
+   647→                    <item.icon className="w-6 h-6 text-white" />
+   648→                  </div>
+   649→                  <div>
+   650→                    <h4 className="font-bold text-foreground text-base mb-1">{item.title}</h4>
+   651→                    <p className="text-muted-foreground text-sm leading-relaxed">{item.desc}</p>
+   652→                  </div>
+   653→                </motion.div>
+   654→              ))}
+   655→            </div>
+   656→
+   657→            <motion.div
+   658→              initial={{ opacity: 0 }}
+   659→              whileInView={{ opacity: 1 }}
+   660→              viewport={{ once: true }}
+   661→              transition={{ delay: 0.5 }}
+   662→              className="mt-8 flex gap-3"
+   663→            >
+   664→              <motion.button
+   665→                whileHover={{ scale: 1.05 }}
+   666→                whileTap={{ scale: 0.95 }}
+   667→                onClick={() => setCurrentPage('register')}
+   668→                className="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-bold text-sm shadow-lg shadow-indigo-200 flex items-center gap-2"
+   669→              >
+   670→                ابدأ مجاناً
+   671→                <ArrowLeft className="w-4 h-4" />
+   672→              </motion.button>
+   673→              <motion.button
+   674→                whileHover={{ scale: 1.05 }}
+   675→                whileTap={{ scale: 0.95 }}
+   676→                className="px-6 py-3 rounded-xl bg-white border-2 border-indigo-200 text-indigo-700 font-bold text-sm hover:border-indigo-400 transition-colors shadow-sm"
+   677→                onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+   678→              >
+   679→                تواصل معنا
+   680→              </motion.button>
+   681→            </motion.div>
+   682→          </motion.div>
+   683→        </div>
+   684→      </div>
+   685→    </section>
+   686→  )
+   687→}
+   688→
+   689→// ============================================
+   690→// FEATURES SECTION (6 Features with illustrations)
+   691→// ============================================
+   692→function FeaturesSection() {
+   693→  const features = [
+   694→    {
+   695→      icon: Building2,
+   696→      title: 'إدارة الجمعيات',
+   697→      desc: 'إنشاء وإدارة عدد غير محدود من الجمعيات مع ملفات تعريفية شاملة تشمل بيانات التواصل والتصنيفات والحالة القانونية والتراخيص المهنية اللازمة.',
+   698→      color: 'bg-gradient-to-br from-indigo-500 to-violet-600',
+   699→      shadow: 'shadow-indigo-200',
+   700→      illustration: <AnimatedHeroIllustration />,
+   701→    },
+   702→    {
+   703→      icon: Users,
+   704→      title: 'إدارة الأعضاء',
+   705→      desc: 'نظام متقدم لإدارة الأعضاء يشمل تحديد الأدوار والصلاحيات، تتبع الحضور والمشاركة، وإرسال الإشعارات والتواصل الجماعي بسهولة وفعالية.',
+   706→      color: 'bg-gradient-to-br from-cyan-500 to-blue-600',
+   707→      shadow: 'shadow-cyan-200',
+   708→      illustration: <AnimatedMembersIllustration />,
+   709→    },
+   710→    {
+   711→      icon: Calendar,
+   712→      title: 'الفعاليات والأنشطة',
+   713→      desc: 'تنظيم وإدارة الفعاليات بكل سهولة مع تحديد المواقع والميزانيات وعدد المشاركين وتتبع الحضور والتقييمات بعد انتهاء الحدث تلقائياً.',
+   714→      color: 'bg-gradient-to-br from-amber-500 to-orange-600',
+   715→      shadow: 'shadow-amber-200',
+   716→      illustration: <AnimatedEventsIllustration />,
+   717→    },
+   718→    {
+   719→      icon: BarChart3,
+   720→      title: 'التقارير المالية',
+   721→      desc: 'لوحة تحكم مالية تفاعلية مع رسوم بيانية حية وتقارير شاملة للإيرادات والمصروفات والميزانيات ومتابعة المعاملات المعلقة والموافقة عليها.',
+   722→      color: 'bg-gradient-to-br from-pink-500 to-rose-600',
+   723→      shadow: 'shadow-pink-200',
+   724→      illustration: <AnimatedFinanceIllustration />,
+   725→    },
+   726→    {
+   727→      icon: Shield,
+   728→      title: 'الأمان والحماية',
+   729→      desc: 'حماية متعددة الطبقات تشمل التشفير AES-256 والتحقق الثنائي ومراقبة الأنشطة المشبوهة وسجل أمني شامل مع تنبيهات فورية لأي تهديد.',
+   730→      color: 'bg-gradient-to-br from-emerald-500 to-teal-600',
+   731→      shadow: 'shadow-emerald-200',
+   732→      illustration: <AnimatedSecurityIllustration />,
+   733→    },
+   734→    {
+   735→      icon: Smartphone,
+   736→      title: 'دعم متعدد الأجهزة',
+   737→      desc: 'تصميم متجاوب يعمل بسلاسة على جميع الأجهزة - الحاسوب واللوحي والهاتف المحمول - مع إمكانية الوصول الكامل في أي وقت ومن أي مكان.',
+   738→      color: 'bg-gradient-to-br from-violet-500 to-purple-600',
+   739→      shadow: 'shadow-violet-200',
+   740→      illustration: <AnimatedPhoneIllustration />,
+   741→    },
+   742→  ]
+   743→
+   744→  return (
+   745→    <section className="relative z-10 py-20 md:py-28 bg-gradient-to-b from-white via-slate-50/50 to-white" id="features">
+   746→      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   747→        <motion.div
+   748→          initial={{ opacity: 0, y: 30 }}
+   749→          whileInView={{ opacity: 1, y: 0 }}
+   750→          viewport={{ once: true }}
+   751→          className="text-center mb-16"
+   752→        >
+   753→          <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-pink-50 to-indigo-50 border border-pink-200/50 text-pink-700 text-sm font-bold mb-6">
+   754→            <Zap className="w-4 h-4" />
+   755→            المميزات الرئيسية
+   756→          </span>
+   757→          <h2 className="text-3xl md:text-5xl font-black text-foreground mb-6">
+   758→            كل ما تحتاجه <span className="gradient-text">في مكان واحد</span>
+   759→          </h2>
+   760→          <p className="text-muted-foreground text-lg max-w-3xl mx-auto leading-relaxed">
+   761→            مجموعة شاملة من الأدوات الاحترافية المصممة خصيصاً لتلبية احتياجات الجمعيات والمؤسسات غير الربحية بكل سهولة وكفاءة.
+   762→          </p>
+   763→        </motion.div>
+   764→
+   765→        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+   766→          {features.map((feature, i) => (
+   767→            <FloatingCard
+   768→              key={feature.title}
+   769→              icon={feature.icon}
+   770→              title={feature.title}
+   771→              desc={feature.desc}
+   772→              delay={i * 0.1}
+   773→              color={feature.color}
+   774→              illustration={feature.illustration}
+   775→            />
+   776→          ))}
+   777→        </div>
+   778→      </div>
+   779→    </section>
+   780→  )
+   781→}
+   782→
+   783→// ============================================
+   784→// HOW IT WORKS SECTION
+   785→// ============================================
+   786→function HowItWorksSection() {
+   787→  const steps = [
+   788→    {
+   789→      num: '01',
+   790→      icon: UserCheck,
+   791→      title: 'سجّل حسابك',
+   792→      desc: 'أنشئ حسابك المجاني في أقل من دقيقة واحدة. لا حاجة لبطاقة ائتمان أو معلومات دفع. مجرد بريدك الإلكتروني وكلمة مرور قوية.',
+   793→      color: 'from-indigo-500 to-violet-500',
+   794→    },
+   795→    {
+   796→      num: '02',
+   797→      icon: Building2,
+   798→      title: 'أنشئ جمعيتك',
+   799→      desc: 'أضف بيانات جمعيتك واختار التصنيف المناسب. يمكنك إنشاء عدد غير محدود من الجمعيات وإدارتها جميعاً من لوحة تحكم واحدة.',
+   800→      color: 'from-cyan-500 to-blue-500',
+   801→    },
+   802→    {
+   803→      num: '03',
+   804→      icon: Users,
+   805→      title: 'أضف الأعضاء',
+   806→      desc: 'ادعُ أعضاءك للانضمام عبر البريد الإلكتروني أو الرابط المباشر. حدد الأدوار والصلاحيات لكل عضو وابدأ بإدارة فريقك فوراً.',
+   807→      color: 'from-pink-500 to-rose-500',
+   808→    },
+   809→    {
+   810→      num: '04',
+   811→      icon: Rocket,
+   812→      title: 'ابدأ الإدارة',
+   813→      desc: 'استخدم جميع الأدوات المتاحة لإدارة الفعاليات والماليات والتقارير. تابع الأداء عبر لوحات التحكم التفاعلية واستفد من التحليلات الذكية.',
+   814→      color: 'from-amber-500 to-orange-500',
+   815→    },
+   816→  ]
+   817→
+   818→  return (
+   819→    <section className="relative z-10 py-20 md:py-28" id="how-it-works">
+   820→      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   821→        <motion.div
+   822→          initial={{ opacity: 0, y: 30 }}
+   823→          whileInView={{ opacity: 1, y: 0 }}
+   824→          viewport={{ once: true }}
+   825→          className="text-center mb-16"
+   826→        >
+   827→          <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-cyan-50 to-indigo-50 border border-cyan-200/50 text-cyan-700 text-sm font-bold mb-6">
+   828→            <Layers className="w-4 h-4" />
+   829→            كيف يعمل النظام
+   830→          </span>
+   831→          <h2 className="text-3xl md:text-5xl font-black text-foreground mb-6">
+   832→            ابدأ في <span className="gradient-text">أربع خطوات بسيطة</span>
+   833→          </h2>
+   834→          <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
+   835→            عملية بسيطة وسريعة لبدء إدارة جمعيتك بكفاءة واحترافية
+   836→          </p>
+   837→        </motion.div>
+   838→
+   839→        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+   840→          {steps.map((step, i) => (
+   841→            <motion.div
+   842→              key={step.num}
+   843→              initial={{ opacity: 0, y: 40 }}
+   844→              whileInView={{ opacity: 1, y: 0 }}
+   845→              viewport={{ once: true }}
+   846→              transition={{ delay: i * 0.15 }}
+   847→              className="relative text-center group"
+   848→            >
+   849→              {/* Connecting line */}
+   850→              {i < steps.length - 1 && (
+   851→                <div className="hidden lg:block absolute top-12 left-[60%] w-[80%] h-0.5 bg-gradient-to-r from-indigo-200 to-cyan-200" />
+   852→              )}
+   853→              <motion.div
+   854→                whileHover={{ scale: 1.05, y: -5 }}
+   855→                className="relative"
+   856→              >
+   857→                <div className={`w-24 h-24 mx-auto rounded-3xl bg-gradient-to-br ${step.color} flex items-center justify-center mb-6 shadow-lg group-hover:shadow-xl transition-shadow`}>
+   858→                  <step.icon className="w-10 h-10 text-white" />
+   859→                </div>
+   860→                <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-white border-2 border-indigo-300 flex items-center justify-center text-xs font-black text-indigo-600">
+   861→                  {step.num}
+   862→                </div>
+   863→              </motion.div>
+   864→              <h3 className="text-lg font-bold text-foreground mb-3">{step.title}</h3>
+   865→              <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
+   866→            </motion.div>
+   867→          ))}
+   868→        </div>
+   869→      </div>
+   870→    </section>
+   871→  )
+   872→}
+   873→
+   874→// ============================================
+   875→// STATS SECTION
+   876→// ============================================
+   877→function StatsSection() {
+   878→  return (
+   879→    <section className="relative z-10 py-20 md:py-24">
+   880→      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   881→        <div className="relative bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-600 rounded-3xl p-8 md:p-12 overflow-hidden shadow-2xl shadow-indigo-200/50">
+   882→          {/* Background decorations */}
+   883→          <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
+   884→          <div className="absolute bottom-0 left-0 w-80 h-80 bg-white/5 rounded-full blur-3xl" />
+   885→          <motion.div
+   886→            animate={{ rotate: 360 }}
+   887→            transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
+   888→            className="absolute -top-20 -right-20 w-40 h-40 border border-white/10 rounded-full"
+   889→          />
+   890→          <motion.div
+   891→            animate={{ rotate: -360 }}
+   892→            transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
+   893→            className="absolute -bottom-10 -left-10 w-60 h-60 border border-white/10 rounded-full"
+   894→          />
+   895→
+   896→          <div className="relative z-10">
+   897→            <motion.div
+   898→              initial={{ opacity: 0, y: 20 }}
+   899→              whileInView={{ opacity: 1, y: 0 }}
+   900→              viewport={{ once: true }}
+   901→              className="text-center mb-10"
+   902→            >
+   903→              <h2 className="text-3xl md:text-4xl font-black text-white mb-3">أرقام تتحدث عنّا</h2>
+   904→              <p className="text-white/70 text-lg">نمت بفضل ثقة عملائنا ومشاركتهم المستمرة</p>
+   905→            </motion.div>
+   906→
+   907→            <StatsCounter />
+   908→          </div>
+   909→        </div>
+   910→      </div>
+   911→    </section>
+   912→  )
+   913→}
+   914→
+   915→// ============================================
+   916→// WHY US SECTION
+   917→// ============================================
+   918→function WhyUsSection() {
+   919→  const reasons = [
+   920→    {
+   921→      icon: BadgeCheck,
+   922→      title: 'موثوقية عالية',
+   923→      desc: 'نظام مستقر وموثوق يعمل على مدار الساعة مع ضمان وقت تشغيل يصل إلى 99.9%. بياناتك محفوظة ومؤمنة دائماً.',
+   924→      color: 'text-indigo-600',
+   925→      bg: 'bg-indigo-50',
+   926→    },
+   927→    {
+   928→      icon: Palette,
+   929→      title: 'تصميم عصري',
+   930→      desc: 'واجهة مستخدم حديثة وبديهية مصممة بعناية فائقة لتوفير أفضل تجربة استخدام ممكنة على جميع الأجهزة والمتصفحات.',
+   931→      color: 'text-pink-600',
+   932→      bg: 'bg-pink-50',
+   933→    },
+   934→    {
+   935→      icon: Code2,
+   936→      title: 'تقنيات متطورة',
+   937→      desc: 'مبني باستخدام أحدث التقنيات العالمية لضمان الأداء العالي والسرعة الفائقة في التحميل والاستجابة لجميع العمليات.',
+   938→      color: 'text-cyan-600',
+   939→      bg: 'bg-cyan-50',
+   940→    },
+   941→    {
+   942→      icon: Headphones,
+   943→      title: 'دعم فني متواصل',
+   944→      desc: 'فريق دعم فني متخصص متاح على مدار الساعة للإجابة على استفساراتك وحل مشاكلك بسرعة واحترافية عالية.',
+   945→      color: 'text-amber-600',
+   946→      bg: 'bg-amber-50',
+   947→    },
+   948→    {
+   949→      icon: Server,
+   950→      title: 'بنية تحتية قوية',
+   951→      desc: 'خوادم سحابية موزعة عالمياً مع نسخ احتياطي تلقائي وحماية من الهجمات الإلكترونية لضمان استمرارية الخدمة.',
+   952→      color: 'text-emerald-600',
+   953→      bg: 'bg-emerald-50',
+   954→    },
+   955→    {
+   956→      icon: Wifi,
+   957→      title: 'مزامنة فورية',
+   958→      desc: 'مزامنة البيانات بشكل فوري بين جميع الأجهزة والمستخدمين مع إمكانية العمل دون اتصال ومزامنة تلقائية عند العودة.',
+   959→      color: 'text-violet-600',
+   960→      bg: 'bg-violet-50',
+   961→    },
+   962→  ]
+   963→
+   964→  return (
+   965→    <section className="relative z-10 py-20 md:py-28 bg-gradient-to-b from-white via-indigo-50/20 to-white" id="why-us">
+   966→      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+   967→        <motion.div
+   968→          initial={{ opacity: 0, y: 30 }}
+   969→          whileInView={{ opacity: 1, y: 0 }}
+   970→          viewport={{ once: true }}
+   971→          className="text-center mb-16"
+   972→        >
+   973→          <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-amber-50 to-indigo-50 border border-amber-200/50 text-amber-700 text-sm font-bold mb-6">
+   974→            <Award className="w-4 h-4" />
+   975→            لماذا جمعياتبرو
+   976→          </span>
+   977→          <h2 className="text-3xl md:text-5xl font-black text-foreground mb-6">
+   978→            لماذا تختار <span className="gradient-text">جمعياتبرو؟</span>
+   979→          </h2>
+   980→          <p className="text-muted-foreground text-lg max-w-3xl mx-auto leading-relaxed">
+   981→            نجمع بين التقنية المتطورة والتصميم الأنيق والدعم المتميز لنقدم لك أفضل تجربة إدارة ممكنة لجمعيتك.
+   982→          </p>
+   983→        </motion.div>
+   984→
+   985→        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+   986→          {reasons.map((reason, i) => (
+   987→            <motion.div
+   988→              key={reason.title}
+   989→              initial={{ opacity: 0, y: 30 }}
+   990→              whileInView={{ opacity: 1, y: 0 }}
+   991→              viewport={{ once: true }}
+   992→              transition={{ delay: i * 0.1 }}
+   993→              whileHover={{ y: -5, scale: 1.02 }}
+   994→              className={`${reason.bg} rounded-2xl p-6 border border-white/60 shadow-sm group cursor-default`}
+   995→            >
+   996→              <div className="flex items-center gap-4 mb-4">
+   997→                <div className={`w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-300`}>
+   998→                  <reason.icon className={`w-6 h-6 ${reason.color}`} />
+   999→                </div>
+  1000→                <h3 className="text-lg font-bold text-foreground">{reason.title}</h3>
+  1001→              </div>
+  1002→              <p className="text-muted-foreground text-sm leading-relaxed">{reason.desc}</p>
+  1003→            </motion.div>
+  1004→          ))}
+  1005→        </div>
+  1006→      </div>
+  1007→    </section>
+  1008→  )
+  1009→}
+  1010→
+  1011→// ============================================
+  1012→// TESTIMONIALS SECTION
+  1013→// ============================================
+  1014→function TestimonialsSection() {
+  1015→  const testimonials = [
+  1016→    {
+  1017→      name: 'أحمد محمد الشهري',
+  1018→      role: 'رئيس جمعية الإحسان الخيرية',
+  1019→      text: 'جمعياتبرو غيّر طريقة إدارتنا بالكامل. الآن نستطيع متابعة الأعضاء والفعاليات والتقارير المالية من مكان واحد. وفرنا أكثر من 60% من الوقت الإداري.',
+  1020→      rating: 5,
+  1021→    },
+  1022→    {
+  1023→      name: 'سارة عبدالله القحطاني',
+  1024→      role: 'مديرة جمعية التعليم الأهلي',
+  1025→      text: 'المنصة سهلة الاستخدام جداً وفريق الدعم ممتاز. نظام الحماية المتقدم يعطيني راحة نفسية كاملة بشأن بيانات أعضائنا ومعلوماتنا المالية الحساسة.',
+  1026→      rating: 5,
+  1027→    },
+  1028→    {
+  1029→      name: 'خالد ناصر العتيبي',
+  1030→      role: 'أمين جمعية النماء الاجتماعية',
+  1031→      text: 'التقارير المالية التفاعلية ساعدتنا في اتخاذ قرارات أفضل وأسرع. نظام إدارة الفعاليات وفّر لنا تنظيماً احترافياً لم نكن نملكه من قبل في جمعيتنا.',
+  1032→      rating: 5,
+  1033→    },
+  1034→  ]
+  1035→
+  1036→  return (
+  1037→    <section className="relative z-10 py-20 md:py-28" id="testimonials">
+  1038→      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  1039→        <motion.div
+  1040→          initial={{ opacity: 0, y: 30 }}
+  1041→          whileInView={{ opacity: 1, y: 0 }}
+  1042→          viewport={{ once: true }}
+  1043→          className="text-center mb-16"
+  1044→        >
+  1045→          <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-indigo-50 to-pink-50 border border-indigo-200/50 text-indigo-700 text-sm font-bold mb-6">
+  1046→            <Star className="w-4 h-4" />
+  1047→            آراء عملائنا
+  1048→          </span>
+  1049→          <h2 className="text-3xl md:text-5xl font-black text-foreground mb-6">
+  1050→            ماذا يقول <span className="gradient-text">عملاؤنا؟</span>
+  1051→          </h2>
+  1052→          <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
+  1053→            ثقة عملائنا هي أكبر دليل على جودة خدماتنا
+  1054→          </p>
+  1055→        </motion.div>
+  1056→
+  1057→        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+  1058→          {testimonials.map((t, i) => (
+  1059→            <motion.div
+  1060→              key={t.name}
+  1061→              initial={{ opacity: 0, y: 30 }}
+  1062→              whileInView={{ opacity: 1, y: 0 }}
+  1063→              viewport={{ once: true }}
+  1064→              transition={{ delay: i * 0.15 }}
+  1065→              whileHover={{ y: -5 }}
+  1066→              className="bg-white rounded-2xl p-6 border border-slate-100 shadow-sm hover:shadow-lg transition-shadow"
+  1067→            >
+  1068→              <div className="flex items-center gap-1 mb-4">
+  1069→                {Array.from({ length: t.rating }).map((_, j) => (
+  1070→                  <Star key={j} className="w-4 h-4 fill-amber-400 text-amber-400" />
+  1071→                ))}
+  1072→              </div>
+  1073→              <p className="text-muted-foreground text-sm leading-relaxed mb-6">{t.text}</p>
+  1074→              <div className="flex items-center gap-3">
+  1075→                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center text-white font-bold text-sm">
+  1076→                  {t.name.charAt(0)}
+  1077→                </div>
+  1078→                <div>
+  1079→                  <p className="font-bold text-foreground text-sm">{t.name}</p>
+  1080→                  <p className="text-muted-foreground text-xs">{t.role}</p>
+  1081→                </div>
+  1082→              </div>
+  1083→            </motion.div>
+  1084→          ))}
+  1085→        </div>
+  1086→      </div>
+  1087→    </section>
+  1088→  )
+  1089→}
+  1090→
+  1091→// ============================================
+  1092→// CTA SECTION
+  1093→// ============================================
+  1094→function CTASection() {
+  1095→  const { setCurrentPage } = useAppStore()
+  1096→  return (
+  1097→    <section className="relative z-10 py-20 md:py-28">
+  1098→      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  1099→        <motion.div
+  1100→          initial={{ opacity: 0, scale: 0.95 }}
+  1101→          whileInView={{ opacity: 1, scale: 1 }}
+  1102→          viewport={{ once: true }}
+  1103→          className="relative bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700 rounded-3xl p-8 md:p-16 overflow-hidden text-center"
+  1104→        >
+  1105→          {/* Animated background elements */}
+  1106→          <div className="absolute inset-0 overflow-hidden">
+  1107→            <motion.div
+  1108→              animate={{ x: [0, 50, 0], y: [0, -30, 0] }}
+  1109→              transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+  1110→              className="absolute top-10 right-10 w-40 h-40 bg-white/5 rounded-full blur-xl"
+  1111→            />
+  1112→            <motion.div
+  1113→              animate={{ x: [0, -40, 0], y: [0, 40, 0] }}
+  1114→              transition={{ duration: 15, repeat: Infinity, ease: 'linear' }}
+  1115→              className="absolute bottom-10 left-10 w-56 h-56 bg-white/5 rounded-full blur-xl"
+  1116→            />
+  1117→            {[0,1,2,3,4,5].map(i => (
+  1118→              <motion.div
+  1119→                key={`cta-star-${i}`}
+  1120→                className="absolute w-1 h-1 bg-white/30 rounded-full"
+  1121→                style={{ left: `${15 + i * 15}%`, top: `${20 + (i % 3) * 25}%` }}
+  1122→                animate={{ opacity: [0.2, 0.8, 0.2], scale: [0.5, 1.5, 0.5] }}
+  1123→                transition={{ duration: 3, repeat: Infinity, delay: i * 0.5 }}
+  1124→              />
+  1125→            ))}
+  1126→          </div>
+  1127→
+  1128→          <div className="relative z-10">
+  1129→            <motion.div
+  1130→              animate={{ y: [0, -5, 0] }}
+  1131→              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+  1132→              className="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-white/10 mb-8"
+  1133→            >
+  1134→              <Rocket className="w-10 h-10 text-white" />
+  1135→            </motion.div>
+  1136→            <h2 className="text-3xl md:text-5xl font-black text-white mb-6">
+  1137→              جاهز لبدء رحلتك؟
+  1138→            </h2>
+  1139→            <p className="text-white/80 text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
+  1140→              انضم إلى آلاف الجمعيات التي تثق بجمعياتبرو لإدارة عملياتها. ابدأ مجاناً اليوم واكتشف الفرق بنفسك.
+  1141→            </p>
+  1142→            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+  1143→              <motion.button
+  1144→                whileHover={{ scale: 1.05, boxShadow: '0 20px 40px -12px rgba(255,255,255,0.2)' }}
+  1145→                whileTap={{ scale: 0.95 }}
+  1146→                onClick={() => setCurrentPage('register')}
+  1147→                className="px-10 py-4 text-base font-bold rounded-2xl bg-white text-indigo-700 shadow-xl transition-all flex items-center justify-center gap-2"
+  1148→              >
+  1149→                ابدأ مجاناً الآن
+  1150→                <ArrowLeft className="w-5 h-5" />
+  1151→              </motion.button>
+  1152→              <motion.button
+  1153→                whileHover={{ scale: 1.05 }}
+  1154→                whileTap={{ scale: 0.95 }}
+  1155→                onClick={() => setCurrentPage('login')}
+  1156→                className="px-10 py-4 text-base font-bold rounded-2xl bg-white/10 border-2 border-white/30 text-white hover:bg-white/20 transition-colors"
+  1157→              >
+  1158→                تسجيل الدخول
+  1159→              </motion.button>
+  1160→            </div>
+  1161→          </div>
+  1162→        </motion.div>
+  1163→      </div>
+  1164→    </section>
+  1165→  )
+  1166→}
+  1167→
+  1168→// ============================================
+  1169→// CONTACT SECTION
+  1170→// ============================================
+  1171→function ContactSection() {
+  1172→  const [sent, setSent] = useState(false)
+  1173→
+  1174→  return (
+  1175→    <section className="relative z-10 py-20 md:py-28 bg-gradient-to-b from-white to-slate-50" id="contact">
+  1176→      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  1177→        <motion.div
+  1178→          initial={{ opacity: 0, y: 30 }}
+  1179→          whileInView={{ opacity: 1, y: 0 }}
+  1180→          viewport={{ once: true }}
+  1181→          className="text-center mb-16"
+  1182→        >
+  1183→          <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-emerald-50 to-cyan-50 border border-emerald-200/50 text-emerald-700 text-sm font-bold mb-6">
+  1184→            <Mail className="w-4 h-4" />
+  1185→            تواصل معنا
+  1186→          </span>
+  1187→          <h2 className="text-3xl md:text-5xl font-black text-foreground mb-6">
+  1188→            نحب أن <span className="gradient-text">نسمع منك</span>
+  1189→          </h2>
+  1190→          <p className="text-muted-foreground text-lg max-w-2xl mx-auto leading-relaxed">
+  1191→            فريقنا جاهز للإجابة على جميع استفساراتك ومساعدتك في بدء رحلتك مع جمعياتبرو
+  1192→          </p>
+  1193→        </motion.div>
+  1194→
+  1195→        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+  1196→          {/* Contact Form */}
+  1197→          <motion.div
+  1198→            initial={{ opacity: 0, x: 30 }}
+  1199→            whileInView={{ opacity: 1, x: 0 }}
+  1200→            viewport={{ once: true }}
+  1201→          >
+  1202→            <div className="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm">
+  1203→              {sent ? (
+  1204→                <motion.div
+  1205→                  initial={{ scale: 0.8, opacity: 0 }}
+  1206→                  animate={{ scale: 1, opacity: 1 }}
+  1207→                  className="text-center py-12"
+  1208→                >
+  1209→                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-emerald-50 flex items-center justify-center">
+  1210→                    <CheckCircle2 className="w-8 h-8 text-emerald-600" />
+  1211→                  </div>
+  1212→                  <h3 className="text-xl font-bold text-foreground mb-2">تم الإرسال بنجاح!</h3>
+  1213→                  <p className="text-muted-foreground">سنتواصل معك في أقرب وقت ممكن.</p>
+  1214→                </motion.div>
+  1215→              ) : (
+  1216→                <div className="space-y-5">
+  1217→                  <div className="grid grid-cols-2 gap-4">
+  1218→                    <div>
+  1219→                      <label className="text-sm font-medium text-foreground mb-1.5 block">الاسم</label>
+  1220→                      <input className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 text-foreground text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none" placeholder="اسمك الكامل" />
+  1221→                    </div>
+  1222→                    <div>
+  1223→                      <label className="text-sm font-medium text-foreground mb-1.5 block">البريد</label>
+  1224→                      <input className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 text-foreground text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none" placeholder="بريدك الإلكتروني" />
+  1225→                    </div>
+  1226→                  </div>
+  1227→                  <div>
+  1228→                    <label className="text-sm font-medium text-foreground mb-1.5 block">الموضوع</label>
+  1229→                    <input className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 text-foreground text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none" placeholder="موضوع الرسالة" />
+  1230→                  </div>
+  1231→                  <div>
+  1232→                    <label className="text-sm font-medium text-foreground mb-1.5 block">الرسالة</label>
+  1233→                    <textarea className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 text-foreground text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none h-32 resize-none" placeholder="اكتب رسالتك هنا..." />
+  1234→                  </div>
+  1235→                  <motion.button
+  1236→                    whileHover={{ scale: 1.02 }}
+  1237→                    whileTap={{ scale: 0.98 }}
+  1238→                    onClick={() => setSent(true)}
+  1239→                    className="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-bold text-sm shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
+  1240→                  >
+  1241→                    <Send className="w-4 h-4" />
+  1242→                    إرسال الرسالة
+  1243→                  </motion.button>
+  1244→                </div>
+  1245→              )}
+  1246→            </div>
+  1247→          </motion.div>
+  1248→
+  1249→          {/* Contact Info */}
+  1250→          <motion.div
+  1251→            initial={{ opacity: 0, x: -30 }}
+  1252→            whileInView={{ opacity: 1, x: 0 }}
+  1253→            viewport={{ once: true }}
+  1254→            className="flex flex-col justify-center space-y-6"
+  1255→          >
+  1256→            <AnimatedCloudIllustration />
+  1257→            <div className="space-y-4">
+  1258→              {[
+  1259→                { icon: Mail, label: 'البريد الإلكتروني', value: 'info@jamiat-pro.com', color: 'text-indigo-600', bg: 'bg-indigo-50' },
+  1260→                { icon: Phone, label: 'رقم الهاتف', value: '+966 50 123 4567', color: 'text-cyan-600', bg: 'bg-cyan-50' },
+  1261→                { icon: MapPin, label: 'العنوان', value: 'الرياض، المملكة العربية السعودية', color: 'text-pink-600', bg: 'bg-pink-50' },
+  1262→              ].map((item) => (
+  1263→                <div key={item.label} className="flex items-center gap-4">
+  1264→                  <div className={`w-12 h-12 rounded-xl ${item.bg} flex items-center justify-center flex-shrink-0`}>
+  1265→                    <item.icon className={`w-5 h-5 ${item.color}`} />
+  1266→                  </div>
+  1267→                  <div>
+  1268→                    <p className="text-xs text-muted-foreground font-medium">{item.label}</p>
+  1269→                    <p className="text-foreground font-bold text-sm">{item.value}</p>
+  1270→                  </div>
+  1271→                </div>
+  1272→              ))}
+  1273→            </div>
+  1274→          </motion.div>
+  1275→        </div>
+  1276→      </div>
+  1277→    </section>
+  1278→  )
+  1279→}
+  1280→
+  1281→// ============================================
+  1282→// FOOTER
+  1283→// ============================================
+  1284→function Footer() {
+  1285→  const { setCurrentPage } = useAppStore()
+  1286→
+  1287→  return (
+  1288→    <footer className="relative z-10 bg-slate-900 text-white pt-16 pb-8">
+  1289→      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  1290→        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+  1291→          {/* Brand */}
+  1292→          <div>
+  1293→            <div className="flex items-center gap-3 mb-4">
+  1294→              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center">
+  1295→                <Building2 className="w-5 h-5 text-white" />
+  1296→              </div>
+  1297→              <span className="text-xl font-black">جمعياتبرو</span>
+  1298→            </div>
+  1299→            <p className="text-slate-400 text-sm leading-relaxed mb-4">
+  1300→              منصة سحابية متكاملة لإدارة وتنظيم الجمعيات والمؤسسات غير الربحية بأحدث التقنيات وأعلى معايير الأمان.
+  1301→            </p>
+  1302→            <div className="flex items-center gap-3">
+  1303→              {[Facebook, Twitter, Instagram, Youtube].map((Icon, i) => (
+  1304→                <motion.a
+  1305→                  key={i}
+  1306→                  href="#"
+  1307→                  whileHover={{ scale: 1.1, y: -2 }}
+  1308→                  className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center hover:bg-indigo-500 transition-colors"
+  1309→                >
+  1310→                  <Icon className="w-4 h-4" />
+  1311→                </motion.a>
+  1312→              ))}
+  1313→            </div>
+  1314→          </div>
+  1315→
+  1316→          {/* Quick Links */}
+  1317→          <div>
+  1318→            <h4 className="font-bold text-base mb-4">روابط سريعة</h4>
+  1319→            <div className="space-y-2.5">
+  1320→              {[
+  1321→                { label: 'الرئيسية', action: () => setCurrentPage('landing') },
+  1322→                { label: 'الجمعيات', action: () => setCurrentPage('login') },
+  1323→                { label: 'الأعضاء', action: () => setCurrentPage('login') },
+  1324→                { label: 'الفعاليات', action: () => setCurrentPage('login') },
+  1325→                { label: 'المالية', action: () => setCurrentPage('login') },
+  1326→              ].map(link => (
+  1327→                <button
+  1328→                  key={link.label}
+  1329→                  onClick={link.action}
+  1330→                  className="block text-slate-400 text-sm hover:text-white transition-colors"
+  1331→                >
+  1332→                  {link.label}
+  1333→                </button>
+  1334→              ))}
+  1335→            </div>
+  1336→          </div>
+  1337→
+  1338→          {/* Features */}
+  1339→          <div>
+  1340→            <h4 className="font-bold text-base mb-4">المميزات</h4>
+  1341→            <div className="space-y-2.5">
+  1342→              {['لوحة التحكم', 'إدارة الأعضاء', 'التقارير المالية', 'الحماية المتقدمة', 'الدعم الفني'].map(feat => (
+  1343→                <span key={feat} className="block text-slate-400 text-sm">{feat}</span>
+  1344→              ))}
+  1345→            </div>
+  1346→          </div>
+  1347→
+  1348→          {/* Newsletter */}
+  1349→          <div>
+  1350→            <h4 className="font-bold text-base mb-4">النشرة البريدية</h4>
+  1351→            <p className="text-slate-400 text-sm mb-4">اشترك ليصلك كل جديد عن المنصة والعروض الحصرية.</p>
+  1352→            <div className="flex gap-2">
+  1353→              <input
+  1354→                className="flex-1 px-4 py-2.5 rounded-xl bg-white/10 border border-white/10 text-white text-sm placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+  1355→                placeholder="بريدك الإلكتروني"
+  1356→              />
+  1357→              <button className="px-4 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 transition-colors text-sm font-bold">
+  1358→                اشترك
+  1359→              </button>
+  1360→            </div>
+  1361→          </div>
+  1362→        </div>
+  1363→
+  1364→        <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+  1365→          <p className="text-slate-500 text-sm">&copy; 2026 جمعياتبرو - جميع الحقوق محفوظة</p>
+  1366→          <div className="flex items-center gap-6">
+  1367→            <span className="text-slate-500 text-xs hover:text-slate-300 cursor-pointer transition-colors">سياسة الخصوصية</span>
+  1368→            <span className="text-slate-500 text-xs hover:text-slate-300 cursor-pointer transition-colors">شروط الاستخدام</span>
+  1369→          </div>
+  1370→        </div>
+  1371→      </div>
+  1372→    </footer>
+  1373→  )
+  1374→}
+  1375→
+  1376→// ============================================
+  1377→// SCROLL TO TOP
+  1378→// ============================================
+  1379→function ScrollToTop() {
+  1380→  const [visible, setVisible] = useState(false)
+  1381→
+  1382→  useEffect(() => {
+  1383→    const handler = () => setVisible(window.scrollY > 500)
+  1384→    window.addEventListener('scroll', handler)
+  1385→    return () => window.removeEventListener('scroll', handler)
+  1386→  }, [])
+  1387→
+  1388→  if (!visible) return null
+  1389→
+  1390→  return (
+  1391→    <motion.button
+  1392→      initial={{ opacity: 0, scale: 0.5 }}
+  1393→      animate={{ opacity: 1, scale: 1 }}
+  1394→      exit={{ opacity: 0, scale: 0.5 }}
+  1395→      whileHover={{ scale: 1.1 }}
+  1396→      whileTap={{ scale: 0.9 }}
+  1397→      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+  1398→      className="fixed bottom-6 left-6 z-50 w-12 h-12 rounded-full bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-xl shadow-indigo-200 flex items-center justify-center"
+  1399→    >
+  1400→      <ArrowUp className="w-5 h-5" />
+  1401→    </motion.button>
+  1402→  )
+  1403→}
+  1404→
+  1405→// ============================================
+  1406→// MAIN LANDING PAGE EXPORT
+  1407→// ============================================
+  1408→export function LandingPage() {
+  1409→  return (
+  1410→    <div className="relative overflow-hidden bg-white min-h-screen">
+  1411→      <HeroSection />
+  1412→      <AboutSection />
+  1413→      <FeaturesSection />
+  1414→      <HowItWorksSection />
+  1415→      <StatsSection />
+  1416→      <WhyUsSection />
+  1417→      <TestimonialsSection />
+  1418→      <CTASection />
+  1419→      <ContactSection />
+  1420→      <Footer />
+  1421→      <ScrollToTop />
+  1422→    </div>
+  1423→  )
+  1424→}
+  1425→

@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db, ensureDbInitialized } from '@/lib/db'
 import { hashPassword } from '@/lib/auth'
 
 // Seed endpoint - creates or updates admin user with custom credentials
 // POST /api/seed - body: { email, password, name }
 export async function POST(request: NextRequest) {
   try {
+    await ensureDbInitialized()
     const body = await request.json().catch(() => ({}))
     
     // Admin credentials from request or environment variables

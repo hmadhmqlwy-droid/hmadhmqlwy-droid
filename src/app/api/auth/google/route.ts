@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db, ensureDbInitialized } from '@/lib/db'
 import { v4 as uuidv4 } from 'uuid'
 
 // Google OAuth - Sign in with Google
 export async function POST(request: NextRequest) {
   try {
+    await ensureDbInitialized()
     const body = await request.json()
     const { token, email, name, picture, sub } = body
 

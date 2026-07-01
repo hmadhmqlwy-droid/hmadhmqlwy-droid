@@ -1,0 +1,632 @@
+     1→'use client'
+     2→
+     3→import { motion, AnimatePresence } from 'framer-motion'
+     4→import { useAppStore, translations } from '@/store/app-store'
+     5→import { LandingPage } from '@/components/sections/landing'
+     6→import { AuthPage } from '@/components/sections/auth'
+     7→import { DashboardPage } from '@/components/sections/dashboard'
+     8→import { AssociationsPage } from '@/components/sections/associations'
+     9→import { MembersPage } from '@/components/sections/members'
+    10→import { EventsPage } from '@/components/sections/events'
+    11→import { FinancePage } from '@/components/sections/finance'
+    12→import { SecurityPage } from '@/components/sections/security'
+    13→import { AdminPage } from '@/components/sections/admin'
+    14→import {
+    15→  Building2, LayoutDashboard, Users, Calendar, DollarSign, Shield, LogOut, Menu, X,
+    16→  Moon, Sun, ChevronLeft, Settings, Bell, Crown, Globe, Download, Check, XCircle, Info, AlertTriangle,
+    17→  Mail, Phone, Facebook, Twitter, Instagram, Youtube, MessageCircle, Sparkles, Search, User
+    18→} from 'lucide-react'
+    19→import { Button } from '@/components/ui/button'
+    20→import { Badge } from '@/components/ui/badge'
+    21→import { Input } from '@/components/ui/input'
+    22→import { useEffect, useRef, useState, useCallback } from 'react'
+    23→
+    24→// ============================================
+    25→// TOP INFO BAR (Like Gama Systems)
+    26→// ============================================
+    27→function TopInfoBar() {
+    28→  const [isVisible, setIsVisible] = useState(true)
+    29→  
+    30→  if (!isVisible) return null
+    31→
+    32→  return (
+    33→    <div className="bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 text-white text-xs relative z-50" dir="rtl">
+    34→      <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-9">
+    35→        {/* Right side - Social icons */}
+    36→        <div className="flex items-center gap-3">
+    37→          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-indigo-300 transition-colors">
+    38→            <Twitter className="w-3.5 h-3.5" />
+    39→          </a>
+    40→          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-indigo-300 transition-colors">
+    41→            <Instagram className="w-3.5 h-3.5" />
+    42→          </a>
+    43→          <a href="https://wa.me/966500000000" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-indigo-300 transition-colors">
+    44→            <MessageCircle className="w-3.5 h-3.5" />
+    45→          </a>
+    46→          <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-indigo-300 transition-colors">
+    47→            <Youtube className="w-3.5 h-3.5" />
+    48→          </a>
+    49→          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-indigo-300 transition-colors">
+    50→            <Facebook className="w-3.5 h-3.5" />
+    51→          </a>
+    52→        </div>
+    53→
+    54→        {/* Center - Promo text */}
+    55→        <div className="hidden md:flex items-center gap-1">
+    56→          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+    57→          <span className="text-amber-400 font-bold">سجّل الآن واحصل على خصم 20% على جميع الخدمات</span>
+    58→        </div>
+    59→
+    60→        {/* Left side - Contact info */}
+    61→        <div className="flex items-center gap-4">
+    62→          <div className="hidden sm:flex items-center gap-1.5 text-white/70">
+    63→            <Phone className="w-3.5 h-3.5" />
+    64→            <span dir="ltr">+966 50 000 0000</span>
+    65→          </div>
+    66→          <div className="hidden sm:flex items-center gap-1.5 text-white/70">
+    67→            <Mail className="w-3.5 h-3.5" />
+    68→            <span>info@jamiat-pro.com</span>
+    69→          </div>
+    70→          <button 
+    71→            onClick={() => setIsVisible(false)}
+    72→            className="text-white/40 hover:text-white transition-colors p-0.5"
+    73→          >
+    74→            <X className="w-3 h-3" />
+    75→          </button>
+    76→        </div>
+    77→      </div>
+    78→    </div>
+    79→  )
+    80→}
+    81→
+    82→// ============================================
+    83→// MAIN NAVBAR (Below top info bar)
+    84→// ============================================
+    85→function MainNavbar({ onMenuClick }: { onMenuClick: () => void }) {
+    86→  const { user, setCurrentPage, logout } = useAppStore()
+    87→  const [searchOpen, setSearchOpen] = useState(false)
+    88→  const [searchQuery, setSearchQuery] = useState('')
+    89→  const [profileOpen, setProfileOpen] = useState(false)
+    90→  const profileRef = useRef<HTMLDivElement>(null)
+    91→
+    92→  useEffect(() => {
+    93→    const handleClick = (e: MouseEvent) => {
+    94→      if (profileRef.current && !profileRef.current.contains(e.target as Node)) setProfileOpen(false)
+    95→    }
+    96→    document.addEventListener('mousedown', handleClick)
+    97→    return () => document.removeEventListener('mousedown', handleClick)
+    98→  }, [])
+    99→
+   100→  return (
+   101→    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-xl border-b border-slate-200/50 shadow-sm" dir="rtl">
+   102→      <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between gap-4">
+   103→        {/* Right - Logo + Menu */}
+   104→        <div className="flex items-center gap-3">
+   105→          <button onClick={onMenuClick} className="text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-lg hover:bg-slate-100">
+   106→            <Menu className="w-5 h-5" />
+   107→          </button>
+   108→          <div className="flex items-center gap-2">
+   109→            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-200">
+   110→              <Building2 className="w-4 h-4 text-white" />
+   111→            </div>
+   112→            <span className="text-lg font-black text-foreground hidden sm:block">جمعيات<span className="text-indigo-500">برو</span></span>
+   113→          </div>
+   114→        </div>
+   115→
+   116→        {/* Center - Search */}
+   117→        <div className="flex-1 max-w-md hidden md:block">
+   118→          <div className="relative">
+   119→            <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+   120→            <Input
+   121→              value={searchQuery}
+   122→              onChange={(e) => setSearchQuery(e.target.value)}
+   123→              placeholder="ابحث في المنصة..."
+   124→              className="pr-10 pl-4 h-9 bg-white/5 border-border/30 rounded-xl text-sm focus:border-emerald-500/50"
+   125→            />
+   126→          </div>
+   127→        </div>
+   128→
+   129→        {/* Left - Actions */}
+   130→        <div className="flex items-center gap-2">
+   131→          {/* Mobile search toggle */}
+   132→          <button 
+   133→            onClick={() => setSearchOpen(!searchOpen)}
+   134→            className="md:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors"
+   135→          >
+   136→            <Search className="w-4 h-4" />
+   137→          </button>
+   138→
+   139→          {/* Notifications */}
+   140→          <NotificationPanel />
+   141→
+   142→          {/* Profile */}
+   143→          <div className="relative" ref={profileRef}>
+   144→            <button
+   145→              onClick={() => setProfileOpen(!profileOpen)}
+   146→              className="flex items-center gap-2 p-1.5 rounded-xl hover:bg-white/5 transition-colors"
+   147→            >
+   148→              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold text-sm shadow-lg shadow-emerald-500/20">
+   149→                {user?.name?.charAt(0) || 'م'}
+   150→              </div>
+   151→              <span className="hidden sm:block text-sm font-bold text-foreground max-w-[120px] truncate">{user?.name || 'المستخدم'}</span>
+   152→            </button>
+   153→
+   154→            <AnimatePresence>
+   155→              {profileOpen && (
+   156→                <motion.div
+   157→                  initial={{ opacity: 0, y: -5, scale: 0.95 }}
+   158→                  animate={{ opacity: 1, y: 0, scale: 1 }}
+   159→                  exit={{ opacity: 0, y: -5, scale: 0.95 }}
+   160→                  transition={{ duration: 0.15 }}
+   161→                  className="absolute left-0 top-full mt-2 w-64 bg-white rounded-xl border border-slate-200 shadow-xl overflow-hidden z-50"
+   162→                  dir="rtl"
+   163→                >
+   164→                  {/* User info */}
+   165→                  <div className="p-4 border-b border-border/20">
+   166→                    <div className="flex items-center gap-3">
+   167→                      <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white font-bold shadow-lg">
+   168→                        {user?.name?.charAt(0) || 'م'}
+   169→                      </div>
+   170→                      <div className="flex-1 min-w-0">
+   171→                        <div className="text-sm font-bold text-foreground truncate">{user?.name || 'المستخدم'}</div>
+   172→                        <div className="text-xs text-muted-foreground truncate">{user?.email || ''}</div>
+   173→                      </div>
+   174→                    </div>
+   175→                    <div className="mt-2">
+   176→                      <Badge className={`${user?.role === 'admin' ? 'bg-amber-500/10 text-amber-500' : user?.role === 'manager' ? 'bg-purple-500/10 text-purple-500' : 'bg-emerald-500/10 text-emerald-500'} text-[10px]`}>
+   177→                        {user?.role === 'admin' ? 'مدير النظام' : user?.role === 'manager' ? 'مشرف' : 'مستخدم'}
+   178→                      </Badge>
+   179→                    </div>
+   180→                  </div>
+   181→                  
+   182→                  {/* Actions */}
+   183→                  <div className="p-2">
+   184→                    <button
+   185→                      onClick={() => { setCurrentPage('security'); setProfileOpen(false) }}
+   186→                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors"
+   187→                    >
+   188→                      <Shield className="w-4 h-4" />
+   189→                      مركز الأمان
+   190→                    </button>
+   191→                    <button
+   192→                      onClick={() => { logout(); setProfileOpen(false) }}
+   193→                      className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-400 hover:text-red-500 hover:bg-red-500/5 transition-colors"
+   194→                    >
+   195→                      <LogOut className="w-4 h-4" />
+   196→                      تسجيل الخروج
+   197→                    </button>
+   198→                  </div>
+   199→                </motion.div>
+   200→              )}
+   201→            </AnimatePresence>
+   202→          </div>
+   203→        </div>
+   204→      </div>
+   205→
+   206→      {/* Mobile search bar */}
+   207→      <AnimatePresence>
+   208→        {searchOpen && (
+   209→          <motion.div
+   210→            initial={{ height: 0, opacity: 0 }}
+   211→            animate={{ height: 'auto', opacity: 1 }}
+   212→            exit={{ height: 0, opacity: 0 }}
+   213→            className="md:hidden px-4 pb-3 border-t border-border/10"
+   214→          >
+   215→            <div className="relative mt-2">
+   216→              <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+   217→              <Input
+   218→                value={searchQuery}
+   219→                onChange={(e) => setSearchQuery(e.target.value)}
+   220→                placeholder="ابحث في المنصة..."
+   221→                className="pr-10 pl-4 h-9 bg-white/5 border-border/30 rounded-xl text-sm focus:border-emerald-500/50"
+   222→                autoFocus
+   223→              />
+   224→            </div>
+   225→          </motion.div>
+   226→        )}
+   227→      </AnimatePresence>
+   228→    </header>
+   229→  )
+   230→}
+   231→
+   232→// ============================================
+   233→// TOAST COMPONENT
+   234→// ============================================
+   235→function Toast() {
+   236→  const { toast, clearToast } = useAppStore()
+   237→  
+   238→  useEffect(() => {
+   239→    if (toast) {
+   240→      const timer = setTimeout(clearToast, 4000)
+   241→      return () => clearTimeout(timer)
+   242→    }
+   243→  }, [toast, clearToast])
+   244→
+   245→  if (!toast) return null
+   246→
+   247→  const colors = {
+   248→    success: 'bg-emerald-500 border-emerald-600',
+   249→    error: 'bg-red-500 border-red-600',
+   250→    info: 'bg-cyan-500 border-cyan-600',
+   251→  }
+   252→  const icons = {
+   253→    success: Check,
+   254→    error: XCircle,
+   255→    info: Info,
+   256→  }
+   257→  const Icon = icons[toast.type]
+   258→
+   259→  return (
+   260→    <motion.div
+   261→      initial={{ opacity: 0, y: -50, x: '-50%' }}
+   262→      animate={{ opacity: 1, y: 0, x: '-50%' }}
+   263→      exit={{ opacity: 0, y: -50, x: '-50%' }}
+   264→      className="fixed top-4 left-1/2 z-[100] max-w-md w-full"
+   265→    >
+   266→      <div className={`mx-4 px-4 py-3 rounded-xl border ${colors[toast.type]} text-white shadow-lg flex items-center gap-3`}>
+   267→        <Icon className="w-5 h-5 flex-shrink-0" />
+   268→        <span className="text-sm font-medium flex-1">{toast.message}</span>
+   269→        <button onClick={clearToast} className="text-white/70 hover:text-white">
+   270→          <X className="w-4 h-4" />
+   271→        </button>
+   272→      </div>
+   273→    </motion.div>
+   274→  )
+   275→}
+   276→
+   277→// ============================================
+   278→// NOTIFICATION PANEL
+   279→// ============================================
+   280→function NotificationPanel() {
+   281→  const { notifications, unreadCount, markAllRead } = useAppStore()
+   282→  const [open, setOpen] = useState(false)
+   283→  const panelRef = useRef<HTMLDivElement>(null)
+   284→
+   285→  useEffect(() => {
+   286→    const handleClick = (e: MouseEvent) => {
+   287→      if (panelRef.current && !panelRef.current.contains(e.target as Node)) setOpen(false)
+   288→    }
+   289→    document.addEventListener('mousedown', handleClick)
+   290→    return () => document.removeEventListener('mousedown', handleClick)
+   291→  }, [])
+   292→
+   293→  const notifIcons: Record<string, any> = {
+   294→    info: Info,
+   295→    warning: AlertTriangle,
+   296→    success: Check,
+   297→    error: XCircle,
+   298→  }
+   299→
+   300→  const notifColors: Record<string, string> = {
+   301→    info: 'text-cyan-500 bg-cyan-500/10',
+   302→    warning: 'text-amber-500 bg-amber-500/10',
+   303→    success: 'text-emerald-500 bg-emerald-500/10',
+   304→    error: 'text-red-500 bg-red-500/10',
+   305→  }
+   306→
+   307→  return (
+   308→    <div className="relative" ref={panelRef}>
+   309→      <button
+   310→        onClick={() => { setOpen(!open); if (!open && unreadCount > 0) markAllRead() }}
+   311→        className="relative p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-white/5 transition-colors"
+   312→      >
+   313→        <Bell className="w-4 h-4" />
+   314→        {unreadCount > 0 && (
+   315→          <motion.span
+   316→            initial={{ scale: 0 }}
+   317→            animate={{ scale: 1 }}
+   318→            className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 rounded-full text-[10px] text-white font-bold flex items-center justify-center"
+   319→          >
+   320→            {unreadCount > 9 ? '9+' : unreadCount}
+   321→          </motion.span>
+   322→        )}
+   323→      </button>
+   324→
+   325→      <AnimatePresence>
+   326→        {open && (
+   327→          <motion.div
+   328→            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+   329→            animate={{ opacity: 1, y: 0, scale: 1 }}
+   330→            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+   331→            transition={{ duration: 0.15 }}
+   332→            className="absolute left-0 top-full mt-2 w-80 bg-white rounded-xl border border-slate-200 shadow-xl overflow-hidden z-50"
+   333→            dir="rtl"
+   334→          >
+   335→            <div className="p-3 border-b border-border/20 flex items-center justify-between">
+   336→              <span className="font-bold text-foreground text-sm">الإشعارات</span>
+   337→              {unreadCount > 0 && (
+   338→                <Badge className="bg-red-500/10 text-red-500 text-[10px]">{unreadCount} جديد</Badge>
+   339→              )}
+   340→            </div>
+   341→            <div className="max-h-80 overflow-y-auto">
+   342→              {notifications.length > 0 ? notifications.map((n) => {
+   343→                const Icon = notifIcons[n.type] || Info
+   344→                return (
+   345→                  <div key={n.id} className={`p-3 border-b border-border/10 hover:bg-white/5 transition-colors ${!n.read ? 'bg-emerald-500/5' : ''}`}>
+   346→                    <div className="flex items-start gap-2">
+   347→                      <div className={`w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0 ${notifColors[n.type] || notifColors.info}`}>
+   348→                        <Icon className="w-3.5 h-3.5" />
+   349→                      </div>
+   350→                      <div className="flex-1 min-w-0">
+   351→                        <div className="text-xs font-bold text-foreground">{n.title}</div>
+   352→                        <div className="text-[10px] text-muted-foreground line-clamp-2">{n.message}</div>
+   353→                      </div>
+   354→                    </div>
+   355→                  </div>
+   356→                )
+   357→              }) : (
+   358→                <div className="p-8 text-center">
+   359→                  <Bell className="w-8 h-8 mx-auto mb-2 text-muted-foreground/30" />
+   360→                  <p className="text-xs text-muted-foreground">لا توجد إشعارات</p>
+   361→                </div>
+   362→              )}
+   363→            </div>
+   364→          </motion.div>
+   365→        )}
+   366→      </AnimatePresence>
+   367→    </div>
+   368→  )
+   369→}
+   370→
+   371→// ============================================
+   372→// SIDEBAR (Fixed on right, no hover weirdness)
+   373→// ============================================
+   374→function Sidebar() {
+   375→  const { currentPage, setCurrentPage, sidebarOpen, setSidebarOpen, user, logout, theme, toggleTheme, lang, setLang, t } = useAppStore()
+   376→
+   377→  const navItems = [
+   378→    { id: 'dashboard' as const, label: t('dashboard'), icon: LayoutDashboard },
+   379→    { id: 'associations' as const, label: t('associations'), icon: Building2 },
+   380→    { id: 'members' as const, label: t('members'), icon: Users },
+   381→    { id: 'events' as const, label: t('events'), icon: Calendar },
+   382→    { id: 'finance' as const, label: t('finance'), icon: DollarSign },
+   383→    { id: 'security' as const, label: t('security'), icon: Shield },
+   384→    ...(user?.role === 'admin' ? [{ id: 'admin' as const, label: t('admin'), icon: Crown }] : []),
+   385→  ]
+   386→
+   387→  return (
+   388→    <>
+   389→      {/* Mobile overlay */}
+   390→      {sidebarOpen && (
+   391→        <motion.div
+   392→          initial={{ opacity: 0 }}
+   393→          animate={{ opacity: 1 }}
+   394→          exit={{ opacity: 0 }}
+   395→          onClick={() => setSidebarOpen(false)}
+   396→          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+   397→        />
+   398→      )}
+   399→
+   400→      <motion.aside
+   401→        initial={false}
+   402→        animate={{ 
+   403→          width: sidebarOpen ? 260 : 72,
+   404→          x: 0
+   405→        }}
+   406→        transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+   407→        className={`fixed right-0 top-0 bottom-0 z-50 bg-white/98 backdrop-blur-xl border-l border-slate-200/50 shadow-lg flex flex-col ${
+   408→          !sidebarOpen ? 'lg:translate-x-0' : ''
+   409→        }`}
+   410→      >
+   411→        {/* Logo */}
+   412→        <div className="h-14 flex items-center justify-between px-3 border-b border-border/20">
+   413→          <AnimatePresence mode="wait">
+   414→            {sidebarOpen && (
+   415→              <motion.div
+   416→                initial={{ opacity: 0 }}
+   417→                animate={{ opacity: 1 }}
+   418→                exit={{ opacity: 0 }}
+   419→                className="flex items-center gap-2"
+   420→              >
+   421→                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-200">
+   422→                  <Building2 className="w-4 h-4 text-white" />
+   423→                </div>
+   424→                <span className="text-lg font-black text-foreground">جمعيات<span className="text-indigo-500">برو</span></span>
+   425→              </motion.div>
+   426→            )}
+   427→          </AnimatePresence>
+   428→          {!sidebarOpen && (
+   429→            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mx-auto shadow-lg shadow-indigo-200">
+   430→              <Building2 className="w-4 h-4 text-white" />
+   431→            </div>
+   432→          )}
+   433→          <button
+   434→            onClick={() => setSidebarOpen(!sidebarOpen)}
+   435→            className="text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded-lg hover:bg-white/5"
+   436→          >
+   437→            {sidebarOpen ? <ChevronLeft className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+   438→          </button>
+   439→        </div>
+   440→
+   441→        {/* Navigation */}
+   442→        <nav className="flex-1 py-3 px-2 overflow-y-auto">
+   443→          <div className="space-y-1">
+   444→            {navItems.map((item) => {
+   445→              const isActive = currentPage === item.id
+   446→              return (
+   447→                <button
+   448→                  key={item.id}
+   449→                  onClick={() => {
+   450→                    setCurrentPage(item.id)
+   451→                    // Close sidebar on mobile after selection
+   452→                    if (window.innerWidth < 1024) setSidebarOpen(false)
+   453→                  }}
+   454→                  className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-medium relative ${
+   455→                    isActive
+   456→                      ? 'bg-indigo-50 text-indigo-600 shadow-sm'
+   457→                      : 'text-muted-foreground hover:text-foreground hover:bg-slate-50'
+   458→                  }`}
+   459→                >
+   460→                  <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-indigo-600' : ''}`} />
+   461→                  <AnimatePresence>
+   462→                    {sidebarOpen && (
+   463→                      <motion.span
+   464→                        initial={{ opacity: 0, width: 0 }}
+   465→                        animate={{ opacity: 1, width: 'auto' }}
+   466→                        exit={{ opacity: 0, width: 0 }}
+   467→                        className="whitespace-nowrap overflow-hidden"
+   468→                      >
+   469→                        {item.label}
+   470→                      </motion.span>
+   471→                    )}
+   472→                  </AnimatePresence>
+   473→                  {isActive && sidebarOpen && (
+   474→                    <div className="absolute right-0 w-1 h-8 bg-indigo-500 rounded-l-full" />
+   475→                  )}
+   476→                </button>
+   477→              )
+   478→            })}
+   479→          </div>
+   480→        </nav>
+   481→
+   482→        {/* Bottom - User section */}
+   483→        <div className="p-3 border-t border-border/20 space-y-2">
+   484→          {sidebarOpen && (
+   485→            <div className="flex items-center gap-3 p-2 rounded-xl bg-slate-50">
+   486→              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-sm shadow-lg">
+   487→                {user?.name?.charAt(0) || 'م'}
+   488→              </div>
+   489→              <div className="flex-1 min-w-0">
+   490→                <div className="text-sm font-bold text-foreground truncate">{user?.name || 'المستخدم'}</div>
+   491→                <div className="text-[10px] text-muted-foreground truncate">{user?.email || ''}</div>
+   492→              </div>
+   493→            </div>
+   494→          )}
+   495→          <div className="flex items-center gap-1">
+   496→            <button
+   497→              onClick={toggleTheme}
+   498→              className="flex-1 flex items-center justify-center gap-1 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-slate-100 transition-colors text-xs"
+   499→              title={theme === 'dark' ? 'الوضع الفاتح' : 'الوضع الداكن'}
+   500→            >
+   501→              {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+   502→              {sidebarOpen && <span>{theme === 'dark' ? 'فاتح' : 'داكن'}</span>}
+   503→            </button>
+   504→            <button
+   505→              onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')}
+   506→              className="flex-1 flex items-center justify-center gap-1 p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-slate-100 transition-colors text-xs"
+   507→              title={lang === 'ar' ? 'English' : 'عربي'}
+   508→            >
+   509→              <Globe className="w-4 h-4" />
+   510→              {sidebarOpen && <span>{lang === 'ar' ? 'EN' : 'عربي'}</span>}
+   511→            </button>
+   512→            <button
+   513→              onClick={logout}
+   514→              className="flex-1 flex items-center justify-center gap-1 p-2 rounded-lg text-red-400 hover:text-red-500 hover:bg-red-500/5 transition-colors text-xs"
+   515→            >
+   516→              <LogOut className="w-4 h-4" />
+   517→              {sidebarOpen && <span>خروج</span>}
+   518→            </button>
+   519→          </div>
+   520→        </div>
+   521→      </motion.aside>
+   522→    </>
+   523→  )
+   524→}
+   525→
+   526→// ============================================
+   527→// MAIN HOME COMPONENT
+   528→// ============================================
+   529→export default function Home() {
+   530→  const { currentPage, isAuthenticated, theme, sidebarOpen, setSidebarOpen } = useAppStore()
+   531→
+   532→  // Set light theme by default
+   533→  useEffect(() => {
+   534→    document.documentElement.dir = 'rtl'
+   535→    document.documentElement.lang = 'ar'
+   536→  }, [])
+   537→
+   538→  // Validate session on mount
+   539→  useEffect(() => {
+   540→    const validateSession = async () => {
+   541→      const token = document.cookie.split('; ').find(row => row.startsWith('session_token='))
+   542→      if (token && !isAuthenticated) {
+   543→        try {
+   544→          const res = await fetch('/api/auth/me')
+   545→          if (res.ok) {
+   546→            const data = await res.json()
+   547→            if (data.user) {
+   548→              useAppStore.getState().login(data.user, token.split('=')[1])
+   549→            }
+   550→          } else {
+   551→            document.cookie = 'session_token=; path=/; max-age=0'
+   552→          }
+   553→        } catch {
+   554→          // Ignore errors
+   555→        }
+   556→      }
+   557→    }
+   558→    validateSession()
+   559→  }, [isAuthenticated])
+   560→
+   561→  // Fetch notifications periodically
+   562→  useEffect(() => {
+   563→    if (!isAuthenticated) return
+   564→    const fetchNotifs = async () => {
+   565→      try {
+   566→        const res = await fetch('/api/notifications')
+   567→        if (res.ok) {
+   568→          const data = await res.json()
+   569→          useAppStore.getState().setNotifications(data.notifications)
+   570→        }
+   571→      } catch {}
+   572→    }
+   573→    fetchNotifs()
+   574→    const interval = setInterval(fetchNotifs, 30000)
+   575→    return () => clearInterval(interval)
+   576→  }, [isAuthenticated])
+   577→
+   578→  // Auth pages - no dashboard layout
+   579→  if (!isAuthenticated) {
+   580→    if (currentPage === 'register' || currentPage === 'login') {
+   581→      return <AuthPage />
+   582→    }
+   583→    return <LandingPage />
+   584→  }
+   585→
+   586→  // Dashboard pages
+   587→  const renderPage = () => {
+   588→    switch (currentPage) {
+   589→      case 'dashboard': return <DashboardPage />
+   590→      case 'associations': return <AssociationsPage />
+   591→      case 'members': return <MembersPage />
+   592→      case 'events': return <EventsPage />
+   593→      case 'finance': return <FinancePage />
+   594→      case 'security': return <SecurityPage />
+   595→      case 'admin': return <AdminPage />
+   596→      default: return <DashboardPage />
+   597→    }
+   598→  }
+   599→
+   600→  return (
+   601→    <div className="min-h-screen bg-background" dir="rtl">
+   602→      <Toast />
+   603→      
+   604→      {/* Top Info Bar (like Gama Systems) */}
+   605→      <TopInfoBar />
+   606→      
+   607→      {/* Main Navbar */}
+   608→      <MainNavbar onMenuClick={() => setSidebarOpen(!sidebarOpen)} />
+   609→      
+   610→      {/* Sidebar */}
+   611→      <Sidebar />
+   612→      
+   613→      {/* Main Content */}
+   614→      <div className="transition-all duration-300" style={{ marginRight: sidebarOpen ? 260 : 72 }}>
+   615→        <main className="p-4 md:p-6 max-w-7xl mx-auto">
+   616→          <AnimatePresence mode="wait">
+   617→            <motion.div
+   618→              key={currentPage}
+   619→              initial={{ opacity: 0, y: 10 }}
+   620→              animate={{ opacity: 1, y: 0 }}
+   621→              exit={{ opacity: 0, y: -10 }}
+   622→              transition={{ duration: 0.2 }}
+   623→            >
+   624→              {renderPage()}
+   625→            </motion.div>
+   626→          </AnimatePresence>
+   627→        </main>
+   628→      </div>
+   629→    </div>
+   630→  )
+   631→}
+   632→

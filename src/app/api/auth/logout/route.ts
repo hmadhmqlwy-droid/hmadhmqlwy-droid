@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { db, ensureDbInitialized } from '@/lib/db'
 import { getAuthUser } from '@/lib/auth-middleware'
 
 export async function POST(request: NextRequest) {
   try {
+    await ensureDbInitialized()
     const user = await getAuthUser(request)
     if (user) {
       // Delete all sessions for this user

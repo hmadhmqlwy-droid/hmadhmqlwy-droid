@@ -496,7 +496,7 @@ export function AssociationsPage() {
             <Button 
               onClick={handleEdit} 
               disabled={editLoading}
-              className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold rounded-xl"
+              className="w-full bg-gradient-to-r from-blue-500 to-sky-600 text-white font-bold rounded-xl"
             >
               {editLoading ? 'جارٍ التحديث...' : 'حفظ التعديلات'}
             </Button>

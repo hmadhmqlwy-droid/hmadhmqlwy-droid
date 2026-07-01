@@ -22,12 +22,12 @@ export function AnimatedHeroIllustration() {
         <svg width="340" height="300" viewBox="0 0 340 300" fill="none" xmlns="http://www.w3.org/2000/svg">
           <defs>
             <radialGradient id="heroGlow" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#10b981" stopOpacity="0.15" />
-              <stop offset="100%" stopColor="#10b981" stopOpacity="0" />
+              <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.15" />
+              <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0" />
             </radialGradient>
             <linearGradient id="buildingGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#10b981" stopOpacity="0.8" />
-              <stop offset="100%" stopColor="#059669" stopOpacity="0.6" />
+              <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.8" />
+              <stop offset="100%" stopColor="#0284c7" stopOpacity="0.6" />
             </linearGradient>
             <linearGradient id="buildingGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.7" />
@@ -38,8 +38,8 @@ export function AnimatedHeroIllustration() {
               <stop offset="100%" stopColor="#0d9488" stopOpacity="0.5" />
             </linearGradient>
             <linearGradient id="groundGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#10b981" stopOpacity="0.2" />
-              <stop offset="100%" stopColor="#10b981" stopOpacity="0.05" />
+              <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.2" />
+              <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0.05" />
             </linearGradient>
           </defs>
           
@@ -50,10 +50,10 @@ export function AnimatedHeroIllustration() {
           <motion.g animate={{ y: [0, -3, 0] }} transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}>
             <rect x="70" y="100" width="55" height="160" rx="4" fill="url(#buildingGrad1)" />
             {windows1.map(w => (
-              <rect key={w.key} x={80 + w.col * 15} y={110 + w.row * 24} width="8" height="10" rx="1" fill="#10b981" opacity={0.3 + (w.row + w.col) % 3 * 0.2} />
+              <rect key={w.key} x={80 + w.col * 15} y={110 + w.row * 24} width="8" height="10" rx="1" fill="#0ea5e9" opacity={0.3 + (w.row + w.col) % 3 * 0.2} />
             ))}
-            <polygon points="70,100 97,75 125,100" fill="#10b981" opacity="0.9" />
-            <line x1="97" y1="75" x2="97" y2="55" stroke="#10b981" strokeWidth="2" />
+            <polygon points="70,100 97,75 125,100" fill="#0ea5e9" opacity="0.9" />
+            <line x1="97" y1="75" x2="97" y2="55" stroke="#0ea5e9" strokeWidth="2" />
             <polygon points="97,55 115,62 97,69" fill="#f59e0b" opacity="0.8" />
           </motion.g>
 
@@ -76,10 +76,10 @@ export function AnimatedHeroIllustration() {
           </motion.g>
 
           {/* Trees */}
-          <rect x="47" y="230" width="4" height="30" rx="2" fill="#059669" opacity="0.5" />
-          <ellipse cx="49" cy="225" rx="12" ry="15" fill="#10b981" opacity="0.4" />
-          <rect x="260" y="235" width="4" height="25" rx="2" fill="#059669" opacity="0.5" />
-          <ellipse cx="262" cy="230" rx="10" ry="13" fill="#10b981" opacity="0.4" />
+          <rect x="47" y="230" width="4" height="30" rx="2" fill="#0284c7" opacity="0.5" />
+          <ellipse cx="49" cy="225" rx="12" ry="15" fill="#0ea5e9" opacity="0.4" />
+          <rect x="260" y="235" width="4" height="25" rx="2" fill="#0284c7" opacity="0.5" />
+          <ellipse cx="262" cy="230" rx="10" ry="13" fill="#0ea5e9" opacity="0.4" />
 
           {/* Clouds */}
           <motion.g animate={{ x: [0, 30, 0] }} transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}>
@@ -105,11 +105,11 @@ export function AnimatedDashboardIllustration() {
         <svg width="200" height="200" viewBox="0 0 200 200" fill="none">
           <defs>
             <linearGradient id="chartGrad1" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#10b981" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="#10b981" stopOpacity="0.1" />
+              <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="#0ea5e9" stopOpacity="0.1" />
             </linearGradient>
           </defs>
-          <rect x="10" y="10" width="180" height="180" rx="20" fill="rgba(16,185,129,0.05)" stroke="rgba(16,185,129,0.15)" strokeWidth="1" />
+          <rect x="10" y="10" width="180" height="180" rx="20" fill="rgba(14,165,233,0.05)" stroke="rgba(14,165,233,0.15)" strokeWidth="1" />
           {[0,1,2,3,4,5].map((i) => (
             <rect
               key={`bar-${i}`}
@@ -123,7 +123,7 @@ export function AnimatedDashboardIllustration() {
           ))}
           <path
             d="M30 120 Q60 80 90 100 Q120 120 150 70 Q165 50 170 60"
-            stroke="#10b981"
+            stroke="#0ea5e9"
             strokeWidth="3"
             fill="none"
             strokeLinecap="round"
@@ -131,11 +131,11 @@ export function AnimatedDashboardIllustration() {
           {[
             { x: 30, y: 120 }, { x: 90, y: 100 }, { x: 150, y: 70 }, { x: 170, y: 60 }
           ].map((dot, i) => (
-            <circle key={`dot-${i}`} cx={dot.x} cy={dot.y} r="4" fill="#10b981" />
+            <circle key={`dot-${i}`} cx={dot.x} cy={dot.y} r="4" fill="#0ea5e9" />
           ))}
           <motion.circle
             cx="150" cy="70" r="4"
-            stroke="#10b981"
+            stroke="#0ea5e9"
             strokeWidth="2"
             fill="none"
             animate={{ r: [4, 12], opacity: [0.6, 0] }}
@@ -159,15 +159,15 @@ export function AnimatedSecurityIllustration() {
         <svg width="220" height="220" viewBox="0 0 220 220" fill="none">
           <defs>
             <linearGradient id="shieldGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#10b981" stopOpacity="0.3" />
+              <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.3" />
               <stop offset="100%" stopColor="#14b8a6" stopOpacity="0.1" />
             </linearGradient>
           </defs>
           
-          <circle cx="110" cy="110" r="100" stroke="#10b981" strokeWidth="1" fill="none" opacity="0.2" />
+          <circle cx="110" cy="110" r="100" stroke="#0ea5e9" strokeWidth="1" fill="none" opacity="0.2" />
           <motion.circle
             cx="110" cy="110" r="90"
-            stroke="#10b981" strokeWidth="2"
+            stroke="#0ea5e9" strokeWidth="2"
             strokeDasharray="10 20"
             fill="none" opacity="0.3"
             animate={{ rotate: -360 }}
@@ -178,7 +178,7 @@ export function AnimatedSecurityIllustration() {
           <motion.path
             d="M110 30 L170 60 L170 120 Q170 170 110 195 Q50 170 50 120 L50 60 Z"
             fill="url(#shieldGrad)"
-            stroke="#10b981"
+            stroke="#0ea5e9"
             strokeWidth="2"
             animate={{ scale: [1, 1.03, 1] }}
             transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
@@ -186,12 +186,12 @@ export function AnimatedSecurityIllustration() {
           />
           
           <motion.g animate={{ y: [0, -3, 0] }} transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}>
-            <rect x="95" y="105" width="30" height="25" rx="4" fill="#10b981" opacity="0.8" />
-            <path d="M100 105 V95 Q100 80 110 80 Q120 80 120 95 V105" stroke="#10b981" strokeWidth="3" fill="none" opacity="0.8" />
+            <rect x="95" y="105" width="30" height="25" rx="4" fill="#0ea5e9" opacity="0.8" />
+            <path d="M100 105 V95 Q100 80 110 80 Q120 80 120 95 V105" stroke="#0ea5e9" strokeWidth="3" fill="none" opacity="0.8" />
             <circle cx="110" cy="117" r="3" fill="white" opacity="0.8" />
           </motion.g>
           
-          <path d="M95 85 L105 95 L125 75" stroke="#10b981" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.6" />
+          <path d="M95 85 L105 95 L125 75" stroke="#0ea5e9" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" fill="none" opacity="0.6" />
         </svg>
       </motion.div>
     </div>
@@ -209,11 +209,11 @@ export function AnimatedMembersIllustration() {
     <div className="w-48 h-48 flex items-center justify-center">
       <motion.div animate={{ scale: [1, 1.02, 1] }} transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}>
         <svg width="180" height="180" viewBox="0 0 180 180" fill="none">
-          <motion.circle cx="90" cy="70" r="15" fill="#10b981" opacity="0.3" animate={{ r: [15, 17, 15] }} transition={{ duration: 2, repeat: Infinity }} />
-          <circle cx="90" cy="70" r="10" fill="#10b981" opacity="0.6" />
+          <motion.circle cx="90" cy="70" r="15" fill="#0ea5e9" opacity="0.3" animate={{ r: [15, 17, 15] }} transition={{ duration: 2, repeat: Infinity }} />
+          <circle cx="90" cy="70" r="10" fill="#0ea5e9" opacity="0.6" />
           {positions.map((pos, i) => (
             <g key={`person-${i}`}>
-              <line x1="90" y1="70" x2={pos.x} y2={pos.y} stroke="#10b981" strokeWidth="1" opacity="0.15" strokeDasharray="4 4" />
+              <line x1="90" y1="70" x2={pos.x} y2={pos.y} stroke="#0ea5e9" strokeWidth="1" opacity="0.15" strokeDasharray="4 4" />
               <motion.circle
                 cx={pos.x} cy={pos.y}
                 r="8" fill="#06b6d4" opacity="0.4"
@@ -286,11 +286,11 @@ export function AnimatedFinanceIllustration() {
           ))}
           <ellipse cx="55" cy="92" rx="22" ry="6" stroke="#f59e0b" strokeWidth="1.5" fill="none" opacity="0.8" />
           <text x="55" y="96" textAnchor="middle" fill="#f59e0b" fontSize="8" fontWeight="bold" opacity="0.8">$</text>
-          <path d="M90 150 Q110 100 130 70 L150 50" stroke="#10b981" strokeWidth="3" strokeLinecap="round" fill="none" />
-          <polygon points="150,50 140,55 145,65" fill="#10b981" opacity="0.8" />
+          <path d="M90 150 Q110 100 130 70 L150 50" stroke="#0ea5e9" strokeWidth="3" strokeLinecap="round" fill="none" />
+          <polygon points="150,50 140,55 145,65" fill="#0ea5e9" opacity="0.8" />
           <motion.g animate={{ y: [0, -5, 0] }} transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}>
-            <rect x="120" y="100" width="45" height="22" rx="8" fill="#10b981" opacity="0.15" />
-            <text x="142" y="115" textAnchor="middle" fill="#10b981" fontSize="11" fontWeight="bold" opacity="0.8">+24%</text>
+            <rect x="120" y="100" width="45" height="22" rx="8" fill="#0ea5e9" opacity="0.15" />
+            <text x="142" y="115" textAnchor="middle" fill="#0ea5e9" fontSize="11" fontWeight="bold" opacity="0.8">+24%</text>
           </motion.g>
         </svg>
       </motion.div>
@@ -308,7 +308,7 @@ export function AnimatedAdminIllustration() {
             <g key={`server-${i}`}>
               <rect x="40" y={40 + i * 35} width="100" height="28" rx="6" fill="rgba(139,92,246,0.08)" stroke="#8b5cf6" strokeWidth="1" opacity="0.5" />
               <motion.circle
-                cx="55" cy={54 + i * 35} r="3" fill="#10b981"
+                cx="55" cy={54 + i * 35} r="3" fill="#0ea5e9"
                 animate={{ opacity: [0.4, 1, 0.4] }}
                 transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.3 }}
               />
@@ -351,13 +351,13 @@ export function AnimatedAuthIllustration() {
         <svg width="240" height="240" viewBox="0 0 240 240" fill="none">
           <defs>
             <linearGradient id="authGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#10b981" stopOpacity="0.2" />
+              <stop offset="0%" stopColor="#0ea5e9" stopOpacity="0.2" />
               <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.1" />
             </linearGradient>
           </defs>
           <motion.circle
             cx="120" cy="120" r="110"
-            stroke="#10b981" strokeWidth="0.5" fill="none" opacity="0.15"
+            stroke="#0ea5e9" strokeWidth="0.5" fill="none" opacity="0.15"
             animate={{ r: [110, 112, 110] }}
             transition={{ duration: 3, repeat: Infinity }}
           />
@@ -367,8 +367,8 @@ export function AnimatedAuthIllustration() {
             transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
             style={{ transformOrigin: '120px 110px' }}
           >
-            <circle cx="120" cy="95" r="25" stroke="#10b981" strokeWidth="2" fill="none" opacity="0.6" />
-            <path d="M110 115 L105 145 L120 135 L135 145 L130 115 Z" fill="#10b981" opacity="0.3" stroke="#10b981" strokeWidth="1" />
+            <circle cx="120" cy="95" r="25" stroke="#0ea5e9" strokeWidth="2" fill="none" opacity="0.6" />
+            <path d="M110 115 L105 145 L120 135 L135 145 L130 115 Z" fill="#0ea5e9" opacity="0.3" stroke="#0ea5e9" strokeWidth="1" />
           </motion.g>
           {[0, 1, 2].map(i => (
             <motion.g
@@ -389,12 +389,12 @@ export function AnimatedAuthIllustration() {
           ].map((p, i) => (
             <motion.circle
               key={`fp-${i}`}
-              cx={p.x} cy={p.y} r="2" fill="#10b981" opacity="0.3"
+              cx={p.x} cy={p.y} r="2" fill="#0ea5e9" opacity="0.3"
               animate={{ y: [p.y, p.y - 10, p.y], opacity: [0.3, 0.6, 0.3] }}
               transition={{ duration: 3, repeat: Infinity, delay: p.d }}
             />
           ))}
-          <rect x="85" y="80" width="70" height="60" rx="8" stroke="#10b981" strokeWidth="1" fill="none" opacity="0.15" />
+          <rect x="85" y="80" width="70" height="60" rx="8" stroke="#0ea5e9" strokeWidth="1" fill="none" opacity="0.15" />
         </svg>
       </motion.div>
     </div>
@@ -412,7 +412,7 @@ export function AnimatedLoader({ text = 'جارٍ التحميل...' }: { text?:
       >
         <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
           <motion.circle
-            cx="32" cy="32" r="28" stroke="#10b981" strokeWidth="2" strokeDasharray="8 16" fill="none"
+            cx="32" cy="32" r="28" stroke="#0ea5e9" strokeWidth="2" strokeDasharray="8 16" fill="none"
             animate={{ rotate: 360 }} transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
             style={{ transformOrigin: '32px 32px' }}
           />
@@ -421,7 +421,7 @@ export function AnimatedLoader({ text = 'جارٍ التحميل...' }: { text?:
             animate={{ rotate: -360 }} transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
             style={{ transformOrigin: '32px 32px' }}
           />
-          <circle cx="32" cy="32" r="6" fill="#10b981" opacity="0.3" />
+          <circle cx="32" cy="32" r="6" fill="#0ea5e9" opacity="0.3" />
         </svg>
       </motion.div>
       <motion.p
@@ -446,10 +446,10 @@ export function AnimatedEmptyState({ type = 'default' }: { type?: 'default' | 'a
         <svg width="120" height="100" viewBox="0 0 120 100" fill="none">
           {type === 'association' && (
             <>
-              <rect x="30" y="20" width="60" height="60" rx="6" fill="rgba(16,185,129,0.05)" stroke="#10b981" strokeWidth="1" opacity="0.3" />
-              <polygon points="30,20 60,5 90,20" fill="rgba(16,185,129,0.08)" stroke="#10b981" strokeWidth="1" opacity="0.3" />
+              <rect x="30" y="20" width="60" height="60" rx="6" fill="rgba(14,165,233,0.05)" stroke="#0ea5e9" strokeWidth="1" opacity="0.3" />
+              <polygon points="30,20 60,5 90,20" fill="rgba(14,165,233,0.08)" stroke="#0ea5e9" strokeWidth="1" opacity="0.3" />
               {[0,1,2].map(i => [0,1].map(j => (
-                <rect key={`ew-${i}-${j}`} x={38+j*22} y={32+i*18} width="14" height="10" rx="2" fill="#10b981" opacity="0.15" />
+                <rect key={`ew-${i}-${j}`} x={38+j*22} y={32+i*18} width="14" height="10" rx="2" fill="#0ea5e9" opacity="0.15" />
               )))}
             </>
           )}
@@ -468,8 +468,8 @@ export function AnimatedEmptyState({ type = 'default' }: { type?: 'default' | 'a
           )}
           {type === 'default' && (
             <>
-              <circle cx="60" cy="40" r="25" fill="rgba(16,185,129,0.05)" stroke="#10b981" strokeWidth="1" opacity="0.3" />
-              <path d="M48 40 L60 52 L72 32" stroke="#10b981" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.4" />
+              <circle cx="60" cy="40" r="25" fill="rgba(14,165,233,0.05)" stroke="#0ea5e9" strokeWidth="1" opacity="0.3" />
+              <path d="M48 40 L60 52 L72 32" stroke="#0ea5e9" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.4" />
             </>
           )}
         </svg>

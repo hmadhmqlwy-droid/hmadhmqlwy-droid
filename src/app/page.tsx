@@ -30,23 +30,23 @@ function TopInfoBar() {
   if (!isVisible) return null
 
   return (
-    <div className="bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 text-white text-xs relative z-50" dir="rtl">
+    <div className="bg-gradient-to-r from-blue-500 via-sky-500 to-indigo-500 text-white text-xs relative z-50" dir="rtl">
       <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-9">
         {/* Right side - Social icons */}
         <div className="flex items-center gap-3">
-          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-indigo-300 transition-colors">
+          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-sky-300 transition-colors">
             <Twitter className="w-3.5 h-3.5" />
           </a>
-          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-indigo-300 transition-colors">
+          <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-sky-300 transition-colors">
             <Instagram className="w-3.5 h-3.5" />
           </a>
-          <a href="https://wa.me/966500000000" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-indigo-300 transition-colors">
+          <a href="https://wa.me/966500000000" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-sky-300 transition-colors">
             <MessageCircle className="w-3.5 h-3.5" />
           </a>
-          <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-indigo-300 transition-colors">
+          <a href="https://youtube.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-sky-300 transition-colors">
             <Youtube className="w-3.5 h-3.5" />
           </a>
-          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-indigo-300 transition-colors">
+          <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-white/60 hover:text-sky-300 transition-colors">
             <Facebook className="w-3.5 h-3.5" />
           </a>
         </div>
@@ -106,10 +106,10 @@ function MainNavbar({ onMenuClick }: { onMenuClick: () => void }) {
             <Menu className="w-5 h-5" />
           </button>
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-200">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-sky-600 flex items-center justify-center shadow-lg shadow-blue-200">
               <Building2 className="w-4 h-4 text-white" />
             </div>
-            <span className="text-lg font-black text-foreground hidden sm:block">جمعيات<span className="text-indigo-500">برو</span></span>
+            <span className="text-lg font-black text-foreground hidden sm:block">جمعيات<span className="text-blue-500">برو</span></span>
           </div>
         </div>
 
@@ -418,15 +418,15 @@ function Sidebar() {
                 exit={{ opacity: 0 }}
                 className="flex items-center gap-2"
               >
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-lg shadow-indigo-200">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-sky-600 flex items-center justify-center shadow-lg shadow-blue-200">
                   <Building2 className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-lg font-black text-foreground">جمعيات<span className="text-indigo-500">برو</span></span>
+                <span className="text-lg font-black text-foreground">جمعيات<span className="text-blue-500">برو</span></span>
               </motion.div>
             )}
           </AnimatePresence>
           {!sidebarOpen && (
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mx-auto shadow-lg shadow-indigo-200">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-sky-600 flex items-center justify-center mx-auto shadow-lg shadow-blue-200">
               <Building2 className="w-4 h-4 text-white" />
             </div>
           )}
@@ -453,11 +453,11 @@ function Sidebar() {
                   }}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-sm font-medium relative ${
                     isActive
-                      ? 'bg-indigo-50 text-indigo-600 shadow-sm'
+                      ? 'bg-blue-50 text-blue-600 shadow-sm'
                       : 'text-muted-foreground hover:text-foreground hover:bg-slate-50'
                   }`}
                 >
-                  <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-indigo-600' : ''}`} />
+                  <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive ? 'text-blue-600' : ''}`} />
                   <AnimatePresence>
                     {sidebarOpen && (
                       <motion.span
@@ -471,7 +471,7 @@ function Sidebar() {
                     )}
                   </AnimatePresence>
                   {isActive && sidebarOpen && (
-                    <div className="absolute right-0 w-1 h-8 bg-indigo-500 rounded-l-full" />
+                    <div className="absolute right-0 w-1 h-8 bg-blue-500 rounded-l-full" />
                   )}
                 </button>
               )
@@ -483,7 +483,7 @@ function Sidebar() {
         <div className="p-3 border-t border-border/20 space-y-2">
           {sidebarOpen && (
             <div className="flex items-center gap-3 p-2 rounded-xl bg-slate-50">
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white font-bold text-sm shadow-lg">
+              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-blue-500 to-sky-600 flex items-center justify-center text-white font-bold text-sm shadow-lg">
                 {user?.name?.charAt(0) || 'م'}
               </div>
               <div className="flex-1 min-w-0">

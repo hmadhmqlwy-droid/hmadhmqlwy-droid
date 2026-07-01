@@ -28,26 +28,26 @@ function AnimatedPhoneIllustration() {
         <svg width="260" height="280" viewBox="0 0 260 280" fill="none">
           <defs>
             <linearGradient id="phoneGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#6366f1" stopOpacity="0.3" />
+              <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.3" />
               <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.1" />
             </linearGradient>
             <linearGradient id="screenGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#eef2ff" />
+              <stop offset="0%" stopColor="#eff6ff" />
               <stop offset="100%" stopColor="#e0f2fe" />
             </linearGradient>
           </defs>
           {/* Phone body */}
-          <rect x="60" y="10" width="140" height="260" rx="24" fill="url(#phoneGrad)" stroke="#6366f1" strokeWidth="2" opacity="0.8" />
+          <rect x="60" y="10" width="140" height="260" rx="24" fill="url(#phoneGrad)" stroke="#3b82f6" strokeWidth="2" opacity="0.8" />
           <rect x="70" y="40" width="120" height="195" rx="4" fill="url(#screenGrad)" />
           {/* Status bar */}
-          <rect x="70" y="40" width="120" height="20" rx="4" fill="#6366f1" opacity="0.15" />
-          <circle cx="82" cy="50" r="3" fill="#6366f1" opacity="0.4" />
-          <rect x="90" y="48" width="30" height="4" rx="2" fill="#6366f1" opacity="0.3" />
+          <rect x="70" y="40" width="120" height="20" rx="4" fill="#3b82f6" opacity="0.15" />
+          <circle cx="82" cy="50" r="3" fill="#3b82f6" opacity="0.4" />
+          <rect x="90" y="48" width="30" height="4" rx="2" fill="#3b82f6" opacity="0.3" />
           {/* App cards */}
           <motion.g animate={{ y: [0, -2, 0] }} transition={{ duration: 3, repeat: Infinity }}>
-            <rect x="78" y="68" width="104" height="35" rx="8" fill="#6366f1" opacity="0.12" />
-            <circle cx="95" cy="85" r="8" fill="#6366f1" opacity="0.3" />
-            <rect x="110" y="79" width="40" height="4" rx="2" fill="#6366f1" opacity="0.25" />
+            <rect x="78" y="68" width="104" height="35" rx="8" fill="#3b82f6" opacity="0.12" />
+            <circle cx="95" cy="85" r="8" fill="#3b82f6" opacity="0.3" />
+            <rect x="110" y="79" width="40" height="4" rx="2" fill="#3b82f6" opacity="0.25" />
             <rect x="110" y="87" width="30" height="3" rx="1.5" fill="#06b6d4" opacity="0.25" />
           </motion.g>
           <motion.g animate={{ y: [0, -3, 0] }} transition={{ duration: 4, repeat: Infinity, delay: 0.5 }}>
@@ -65,15 +65,15 @@ function AnimatedPhoneIllustration() {
             <rect x="110" y="179" width="35" height="3" rx="1.5" fill="#10b981" opacity="0.2" />
           </motion.g>
           {/* Bottom nav */}
-          <rect x="70" y="200" width="120" height="35" rx="0" fill="#6366f1" opacity="0.06" />
+          <rect x="70" y="200" width="120" height="35" rx="0" fill="#3b82f6" opacity="0.06" />
           {[0,1,2,3,4].map(i => (
-            <circle key={`nav-${i}`} cx={85 + i * 24} cy="218" r="4" fill="#6366f1" opacity={i === 0 ? 0.5 : 0.15} />
+            <circle key={`nav-${i}`} cx={85 + i * 24} cy="218" r="4" fill="#3b82f6" opacity={i === 0 ? 0.5 : 0.15} />
           ))}
           {/* Notch */}
-          <rect x="105" y="15" width="50" height="6" rx="3" fill="#6366f1" opacity="0.2" />
+          <rect x="105" y="15" width="50" height="6" rx="3" fill="#3b82f6" opacity="0.2" />
           {/* Floating notification */}
           <motion.g animate={{ y: [0, -8, 0], opacity: [0.7, 1, 0.7] }} transition={{ duration: 3, repeat: Infinity, delay: 2 }}>
-            <rect x="180" y="60" width="70" height="28" rx="8" fill="white" stroke="#6366f1" strokeWidth="1" opacity="0.9" />
+            <rect x="180" y="60" width="70" height="28" rx="8" fill="white" stroke="#3b82f6" strokeWidth="1" opacity="0.9" />
             <circle cx="194" cy="74" r="5" fill="#ec4899" opacity="0.4" />
             <rect x="204" y="70" width="35" height="4" rx="2" fill="#1a1a2e" opacity="0.3" />
           </motion.g>
@@ -94,14 +94,14 @@ function AnimatedTeamIllustration() {
         <svg width="280" height="260" viewBox="0 0 280 260" fill="none">
           <defs>
             <linearGradient id="teamGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#6366f1" stopOpacity="0.2" />
+              <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.2" />
               <stop offset="100%" stopColor="#ec4899" stopOpacity="0.1" />
             </linearGradient>
           </defs>
           {/* Central person */}
-          <circle cx="140" cy="70" r="22" fill="#6366f1" opacity="0.3" />
-          <circle cx="140" cy="70" r="15" fill="#6366f1" opacity="0.5" />
-          <path d="M110 130 Q140 100 170 130 L170 160 Q140 170 110 160 Z" fill="#6366f1" opacity="0.25" />
+          <circle cx="140" cy="70" r="22" fill="#3b82f6" opacity="0.3" />
+          <circle cx="140" cy="70" r="15" fill="#3b82f6" opacity="0.5" />
+          <path d="M110 130 Q140 100 170 130 L170 160 Q140 170 110 160 Z" fill="#3b82f6" opacity="0.25" />
           {/* Connected people */}
           {[
             { x: 50, y: 90, c: '#06b6d4', delay: 0 },
@@ -113,7 +113,7 @@ function AnimatedTeamIllustration() {
             <g key={`team-${i}`}>
               <motion.line
                 x1="140" y1="100" x2={p.x} y2={p.y}
-                stroke="#6366f1" strokeWidth="1.5" strokeDasharray="6 6"
+                stroke="#3b82f6" strokeWidth="1.5" strokeDasharray="6 6"
                 animate={{ opacity: [0.1, 0.3, 0.1] }}
                 transition={{ duration: 3, repeat: Infinity, delay: p.delay }}
               />
@@ -136,7 +136,7 @@ function AnimatedTeamIllustration() {
             <motion.circle
               key={`dot-${i}`}
               cx={d.x} cy={d.y} r="3"
-              fill="#6366f1" opacity="0.15"
+              fill="#3b82f6" opacity="0.15"
               animate={{ y: [d.y, d.y - 10, d.y], opacity: [0.15, 0.3, 0.15] }}
               transition={{ duration: 4, repeat: Infinity, delay: i * 0.8 }}
             />
@@ -157,36 +157,36 @@ function AnimatedCloudIllustration() {
         <svg width="260" height="240" viewBox="0 0 260 240" fill="none">
           <defs>
             <linearGradient id="cloudGrad" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stopColor="#6366f1" stopOpacity="0.15" />
+              <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.15" />
               <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.08" />
             </linearGradient>
           </defs>
           {/* Cloud shape */}
-          <path d="M60 150 Q60 110 100 100 Q100 60 150 60 Q200 60 200 100 Q240 110 240 150 Z" fill="url(#cloudGrad)" stroke="#6366f1" strokeWidth="1.5" opacity="0.6" />
+          <path d="M60 150 Q60 110 100 100 Q100 60 150 60 Q200 60 200 100 Q240 110 240 150 Z" fill="url(#cloudGrad)" stroke="#3b82f6" strokeWidth="1.5" opacity="0.6" />
           {/* Server inside cloud */}
           {[0, 1, 2].map(i => (
             <g key={`srv-${i}`}>
-              <rect x="100" y={100 + i * 22} width="60" height="18" rx="4" fill="white" stroke="#6366f1" strokeWidth="1" opacity="0.7" />
+              <rect x="100" y={100 + i * 22} width="60" height="18" rx="4" fill="white" stroke="#3b82f6" strokeWidth="1" opacity="0.7" />
               <motion.circle
                 cx="112" cy={109 + i * 22} r="3"
                 fill="#10b981"
                 animate={{ opacity: [0.3, 0.8, 0.3] }}
                 transition={{ duration: 1.5, repeat: Infinity, delay: i * 0.3 }}
               />
-              <rect x="122" y={105 + i * 22} width="28" height="3" rx="1.5" fill="#6366f1" opacity="0.15" />
+              <rect x="122" y={105 + i * 22} width="28" height="3" rx="1.5" fill="#3b82f6" opacity="0.15" />
             </g>
           ))}
           {/* Arrows up/down */}
           <motion.g animate={{ y: [0, -5, 0] }} transition={{ duration: 2, repeat: Infinity }}>
-            <path d="M130 85 L130 75 M125 80 L130 75 L135 80" stroke="#6366f1" strokeWidth="2" opacity="0.4" />
+            <path d="M130 85 L130 75 M125 80 L130 75 L135 80" stroke="#3b82f6" strokeWidth="2" opacity="0.4" />
           </motion.g>
           <motion.g animate={{ y: [0, 5, 0] }} transition={{ duration: 2, repeat: Infinity, delay: 1 }}>
             <path d="M130 175 L130 185 M125 180 L130 185 L135 180" stroke="#06b6d4" strokeWidth="2" opacity="0.4" />
           </motion.g>
           {/* Shield badge */}
           <motion.g animate={{ scale: [1, 1.1, 1] }} transition={{ duration: 3, repeat: Infinity }} style={{ transformOrigin: '200px 90px' }}>
-            <path d="M200 75 L215 82 L215 95 Q215 105 200 110 Q185 105 185 95 L185 82 Z" fill="#6366f1" opacity="0.15" stroke="#6366f1" strokeWidth="1" />
-            <CheckCircle2 x="191" y="83" width="18" height="18" fill="none" stroke="#6366f1" strokeWidth="1.5" opacity="0.5" />
+            <path d="M200 75 L215 82 L215 95 Q215 105 200 110 Q185 105 185 95 L185 82 Z" fill="#3b82f6" opacity="0.15" stroke="#3b82f6" strokeWidth="1" />
+            <CheckCircle2 x="191" y="83" width="18" height="18" fill="none" stroke="#3b82f6" strokeWidth="1.5" opacity="0.5" />
           </motion.g>
         </svg>
       </motion.div>
@@ -222,7 +222,7 @@ function Particles() {
       delay: seededRandom(i * 31 + 5) * 5,
       animX1: Math.round((seededRandom(i * 37 + 6) * 50 - 25) * 10000) / 10000,
       animX2: Math.round((seededRandom(i * 41 + 7) * 100 - 50) * 10000) / 10000,
-      color: ['rgba(99,102,241,0.1)', 'rgba(6,182,212,0.08)', 'rgba(236,72,153,0.06)', 'rgba(245,158,11,0.06)'][i % 4],
+      color: ['rgba(59,130,246,0.1)', 'rgba(14,165,233,0.08)', 'rgba(236,72,153,0.06)', 'rgba(245,158,11,0.06)'][i % 4],
     }))
   )[0]
 
@@ -273,7 +273,7 @@ function FloatingCard({ icon: Icon, title, desc, delay, color, illustration }: {
     >
       <div className="glass-card rounded-2xl p-6 cursor-pointer preserve-3d card-3d group h-full">
         {illustration && (
-          <div className="mb-3 flex justify-center overflow-hidden rounded-xl bg-indigo-50/50 py-2">
+          <div className="mb-3 flex justify-center overflow-hidden rounded-xl bg-blue-50/50 py-2">
             {illustration}
           </div>
         )}
@@ -319,7 +319,7 @@ function StatsCounter() {
   }, [])
 
   const stats = [
-    { label: 'جمعية مسجلة', value: counts.associations.toLocaleString('ar-SA'), icon: Building2, color: 'text-indigo-600', bg: 'bg-indigo-50' },
+    { label: 'جمعية مسجلة', value: counts.associations.toLocaleString('ar-SA'), icon: Building2, color: 'text-blue-600', bg: 'bg-blue-50' },
     { label: 'عضو فعّال', value: counts.members.toLocaleString('ar-SA'), icon: Users, color: 'text-cyan-600', bg: 'bg-cyan-50' },
     { label: 'فعالية منفذة', value: counts.events.toLocaleString('ar-SA'), icon: Calendar, color: 'text-amber-600', bg: 'bg-amber-50' },
     { label: 'نسبة الأمان', value: `${counts.security}%`, icon: Shield, color: 'text-pink-600', bg: 'bg-pink-50' },
@@ -391,8 +391,8 @@ function HeroSection() {
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden">
       {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-white via-indigo-50/30 to-cyan-50/20" />
-      <div className="absolute top-20 left-10 w-72 h-72 bg-indigo-200/20 rounded-full blur-3xl animate-blob-1" />
+      <div className="absolute inset-0 bg-gradient-to-br from-white via-blue-50/30 to-cyan-50/20" />
+      <div className="absolute top-20 left-10 w-72 h-72 bg-blue-200/20 rounded-full blur-3xl animate-blob-1" />
       <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-200/15 rounded-full blur-3xl animate-blob-2" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-pink-100/10 rounded-full blur-3xl" />
       <Particles />
@@ -408,7 +408,7 @@ function HeroSection() {
                 exit={{ opacity: 0, y: -30 }}
                 transition={{ duration: 0.5 }}
               >
-                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-200/60 text-indigo-700 text-sm font-medium mb-6">
+                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-blue-50 border border-blue-200/60 text-blue-700 text-sm font-medium mb-6">
                   <Sparkles className="w-4 h-4" />
                   {slides[current].badge}
                 </span>
@@ -453,10 +453,10 @@ function HeroSection() {
                 className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start"
               >
                 <motion.button
-                  whileHover={{ scale: 1.05, boxShadow: '0 20px 40px -12px rgba(99,102,241,0.3)' }}
+                  whileHover={{ scale: 1.05, boxShadow: '0 20px 40px -12px rgba(59,130,246,0.3)' }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setCurrentPage('register')}
-                  className="px-8 py-4 text-base font-bold rounded-2xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-xl shadow-indigo-500/20 transition-all flex items-center justify-center gap-2"
+                  className="px-8 py-4 text-base font-bold rounded-2xl bg-gradient-to-r from-blue-500 to-sky-600 text-white shadow-xl shadow-blue-500/20 transition-all flex items-center justify-center gap-2"
                 >
                   {slides[current].cta}
                   <ArrowLeft className="w-5 h-5" />
@@ -465,7 +465,7 @@ function HeroSection() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setCurrentPage('login')}
-                  className="px-8 py-4 text-base font-bold rounded-2xl bg-white border-2 border-indigo-200 text-foreground hover:border-indigo-400 hover:text-indigo-600 transition-colors shadow-sm"
+                  className="px-8 py-4 text-base font-bold rounded-2xl bg-white border-2 border-blue-200 text-foreground hover:border-blue-400 hover:text-blue-600 transition-colors shadow-sm"
                 >
                   {slides[current].ctaSecondary}
                 </motion.button>
@@ -479,7 +479,7 @@ function HeroSection() {
                   key={i}
                   onClick={() => setCurrent(i)}
                   className={`h-2.5 rounded-full transition-all duration-500 ${
-                    i === current ? 'w-10 bg-indigo-500' : 'w-2.5 bg-indigo-300 hover:bg-indigo-400'
+                    i === current ? 'w-10 bg-blue-500' : 'w-2.5 bg-blue-300 hover:bg-blue-400'
                   }`}
                 />
               ))}
@@ -522,8 +522,8 @@ function AboutSection() {
       icon: Rocket,
       title: 'بداية سهلة وسريعة',
       desc: 'ابدأ باستخدام المنصة في دقائق معدودة دون الحاجة لتدريب معقد. واجهة بسيطة وبديهية تناسب جميع المستويات التقنية.',
-      color: 'from-indigo-500 to-violet-500',
-      bg: 'bg-indigo-50',
+      color: 'from-blue-500 to-sky-500',
+      bg: 'bg-blue-50',
     },
     {
       icon: Shield,
@@ -558,7 +558,7 @@ function AboutSection() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-indigo-50 to-cyan-50 border border-indigo-200/50 text-indigo-700 text-sm font-bold mb-6">
+          <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200/50 text-blue-700 text-sm font-bold mb-6">
             <Lightbulb className="w-4 h-4" />
             عن منصة جمعياتبرو
           </span>
@@ -580,8 +580,8 @@ function AboutSection() {
             transition={{ duration: 0.6 }}
             className="relative"
           >
-            <div className="relative bg-gradient-to-br from-indigo-50 via-white to-cyan-50 rounded-3xl p-8 border border-indigo-100/50 shadow-lg shadow-indigo-100/30">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-200/30 rounded-full blur-2xl animate-blob-1" />
+            <div className="relative bg-gradient-to-br from-blue-50 via-white to-cyan-50 rounded-3xl p-8 border border-blue-100/50 shadow-lg shadow-blue-100/30">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-200/30 rounded-full blur-2xl animate-blob-1" />
               <div className="absolute bottom-0 left-0 w-40 h-40 bg-cyan-200/30 rounded-full blur-2xl animate-blob-2" />
               <div className="relative z-10 flex items-center justify-center py-8">
                 <div className="relative w-64 h-64">
@@ -590,7 +590,7 @@ function AboutSection() {
                     transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
                     className="absolute inset-0"
                   >
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-400 to-indigo-600 shadow-lg shadow-indigo-200 flex items-center justify-center">
+                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 shadow-lg shadow-blue-200 flex items-center justify-center">
                       <Building2 className="w-7 h-7 text-white" />
                     </div>
                     <div className="absolute bottom-0 right-0 w-12 h-12 rounded-2xl bg-gradient-to-br from-cyan-400 to-cyan-600 shadow-lg shadow-cyan-200 flex items-center justify-center">
@@ -610,13 +610,13 @@ function AboutSection() {
                     <motion.div
                       animate={{ scale: [1, 1.08, 1] }}
                       transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                      className="w-20 h-20 rounded-3xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center shadow-2xl shadow-indigo-300/50"
+                      className="w-20 h-20 rounded-3xl bg-gradient-to-br from-blue-500 to-sky-600 flex items-center justify-center shadow-2xl shadow-blue-300/50"
                     >
                       <Sparkles className="w-10 h-10 text-white" />
                     </motion.div>
                   </div>
                   <svg className="absolute inset-0 w-full h-full" viewBox="0 0 256 256" fill="none">
-                    <circle cx="128" cy="128" r="115" stroke="rgba(99,102,241,0.15)" strokeWidth="1.5" strokeDasharray="8 12" />
+                    <circle cx="128" cy="128" r="115" stroke="rgba(59,130,246,0.15)" strokeWidth="1.5" strokeDasharray="8 12" />
                     <circle cx="128" cy="128" r="90" stroke="rgba(6,182,212,0.1)" strokeWidth="1" strokeDasharray="4 8" />
                   </svg>
                 </div>
@@ -665,7 +665,7 @@ function AboutSection() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setCurrentPage('register')}
-                className="px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-bold text-sm shadow-lg shadow-indigo-200 flex items-center gap-2"
+                className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-sky-600 text-white font-bold text-sm shadow-lg shadow-blue-200 flex items-center gap-2"
               >
                 ابدأ مجاناً
                 <ArrowLeft className="w-4 h-4" />
@@ -673,7 +673,7 @@ function AboutSection() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-6 py-3 rounded-xl bg-white border-2 border-indigo-200 text-indigo-700 font-bold text-sm hover:border-indigo-400 transition-colors shadow-sm"
+                className="px-6 py-3 rounded-xl bg-white border-2 border-blue-200 text-blue-700 font-bold text-sm hover:border-blue-400 transition-colors shadow-sm"
                 onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
               >
                 تواصل معنا
@@ -695,8 +695,8 @@ function FeaturesSection() {
       icon: Building2,
       title: 'إدارة الجمعيات',
       desc: 'إنشاء وإدارة عدد غير محدود من الجمعيات مع ملفات تعريفية شاملة تشمل بيانات التواصل والتصنيفات والحالة القانونية والتراخيص المهنية اللازمة.',
-      color: 'bg-gradient-to-br from-indigo-500 to-violet-600',
-      shadow: 'shadow-indigo-200',
+      color: 'bg-gradient-to-br from-blue-500 to-sky-600',
+      shadow: 'shadow-blue-200',
       illustration: <AnimatedHeroIllustration />,
     },
     {
@@ -735,8 +735,8 @@ function FeaturesSection() {
       icon: Smartphone,
       title: 'دعم متعدد الأجهزة',
       desc: 'تصميم متجاوب يعمل بسلاسة على جميع الأجهزة - الحاسوب واللوحي والهاتف المحمول - مع إمكانية الوصول الكامل في أي وقت ومن أي مكان.',
-      color: 'bg-gradient-to-br from-violet-500 to-purple-600',
-      shadow: 'shadow-violet-200',
+      color: 'bg-gradient-to-br from-sky-500 to-blue-600',
+      shadow: 'shadow-sky-200',
       illustration: <AnimatedPhoneIllustration />,
     },
   ]
@@ -750,7 +750,7 @@ function FeaturesSection() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-pink-50 to-indigo-50 border border-pink-200/50 text-pink-700 text-sm font-bold mb-6">
+          <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-pink-50 to-blue-50 border border-pink-200/50 text-pink-700 text-sm font-bold mb-6">
             <Zap className="w-4 h-4" />
             المميزات الرئيسية
           </span>
@@ -790,7 +790,7 @@ function HowItWorksSection() {
       icon: UserCheck,
       title: 'سجّل حسابك',
       desc: 'أنشئ حسابك المجاني في أقل من دقيقة واحدة. لا حاجة لبطاقة ائتمان أو معلومات دفع. مجرد بريدك الإلكتروني وكلمة مرور قوية.',
-      color: 'from-indigo-500 to-violet-500',
+      color: 'from-blue-500 to-sky-500',
     },
     {
       num: '02',
@@ -824,7 +824,7 @@ function HowItWorksSection() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-cyan-50 to-indigo-50 border border-cyan-200/50 text-cyan-700 text-sm font-bold mb-6">
+          <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200/50 text-cyan-700 text-sm font-bold mb-6">
             <Layers className="w-4 h-4" />
             كيف يعمل النظام
           </span>
@@ -848,7 +848,7 @@ function HowItWorksSection() {
             >
               {/* Connecting line */}
               {i < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-12 left-[60%] w-[80%] h-0.5 bg-gradient-to-r from-indigo-200 to-cyan-200" />
+                <div className="hidden lg:block absolute top-12 left-[60%] w-[80%] h-0.5 bg-gradient-to-r from-blue-200 to-cyan-200" />
               )}
               <motion.div
                 whileHover={{ scale: 1.05, y: -5 }}
@@ -857,7 +857,7 @@ function HowItWorksSection() {
                 <div className={`w-24 h-24 mx-auto rounded-3xl bg-gradient-to-br ${step.color} flex items-center justify-center mb-6 shadow-lg group-hover:shadow-xl transition-shadow`}>
                   <step.icon className="w-10 h-10 text-white" />
                 </div>
-                <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-white border-2 border-indigo-300 flex items-center justify-center text-xs font-black text-indigo-600">
+                <div className="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-white border-2 border-blue-300 flex items-center justify-center text-xs font-black text-blue-600">
                   {step.num}
                 </div>
               </motion.div>
@@ -878,7 +878,7 @@ function StatsSection() {
   return (
     <section className="relative z-10 py-20 md:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative bg-gradient-to-br from-indigo-500 via-violet-500 to-purple-600 rounded-3xl p-8 md:p-12 overflow-hidden shadow-2xl shadow-indigo-200/50">
+        <div className="relative bg-gradient-to-br from-blue-500 via-sky-500 to-blue-600 rounded-3xl p-8 md:p-12 overflow-hidden shadow-2xl shadow-blue-200/50">
           {/* Background decorations */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl" />
           <div className="absolute bottom-0 left-0 w-80 h-80 bg-white/5 rounded-full blur-3xl" />
@@ -921,8 +921,8 @@ function WhyUsSection() {
       icon: BadgeCheck,
       title: 'موثوقية عالية',
       desc: 'نظام مستقر وموثوق يعمل على مدار الساعة مع ضمان وقت تشغيل يصل إلى 99.9%. بياناتك محفوظة ومؤمنة دائماً.',
-      color: 'text-indigo-600',
-      bg: 'bg-indigo-50',
+      color: 'text-blue-600',
+      bg: 'bg-blue-50',
     },
     {
       icon: Palette,
@@ -956,13 +956,13 @@ function WhyUsSection() {
       icon: Wifi,
       title: 'مزامنة فورية',
       desc: 'مزامنة البيانات بشكل فوري بين جميع الأجهزة والمستخدمين مع إمكانية العمل دون اتصال ومزامنة تلقائية عند العودة.',
-      color: 'text-violet-600',
-      bg: 'bg-violet-50',
+      color: 'text-sky-600',
+      bg: 'bg-sky-50',
     },
   ]
 
   return (
-    <section className="relative z-10 py-20 md:py-28 bg-gradient-to-b from-white via-indigo-50/20 to-white" id="why-us">
+    <section className="relative z-10 py-20 md:py-28 bg-gradient-to-b from-white via-blue-50/20 to-white" id="why-us">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -970,7 +970,7 @@ function WhyUsSection() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-amber-50 to-indigo-50 border border-amber-200/50 text-amber-700 text-sm font-bold mb-6">
+          <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-amber-50 to-blue-50 border border-amber-200/50 text-amber-700 text-sm font-bold mb-6">
             <Award className="w-4 h-4" />
             لماذا جمعياتبرو
           </span>
@@ -1042,7 +1042,7 @@ function TestimonialsSection() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-indigo-50 to-pink-50 border border-indigo-200/50 text-indigo-700 text-sm font-bold mb-6">
+          <span className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-gradient-to-r from-blue-50 to-pink-50 border border-blue-200/50 text-blue-700 text-sm font-bold mb-6">
             <Star className="w-4 h-4" />
             آراء عملائنا
           </span>
@@ -1072,7 +1072,7 @@ function TestimonialsSection() {
               </div>
               <p className="text-muted-foreground text-sm leading-relaxed mb-6">{t.text}</p>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center text-white font-bold text-sm">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-sky-500 flex items-center justify-center text-white font-bold text-sm">
                   {t.name.charAt(0)}
                 </div>
                 <div>
@@ -1100,7 +1100,7 @@ function CTASection() {
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="relative bg-gradient-to-br from-indigo-600 via-violet-600 to-purple-700 rounded-3xl p-8 md:p-16 overflow-hidden text-center"
+          className="relative bg-gradient-to-br from-blue-600 via-sky-600 to-blue-700 rounded-3xl p-8 md:p-16 overflow-hidden text-center"
         >
           {/* Animated background elements */}
           <div className="absolute inset-0 overflow-hidden">
@@ -1144,7 +1144,7 @@ function CTASection() {
                 whileHover={{ scale: 1.05, boxShadow: '0 20px 40px -12px rgba(255,255,255,0.2)' }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setCurrentPage('register')}
-                className="px-10 py-4 text-base font-bold rounded-2xl bg-white text-indigo-700 shadow-xl transition-all flex items-center justify-center gap-2"
+                className="px-10 py-4 text-base font-bold rounded-2xl bg-white text-blue-700 shadow-xl transition-all flex items-center justify-center gap-2"
               >
                 ابدأ مجاناً الآن
                 <ArrowLeft className="w-5 h-5" />
@@ -1217,26 +1217,26 @@ function ContactSection() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="text-sm font-medium text-foreground mb-1.5 block">الاسم</label>
-                      <input className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 text-foreground text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none" placeholder="اسمك الكامل" />
+                      <input className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 text-foreground text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none" placeholder="اسمك الكامل" />
                     </div>
                     <div>
                       <label className="text-sm font-medium text-foreground mb-1.5 block">البريد</label>
-                      <input className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 text-foreground text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none" placeholder="بريدك الإلكتروني" />
+                      <input className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 text-foreground text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none" placeholder="بريدك الإلكتروني" />
                     </div>
                   </div>
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">الموضوع</label>
-                    <input className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 text-foreground text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none" placeholder="موضوع الرسالة" />
+                    <input className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 text-foreground text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none" placeholder="موضوع الرسالة" />
                   </div>
                   <div>
                     <label className="text-sm font-medium text-foreground mb-1.5 block">الرسالة</label>
-                    <textarea className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 text-foreground text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none h-32 resize-none" placeholder="اكتب رسالتك هنا..." />
+                    <textarea className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50/50 text-foreground text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none h-32 resize-none" placeholder="اكتب رسالتك هنا..." />
                   </div>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setSent(true)}
-                    className="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-bold text-sm shadow-lg shadow-indigo-200 flex items-center justify-center gap-2"
+                    className="w-full px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-sky-600 text-white font-bold text-sm shadow-lg shadow-blue-200 flex items-center justify-center gap-2"
                   >
                     <Send className="w-4 h-4" />
                     إرسال الرسالة
@@ -1256,7 +1256,7 @@ function ContactSection() {
             <AnimatedCloudIllustration />
             <div className="space-y-4">
               {[
-                { icon: Mail, label: 'البريد الإلكتروني', value: 'info@jamiat-pro.com', color: 'text-indigo-600', bg: 'bg-indigo-50' },
+                { icon: Mail, label: 'البريد الإلكتروني', value: 'info@jamiat-pro.com', color: 'text-blue-600', bg: 'bg-blue-50' },
                 { icon: Phone, label: 'رقم الهاتف', value: '+966 50 123 4567', color: 'text-cyan-600', bg: 'bg-cyan-50' },
                 { icon: MapPin, label: 'العنوان', value: 'الرياض، المملكة العربية السعودية', color: 'text-pink-600', bg: 'bg-pink-50' },
               ].map((item) => (
@@ -1285,13 +1285,13 @@ function Footer() {
   const { setCurrentPage } = useAppStore()
 
   return (
-    <footer className="relative z-10 bg-slate-900 text-white pt-16 pb-8">
+    <footer className="relative z-10 bg-gradient-to-br from-blue-950 via-slate-900 to-blue-950 text-white pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {/* Brand */}
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-400 to-sky-500 flex items-center justify-center">
                 <Building2 className="w-5 h-5 text-white" />
               </div>
               <span className="text-xl font-black">جمعياتبرو</span>
@@ -1305,7 +1305,7 @@ function Footer() {
                   key={i}
                   href="#"
                   whileHover={{ scale: 1.1, y: -2 }}
-                  className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center hover:bg-indigo-500 transition-colors"
+                  className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center hover:bg-blue-500 transition-colors"
                 >
                   <Icon className="w-4 h-4" />
                 </motion.a>
@@ -1351,10 +1351,10 @@ function Footer() {
             <p className="text-slate-400 text-sm mb-4">اشترك ليصلك كل جديد عن المنصة والعروض الحصرية.</p>
             <div className="flex gap-2">
               <input
-                className="flex-1 px-4 py-2.5 rounded-xl bg-white/10 border border-white/10 text-white text-sm placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none"
+                className="flex-1 px-4 py-2.5 rounded-xl bg-white/10 border border-white/10 text-white text-sm placeholder-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
                 placeholder="بريدك الإلكتروني"
               />
-              <button className="px-4 py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 transition-colors text-sm font-bold">
+              <button className="px-4 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-600 transition-colors text-sm font-bold">
                 اشترك
               </button>
             </div>
@@ -1395,7 +1395,7 @@ function ScrollToTop() {
       whileHover={{ scale: 1.1 }}
       whileTap={{ scale: 0.9 }}
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-      className="fixed bottom-6 left-6 z-50 w-12 h-12 rounded-full bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-xl shadow-indigo-200 flex items-center justify-center"
+      className="fixed bottom-6 left-6 z-50 w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-sky-600 text-white shadow-xl shadow-blue-200 flex items-center justify-center"
     >
       <ArrowUp className="w-5 h-5" />
     </motion.button>

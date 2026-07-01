@@ -4,6 +4,7 @@ import { getAuthUser } from '@/lib/auth-middleware'
 // GET /api/auth/me - Get current authenticated user
 export async function GET(request: NextRequest) {
   try {
+    await ensureDbInitialized()
     const user = await getAuthUser(request)
     if (!user) {
       return NextResponse.json({ error: 'غير مصادق' }, { status: 401 })
