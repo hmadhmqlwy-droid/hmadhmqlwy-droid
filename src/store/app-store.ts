@@ -296,7 +296,7 @@ export const useAppStore = create<AppState>((set, get) => ({
     }
     // Call logout API to invalidate session
     fetch('/api/auth/logout', { method: 'POST' }).catch(() => {})
-    set({ user: null, isAuthenticated: false, currentPage: 'landing', selectedAssociation: null, notifications: [], unreadCount: 0, sessionToken: null })
+    set({ user: null, isAuthenticated: false, currentPage: 'landing', selectedAssociation: null, notifications: [], unreadCount: 0, sessionToken: null, associations: [] })
   },
   setSelectedAssociation: (assoc) => set({ selectedAssociation: assoc }),
   setAssociations: (assocs) => set({ associations: assocs }),

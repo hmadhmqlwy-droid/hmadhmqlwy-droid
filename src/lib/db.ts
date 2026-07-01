@@ -4,11 +4,15 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined
 }
 
-// Neon Vercel integration may use POSTGRES_URL or DATABASE_URL
+// Support multiple env var names from different hosting providers
 const databaseUrl = process.env.DATABASE_URL || process.env.POSTGRES_URL || process.env.POSTGRES_PRISMA_URL
+const directUrl = process.env.DIRECT_URL || process.env.POSTGRES_URL_NON_POOLING || databaseUrl
 
 if (databaseUrl && !process.env.DATABASE_URL) {
   process.env.DATABASE_URL = databaseUrl
+}
+if (directUrl && !process.env.DIRECT_URL) {
+  process.env.DIRECT_URL = directUrl
 }
 
 export const db =

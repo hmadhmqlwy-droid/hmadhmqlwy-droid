@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
@@ -74,6 +75,8 @@ model Member {
   status        String   @default("active") // active, inactive, suspended
   joinedAt      DateTime @default(now())
   leftAt        DateTime?
+
+  @@unique([userId, associationId])
 }
 
 model Event {

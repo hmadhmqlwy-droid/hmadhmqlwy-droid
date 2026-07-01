@@ -331,6 +331,30 @@ export default function Home() {
     document.documentElement.lang = 'ar'
   }, [])
 
+  // Validate session on mount - check if cookie exists and restore session
+  useEffect(() => {
+    const validateSession = async () => {
+      const token = document.cookie.split('; ').find(row => row.startsWith('session_token='))
+      if (token && !isAuthenticated) {
+        try {
+          const res = await fetch('/api/auth/me')
+          if (res.ok) {
+            const data = await res.json()
+            if (data.user) {
+              useAppStore.getState().login(data.user, token.split('=')[1])
+            }
+          } else {
+            // Session invalid, clear cookie
+            document.cookie = 'session_token=; path=/; max-age=0'
+          }
+        } catch {
+          // Ignore errors
+        }
+      }
+    }
+    validateSession()
+  }, [isAuthenticated])
+
   // Fetch notifications periodically
   useEffect(() => {
     if (!isAuthenticated) return

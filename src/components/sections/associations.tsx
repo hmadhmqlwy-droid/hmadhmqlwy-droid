@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { useAppStore } from '@/store/app-store'
-import { Building2, Plus, Search, Filter, MapPin, Users, Calendar, Trash2, Eye, Phone, Mail, Globe, Award, AlertCircle } from 'lucide-react'
+import { Building2, Plus, Search, Filter, MapPin, Users, Calendar, Trash2, Eye, Phone, Mail, Globe, Award, AlertCircle, Edit3 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -130,9 +130,20 @@ export function AssociationsPage() {
   const canDelete = (assoc: any) => {
     if (!user) return false
     if (user.role === 'admin') return true
-    // Check if user is president of this association
+    // Only president can delete - regular members and other roles cannot
+    if (user.role === 'user' || user.role === 'manager') {
+      const membership = assoc.members?.find((m: any) => m.userId === user.id)
+      return membership?.role === 'president'
+    }
+    return false
+  }
+
+  const canEdit = (assoc: any) => {
+    if (!user) return false
+    if (user.role === 'admin') return true
+    // Secretary and above can edit
     const membership = assoc.members?.find((m: any) => m.userId === user.id)
-    return membership?.role === 'president'
+    return membership && ['president', 'vice_president', 'secretary'].includes(membership.role)
   }
 
   const filtered = associations.filter(a => {
