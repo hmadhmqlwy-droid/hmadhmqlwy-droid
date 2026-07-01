@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { hashPassword } from '@/lib/auth'
 
-// Seed endpoint - creates admin user with custom credentials
+// Seed endpoint - creates or updates admin user with custom credentials
 // POST /api/seed - body: { email, password, name }
 export async function POST(request: NextRequest) {
   try {
@@ -25,16 +25,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'كلمة المرور يجب أن تكون 8 أحرف على الأقل' }, { status: 400 })
     }
 
+    // Hash the password
+    const hashedPassword = await hashPassword(adminPassword)
+
     // Check if admin already exists
     const existingAdmin = await db.user.findUnique({ where: { email: adminEmail } })
 
     if (existingAdmin) {
-      return NextResponse.json({ message: 'المدير موجود بالفعل', admin: { email: adminEmail } })
+      // Update existing admin password and info
+      const updated = await db.user.update({
+        where: { email: adminEmail },
+        data: {
+          name: adminName,
+          password: hashedPassword,
+          role: 'admin',
+          isActive: true,
+        }
+      })
+
+      return NextResponse.json({
+        message: 'تم تحديث بيانات المدير بنجاح',
+        admin: {
+          id: updated.id,
+          name: updated.name,
+          email: updated.email,
+          role: updated.role,
+        },
+      })
     }
 
-    // Create admin user with hashed password
-    const hashedPassword = await hashPassword(adminPassword)
-
+    // Create new admin user with hashed password
     const admin = await db.user.create({
       data: {
         name: adminName,
