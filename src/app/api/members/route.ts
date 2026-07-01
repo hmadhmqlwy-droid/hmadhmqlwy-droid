@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
 
     // Check if already a member
     const existingMember = await db.member.findUnique({
-      where: { userId_associiationId: { userId: targetUser.id, associationId } }
+      where: { userId_associationId: { userId: targetUser.id, associationId } }
     })
 
     if (existingMember) {

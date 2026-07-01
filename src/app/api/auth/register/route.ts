@@ -27,16 +27,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'كلمة المرور يجب أن تكون 8 أحرف على الأقل' }, { status: 400 })
     }
 
-    // Password strength check
+    // Password strength check - require at least 2 of 4 criteria
     const hasUpperCase = /[A-Z]/.test(password)
     const hasLowerCase = /[a-z]/.test(password)
     const hasNumbers = /\d/.test(password)
     const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(password)
     const strengthCount = [hasUpperCase, hasLowerCase, hasNumbers, hasSpecialChar].filter(Boolean).length
 
-    if (strengthCount < 3) {
+    if (strengthCount < 2) {
       return NextResponse.json({ 
-        error: 'كلمة المرور ضعيفة. يجب أن تحتوي على أحرف كبيرة وصغيرة وأرقام ورموز' 
+        error: 'كلمة المرور ضعيفة. يجب أن تحتوي على الأقل على نوعين من: أحرف كبيرة وصغيرة وأرقام ورموز' 
       }, { status: 400 })
     }
 

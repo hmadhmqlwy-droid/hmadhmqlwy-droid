@@ -91,6 +91,26 @@ export function AdminPage() {
     }
   }
 
+  const handleRoleChange = async (userId: string, newRole: string) => {
+    try {
+      const res = await fetch('/api/admin', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, action: { role: newRole } }),
+      })
+      if (res.ok) {
+        showToast('تم تغيير الدور بنجاح', 'success')
+        fetchAdminData()
+      } else {
+        const data = await res.json()
+        showToast(data.error || 'خطأ في تغيير الدور', 'error')
+      }
+    } catch (e) {
+      console.error(e)
+      showToast('خطأ في الاتصال', 'error')
+    }
+  }
+
   const handleDeleteUser = async (userId: string, userName: string) => {
     if (!confirm(`هل أنت متأكد من حذف المستخدم "${userName}"؟ هذا الإجراء لا يمكن التراجع عنه.`)) return
     try {
@@ -235,6 +255,15 @@ export function AdminPage() {
                   </div>
                 </div>
                 <div className="flex items-center gap-1">
+                  <select
+                    value={u.role}
+                    onChange={(e) => handleRoleChange(u.id, e.target.value)}
+                    className="text-[10px] bg-background/50 border border-border/50 rounded-lg px-2 py-1 text-foreground"
+                  >
+                    <option value="user">مستخدم</option>
+                    <option value="manager">مشرف</option>
+                    <option value="admin">مدير</option>
+                  </select>
                   <Button
                     onClick={() => handleToggleActive(u.id, u.isActive)}
                     variant="ghost"

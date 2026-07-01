@@ -10,6 +10,7 @@ const protectedRoutes = [
   '/api/security',
   '/api/notifications',
   '/api/export',
+  '/api/members',
 ]
 
 // Routes that require admin role
@@ -59,5 +60,6 @@ export const config = {
     '/api/notifications/:path*',
     '/api/export/:path*',
     '/api/admin/:path*',
+    '/api/members/:path*',
   ],
 }

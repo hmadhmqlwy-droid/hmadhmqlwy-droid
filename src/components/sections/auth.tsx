@@ -45,6 +45,12 @@ export function AuthPage() {
       setError('البريد الإلكتروني وكلمة المرور مطلوبان')
       return
     }
+    // Basic email format check
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(loginEmail.trim())) {
+      setError('صيغة البريد الإلكتروني غير صحيحة')
+      return
+    }
     setLoading(true)
     try {
       const res = await fetch('/api/auth/login', {
@@ -125,8 +131,18 @@ export function AuthPage() {
       setError('الاسم الكامل مطلوب')
       return
     }
+    if (regName.trim().length < 2) {
+      setError('الاسم يجب أن يكون حرفين على الأقل')
+      return
+    }
     if (!regEmail.trim()) {
       setError('البريد الإلكتروني مطلوب')
+      return
+    }
+    // Email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(regEmail.trim())) {
+      setError('صيغة البريد الإلكتروني غير صحيحة')
       return
     }
     if (!regPassword) {

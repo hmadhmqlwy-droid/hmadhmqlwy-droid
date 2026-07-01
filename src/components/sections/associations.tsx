@@ -39,6 +39,12 @@ const categoryIcons: Record<string, string> = {
   'أخرى': '📌',
 }
 
+const emptyForm = {
+  name: '', nameEn: '', description: '', category: 'خيري',
+  phone: '', email: '', website: '', address: '', city: '',
+  licenseNumber: '', taxId: '', foundedDate: '',
+}
+
 export function AssociationsPage() {
   const { user, showToast } = useAppStore()
   const [associations, setAssociations] = useState<any[]>([])
@@ -46,16 +52,15 @@ export function AssociationsPage() {
   const [search, setSearch] = useState('')
   const [filterCategory, setFilterCategory] = useState('all')
   const [showCreate, setShowCreate] = useState(false)
+  const [showEdit, setShowEdit] = useState(false)
+  const [editingAssoc, setEditingAssoc] = useState<any>(null)
   const [selectedAssoc, setSelectedAssoc] = useState<any>(null)
   const [showDetail, setShowDetail] = useState(false)
   const [createLoading, setCreateLoading] = useState(false)
+  const [editLoading, setEditLoading] = useState(false)
 
-  // Create form
-  const [form, setForm] = useState({
-    name: '', nameEn: '', description: '', category: 'خيري',
-    phone: '', email: '', website: '', address: '', city: '',
-    licenseNumber: '', taxId: '', foundedDate: '',
-  })
+  // Create/Edit form
+  const [form, setForm] = useState(emptyForm)
 
   useEffect(() => { fetchAssociations() }, [])
 
@@ -94,7 +99,7 @@ export function AssociationsPage() {
       })
       if (res.ok) {
         setShowCreate(false)
-        setForm({ name: '', nameEn: '', description: '', category: 'خيري', phone: '', email: '', website: '', address: '', city: '', licenseNumber: '', taxId: '', foundedDate: '' })
+        setForm(emptyForm)
         fetchAssociations()
         showToast('تم إنشاء الجمعية بنجاح', 'success')
       } else {
@@ -107,6 +112,61 @@ export function AssociationsPage() {
     } finally {
       setCreateLoading(false)
     }
+  }
+
+  const handleEdit = async () => {
+    if (!editingAssoc) return
+    if (!form.name.trim()) {
+      showToast('اسم الجمعية مطلوب', 'error')
+      return
+    }
+    if (!form.description.trim()) {
+      showToast('وصف الجمعية مطلوب', 'error')
+      return
+    }
+    
+    setEditLoading(true)
+    try {
+      const res = await fetch('/api/associations', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ associationId: editingAssoc.id, ...form }),
+      })
+      if (res.ok) {
+        setShowEdit(false)
+        setEditingAssoc(null)
+        setForm(emptyForm)
+        fetchAssociations()
+        showToast('تم تحديث الجمعية بنجاح', 'success')
+      } else {
+        const data = await res.json()
+        showToast(data.error || 'خطأ في تحديث الجمعية', 'error')
+      }
+    } catch (e) {
+      console.error(e)
+      showToast('خطأ في الاتصال بالخادم', 'error')
+    } finally {
+      setEditLoading(false)
+    }
+  }
+
+  const openEditDialog = (assoc: any) => {
+    setEditingAssoc(assoc)
+    setForm({
+      name: assoc.name || '',
+      nameEn: assoc.nameEn || '',
+      description: assoc.description || '',
+      category: assoc.category || 'خيري',
+      phone: assoc.phone || '',
+      email: assoc.email || '',
+      website: assoc.website || '',
+      address: assoc.address || '',
+      city: assoc.city || '',
+      licenseNumber: assoc.licenseNumber || '',
+      taxId: assoc.taxId || '',
+      foundedDate: assoc.foundedDate ? new Date(assoc.foundedDate).toISOString().split('T')[0] : '',
+    })
+    setShowEdit(true)
   }
 
   const handleDelete = async (assocId: string, assocName: string) => {
@@ -130,7 +190,6 @@ export function AssociationsPage() {
   const canDelete = (assoc: any) => {
     if (!user) return false
     if (user.role === 'admin') return true
-    // Only president can delete - regular members and other roles cannot
     if (user.role === 'user' || user.role === 'manager') {
       const membership = assoc.members?.find((m: any) => m.userId === user.id)
       return membership?.role === 'president'
@@ -141,7 +200,6 @@ export function AssociationsPage() {
   const canEdit = (assoc: any) => {
     if (!user) return false
     if (user.role === 'admin') return true
-    // Secretary and above can edit
     const membership = assoc.members?.find((m: any) => m.userId === user.id)
     return membership && ['president', 'vice_president', 'secretary'].includes(membership.role)
   }
@@ -301,15 +359,27 @@ export function AssociationsPage() {
                         {statusLabels[assoc.status] || assoc.status}
                       </Badge>
                     </div>
-                    {canDelete(assoc) && (
-                      <button
-                        onClick={(e) => { e.stopPropagation(); handleDelete(assoc.id, assoc.name) }}
-                        className="absolute top-3 left-3 p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:text-red-500 hover:bg-red-500/20 transition-colors"
-                        title="حذف الجمعية"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
+                    {/* Action buttons */}
+                    <div className="absolute top-3 left-3 flex gap-1">
+                      {canEdit(assoc) && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); openEditDialog(assoc) }}
+                          className="p-1.5 rounded-lg bg-blue-500/10 text-blue-400 hover:text-blue-500 hover:bg-blue-500/20 transition-colors"
+                          title="تعديل الجمعية"
+                        >
+                          <Edit3 className="w-4 h-4" />
+                        </button>
+                      )}
+                      {canDelete(assoc) && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDelete(assoc.id, assoc.name) }}
+                          className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:text-red-500 hover:bg-red-500/20 transition-colors"
+                          title="حذف الجمعية"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                   {/* Card Body */}
                   <div className="p-4">
@@ -349,6 +419,95 @@ export function AssociationsPage() {
           </Button>
         </motion.div>
       )}
+
+      {/* Edit Dialog */}
+      <Dialog open={showEdit} onOpenChange={setShowEdit}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto" dir="rtl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-black">تعديل الجمعية</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <div>
+              <Label>اسم الجمعية *</Label>
+              <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="جمعية الأمل الخيرية" className="mt-1" />
+            </div>
+            <div>
+              <Label>الاسم بالإنجليزية</Label>
+              <Input value={form.nameEn} onChange={e => setForm({ ...form, nameEn: e.target.value })} placeholder="Al Amal Charity" className="mt-1" dir="ltr" />
+            </div>
+            <div>
+              <Label>الوصف *</Label>
+              <Textarea value={form.description} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="وصف الجمعية..." className="mt-1" rows={3} />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>التصنيف *</Label>
+                <Select value={form.category} onValueChange={v => setForm({ ...form, category: v })}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>المدينة</Label>
+                <Input value={form.city} onChange={e => setForm({ ...form, city: e.target.value })} placeholder="الرياض" className="mt-1" />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>الهاتف</Label>
+                <Input value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} placeholder="+966 5x xxx xxxx" className="mt-1" dir="ltr" />
+              </div>
+              <div>
+                <Label>البريد</Label>
+                <Input value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="info@example.com" className="mt-1" dir="ltr" />
+              </div>
+            </div>
+            <div>
+              <Label>الموقع الإلكتروني</Label>
+              <Input value={form.website} onChange={e => setForm({ ...form, website: e.target.value })} placeholder="https://example.com" className="mt-1" dir="ltr" />
+            </div>
+            <div>
+              <Label>العنوان</Label>
+              <Input value={form.address} onChange={e => setForm({ ...form, address: e.target.value })} placeholder="شارع الملك فهد، الرياض" className="mt-1" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>رقم الترخيص</Label>
+                <Input value={form.licenseNumber} onChange={e => setForm({ ...form, licenseNumber: e.target.value })} placeholder="LIC-2024-001" className="mt-1" dir="ltr" />
+              </div>
+              <div>
+                <Label>الرقم الضريبي</Label>
+                <Input value={form.taxId} onChange={e => setForm({ ...form, taxId: e.target.value })} placeholder="TAX-001" className="mt-1" dir="ltr" />
+              </div>
+            </div>
+            <div>
+              <Label>تاريخ التأسيس</Label>
+              <Input type="date" value={form.foundedDate} onChange={e => setForm({ ...form, foundedDate: e.target.value })} className="mt-1" dir="ltr" />
+            </div>
+            <div>
+              <Label>الحالة</Label>
+              <Select value={editingAssoc?.status || 'active'} onValueChange={v => setEditingAssoc({ ...editingAssoc, status: v })}>
+                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">نشطة</SelectItem>
+                  <SelectItem value="inactive">غير نشطة</SelectItem>
+                  <SelectItem value="suspended">معلقة</SelectItem>
+                  <SelectItem value="pending">قيد المراجعة</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button 
+              onClick={handleEdit} 
+              disabled={editLoading}
+              className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold rounded-xl"
+            >
+              {editLoading ? 'جارٍ التحديث...' : 'حفظ التعديلات'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Detail Dialog */}
       <Dialog open={showDetail} onOpenChange={setShowDetail}>
@@ -401,16 +560,28 @@ export function AssociationsPage() {
                     <div className="text-xs text-muted-foreground">معاملة</div>
                   </div>
                 </div>
-                {canDelete(selectedAssoc) && (
-                  <Button 
-                    onClick={() => handleDelete(selectedAssoc.id, selectedAssoc.name)}
-                    variant="outline"
-                    className="w-full border-red-500/30 text-red-500 hover:bg-red-500/10 font-bold rounded-xl"
-                  >
-                    <Trash2 className="w-4 h-4 ml-2" />
-                    حذف الجمعية
-                  </Button>
-                )}
+                <div className="flex gap-2">
+                  {canEdit(selectedAssoc) && (
+                    <Button 
+                      onClick={() => { setShowDetail(false); openEditDialog(selectedAssoc) }}
+                      variant="outline"
+                      className="flex-1 border-blue-500/30 text-blue-500 hover:bg-blue-500/10 font-bold rounded-xl"
+                    >
+                      <Edit3 className="w-4 h-4 ml-2" />
+                      تعديل الجمعية
+                    </Button>
+                  )}
+                  {canDelete(selectedAssoc) && (
+                    <Button 
+                      onClick={() => handleDelete(selectedAssoc.id, selectedAssoc.name)}
+                      variant="outline"
+                      className="flex-1 border-red-500/30 text-red-500 hover:bg-red-500/10 font-bold rounded-xl"
+                    >
+                      <Trash2 className="w-4 h-4 ml-2" />
+                      حذف الجمعية
+                    </Button>
+                  )}
+                </div>
               </div>
             </>
           )}

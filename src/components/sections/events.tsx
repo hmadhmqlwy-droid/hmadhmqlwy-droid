@@ -98,6 +98,17 @@ export function EventsPage() {
 
   const filtered = events.filter(e => e.title.includes(search))
 
+  // Check if user can delete an event (admin or president/secretary of the association)
+  const canDeleteEvent = (event: any) => {
+    if (!user) return false
+    if (user.role === 'admin') return true
+    // Check if user is president/vice_president/secretary of the association
+    const assoc = associations.find(a => a.id === event.associationId)
+    if (!assoc) return false
+    const membership = assoc.members?.find((m: any) => m.userId === user.id)
+    return membership && ['president', 'vice_president', 'secretary'].includes(membership.role)
+  }
+
   if (loading) return (
     <div className="flex items-center justify-center min-h-[60vh]" dir="rtl">
       <motion.div animate={{ rotate: 360 }} transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
@@ -173,9 +184,9 @@ export function EventsPage() {
                 <span className={`absolute top-3 left-3 px-2 py-0.5 rounded-full text-xs font-medium ${statusColors[event.status] || 'bg-muted'}`}>
                   {statusLabels[event.status] || event.status}
                 </span>
-                {(user?.role === 'admin') && (
+                {canDeleteEvent(event) && (
                   <button
-                    onClick={() => handleDelete(event.id, event.title)}
+                    onClick={(e) => { e.stopPropagation(); handleDelete(event.id, event.title) }}
                     className="absolute top-3 right-3 p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:text-red-500 hover:bg-red-500/20 transition-colors"
                     title="حذف الفعالية"
                   >
