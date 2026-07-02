@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useAppStore } from '@/store/app-store'
 import { 
   Mail, Lock, User, Eye, EyeOff, ArrowLeft, ArrowRight,
@@ -47,7 +47,9 @@ export function AuthPage() {
   const [step, setStep] = useState<AuthStep>('email')
   const [direction, setDirection] = useState(1)
   const [loading, setLoading] = useState(false)
+  const [googleLoading, setGoogleLoading] = useState(false)
   const [error, setError] = useState('')
+  const googleScriptLoaded = useRef(false)
   
   // Form fields
   const [email, setEmail] = useState('')
@@ -58,6 +60,146 @@ export function AuthPage() {
   
   // Password strength
   const [passwordStrength, setPasswordStrength] = useState(0)
+
+  // Load Google Identity Services script
+  useEffect(() => {
+    if (googleScriptLoaded.current) return
+    googleScriptLoaded.current = true
+
+    // Check if GIS script already loaded
+    if (window.google?.accounts?.id) {
+      initializeGoogle()
+      return
+    }
+
+    const script = document.createElement('script')
+    script.src = 'https://accounts.google.com/gsi/client'
+    script.async = true
+    script.defer = true
+    script.onload = () => initializeGoogle()
+    document.head.appendChild(script)
+  }, [])
+
+  const initializeGoogle = useCallback(() => {
+    // We'll initialize when user clicks the button instead
+    // This avoids errors when no client ID is configured
+  }, [])
+
+  const handleGoogleLogin = useCallback(async () => {
+    setGoogleLoading(true)
+    setError('')
+
+    try {
+      // Check if Google GIS is available
+      if (window.google?.accounts?.id) {
+        // Use Google Identity Services
+        window.google.accounts.id.initialize({
+          client_id: '', // Will be set from env
+          callback: async (response: { credential: string }) => {
+            try {
+              const res = await fetch('/api/auth/google', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ credential: response.credential }),
+              })
+              
+              const data = await res.json()
+              
+              if (!res.ok) {
+                setError(data.error || 'فشل تسجيل الدخول عبر Google')
+                setGoogleLoading(false)
+                return
+              }
+              
+              login(data.user, data.token)
+              showToast('تم تسجيل الدخول عبر Google بنجاح', 'success')
+            } catch (err) {
+              setError('حدث خطأ في الاتصال بالخادم')
+            } finally {
+              setGoogleLoading(false)
+            }
+          },
+        })
+        window.google.accounts.id.prompt()
+      } else {
+        // Fallback: Open Google OAuth popup manually
+        await handleGooglePopupFallback()
+      }
+    } catch (err) {
+      setError('فشل في فتح نافذة Google')
+      setGoogleLoading(false)
+    }
+  }, [login, showToast])
+
+  // Fallback Google OAuth using popup
+  const handleGooglePopupFallback = useCallback(async () => {
+    try {
+      // Use Google's OAuth2 endpoint for implicit flow
+      const clientId = '' // Client ID would go here
+      
+      if (!clientId) {
+        // No Google Client ID configured - show helpful message
+        setError('تسجيل الدخول عبر Google يحتاج إلى إعداد Google Client ID من لوحة تحكم Google Cloud Console. يمكنك استخدام تسجيل الدخول بالبريد الإلكتروني وكلمة المرور حالياً.')
+        setGoogleLoading(false)
+        return
+      }
+
+      const redirectUri = `${window.location.origin}/api/auth/google/callback`
+      const scope = 'openid email profile'
+      const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=token&scope=${encodeURIComponent(scope)}`
+      
+      const popup = window.open(authUrl, 'google-auth', 'width=500,height=600')
+      
+      if (!popup) {
+        setError('تم حظر النافذة المنبثقة. يرجى السماح بالنوافذ المنبثقة لهذا الموقع.')
+        setGoogleLoading(false)
+        return
+      }
+
+      // Listen for the popup to send back the token
+      const messageHandler = async (event: MessageEvent) => {
+        if (event.origin !== window.location.origin) return
+        
+        if (event.data.type === 'google-auth-success') {
+          window.removeEventListener('message', messageHandler)
+          popup.close()
+          
+          const res = await fetch('/api/auth/google', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 
+              token: event.data.token,
+              email: event.data.email,
+              name: event.data.name,
+              picture: event.data.picture,
+              sub: event.data.sub,
+            }),
+          })
+          
+          const data = await res.json()
+          
+          if (!res.ok) {
+            setError(data.error || 'فشل تسجيل الدخول عبر Google')
+            return
+          }
+          
+          login(data.user, data.token)
+          showToast('تم تسجيل الدخول عبر Google بنجاح', 'success')
+        } else if (event.data.type === 'google-auth-error') {
+          window.removeEventListener('message', messageHandler)
+          popup.close()
+          setError('فشل تسجيل الدخول عبر Google')
+        }
+        
+        setGoogleLoading(false)
+      }
+      
+      window.addEventListener('message', messageHandler)
+    } catch (err) {
+      setError('حدث خطأ في الاتصال بـ Google')
+      setGoogleLoading(false)
+    }
+  }, [login, showToast])
 
   // Calculate password strength
   useEffect(() => {
@@ -186,10 +328,6 @@ export function AuthPage() {
     }
   }
 
-  const handleGoogleLogin = () => {
-    showToast('تسجيل الدخول بـ Google سيكون متاحاً قريباً', 'info')
-  }
-
   const handleKeyDown = (e: React.KeyboardEvent, action: () => void) => {
     if (e.key === 'Enter') action()
   }
@@ -312,9 +450,9 @@ export function AuthPage() {
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: 'auto' }}
                       exit={{ opacity: 0, height: 0 }}
-                      className="flex items-center gap-2 p-3 mb-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm"
+                      className="flex items-start gap-2 p-3 mb-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm"
                     >
-                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
                       <span>{error}</span>
                     </motion.div>
                   )}
@@ -343,10 +481,15 @@ export function AuthPage() {
                     {/* Google Sign In */}
                     <button
                       onClick={handleGoogleLogin}
-                      className="w-full flex items-center justify-center gap-3 h-12 px-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700"
+                      disabled={googleLoading}
+                      className="w-full flex items-center justify-center gap-3 h-12 px-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <GoogleIcon />
-                      تسجيل الدخول بحساب Google
+                      {googleLoading ? (
+                        <Loader2 className="w-5 h-5 animate-spin text-gray-500" />
+                      ) : (
+                        <GoogleIcon />
+                      )}
+                      {googleLoading ? 'جاري الاتصال بـ Google...' : 'تسجيل الدخول بحساب Google'}
                     </button>
 
                     <div className="relative">
@@ -458,10 +601,15 @@ export function AuthPage() {
                     {/* Google Sign Up */}
                     <button
                       onClick={handleGoogleLogin}
-                      className="w-full flex items-center justify-center gap-3 h-12 px-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700"
+                      disabled={googleLoading}
+                      className="w-full flex items-center justify-center gap-3 h-12 px-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors text-sm font-medium text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <GoogleIcon />
-                      التسجيل بحساب Google
+                      {googleLoading ? (
+                        <Loader2 className="w-5 h-5 animate-spin text-gray-500" />
+                      ) : (
+                        <GoogleIcon />
+                      )}
+                      {googleLoading ? 'جاري الاتصال بـ Google...' : 'التسجيل بحساب Google'}
                     </button>
 
                     <div className="relative">
