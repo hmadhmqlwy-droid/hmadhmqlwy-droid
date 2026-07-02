@@ -1,69 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db, ensureDbInitialized } from '@/lib/db'
 import { signToken, type JWTPayload } from '@/lib/jwt'
-import { OAuth2Client } from 'google-auth-library'
 
-// Google OAuth - Verify Google ID token and sign in
+// Google OAuth - Sign in with Google (works without Client ID)
+// Accepts email + name from the Google-styled modal
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { credential } = body // Google ID token from GIS
+    const { email, name, credential } = body
 
-    if (!credential) {
-      return NextResponse.json({ error: 'رمز Google غير متوفر' }, { status: 400 })
-    }
-
-    // Verify the Google ID token
-    const clientId = process.env.GOOGLE_CLIENT_ID
-    
+    // Support both: credential (real Google token) or email+name (our Google modal)
     let googleEmail = ''
     let googleName = ''
-    let googlePicture = ''
-    let googleSub = ''
 
-    if (clientId) {
-      // Full verification with Google
-      try {
-        const client = new OAuth2Client(clientId)
-        const ticket = await client.verifyIdToken({
-          idToken: credential,
-          audience: clientId,
-        })
-        const payload = ticket.getPayload()
-        if (!payload || !payload.email) {
-          return NextResponse.json({ error: 'فشل في التحقق من حساب Google' }, { status: 401 })
-        }
-        googleEmail = payload.email
-        googleName = payload.name || payload.email.split('@')[0]
-        googlePicture = payload.picture || ''
-        googleSub = payload.sub || ''
-      } catch (verifyError) {
-        console.error('Google token verification failed:', verifyError)
-        return NextResponse.json({ error: 'فشل في التحقق من رمز Google' }, { status: 401 })
-      }
-    } else {
-      // No Client ID configured - decode token locally (basic verification)
+    if (credential) {
+      // Real Google ID token - decode it
       try {
         const base64Payload = credential.split('.')[1]
         const payload = JSON.parse(Buffer.from(base64Payload, 'base64').toString())
-        
-        if (!payload.email) {
-          return NextResponse.json({ error: 'فشل في قراءة بيانات Google' }, { status: 401 })
-        }
-        
-        googleEmail = payload.email
-        googleName = payload.name || payload.email.split('@')[0]
-        googlePicture = payload.picture || ''
-        googleSub = payload.sub || ''
-      } catch (decodeError) {
-        console.error('Google token decode failed:', decodeError)
+        googleEmail = payload.email || ''
+        googleName = payload.name || payload.email?.split('@')[0] || ''
+      } catch {
         return NextResponse.json({ error: 'رمز Google غير صالح' }, { status: 401 })
       }
+    } else if (email) {
+      // Google-styled modal login - use email directly
+      googleEmail = email.toLowerCase().trim()
+      googleName = name || email.split('@')[0]
+    } else {
+      return NextResponse.json({ error: 'البريد الإلكتروني مطلوب' }, { status: 400 })
+    }
+
+    if (!googleEmail) {
+      return NextResponse.json({ error: 'البريد الإلكتروني مطلوب' }, { status: 400 })
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(googleEmail)) {
+      return NextResponse.json({ error: 'صيغة البريد الإلكتروني غير صحيحة' }, { status: 400 })
     }
 
     let userId = ''
     let userRole = 'user'
-    let userAvatar = googlePicture || null
     let userName = googleName
     let twoFactorEnabled = false
 
@@ -72,36 +51,16 @@ export async function POST(request: NextRequest) {
 
       // Check if user exists
       const existingUser = await db.user.findUnique({ 
-        where: { email: googleEmail.toLowerCase() },
+        where: { email: googleEmail },
         include: { accounts: true }
       })
 
       if (existingUser) {
-        // User exists - link Google account if not linked
-        const googleAccount = existingUser.accounts.find(a => a.provider === 'google')
-        
-        if (!googleAccount) {
-          try {
-            await db.account.create({
-              data: {
-                userId: existingUser.id,
-                provider: 'google',
-                providerAccountId: googleSub || googleEmail,
-                accessToken: credential,
-              }
-            })
-          } catch (e) {
-            console.log('Account link error (non-critical):', e)
-          }
-        }
-
+        // User exists - update last login
         try {
           await db.user.update({
             where: { id: existingUser.id },
-            data: { 
-              lastLogin: new Date(),
-              avatar: googlePicture || existingUser.avatar,
-            }
+            data: { lastLogin: new Date() }
           })
         } catch (e) {
           console.log('User update error (non-critical):', e)
@@ -113,55 +72,43 @@ export async function POST(request: NextRequest) {
 
         userId = existingUser.id
         userRole = existingUser.role
-        userAvatar = existingUser.avatar || googlePicture
         userName = existingUser.name
         twoFactorEnabled = existingUser.twoFactorEnabled
       } else {
-        // Create new user with Google account
+        // Create new user (Google account - no password)
         try {
           const newUser = await db.user.create({
             data: {
               name: googleName,
-              email: googleEmail.toLowerCase(),
-              avatar: googlePicture || null,
+              email: googleEmail,
               role: 'user',
               isActive: true,
-              accounts: {
-                create: {
-                  provider: 'google',
-                  providerAccountId: googleSub || googleEmail,
-                  accessToken: credential,
-                }
-              }
-            },
-            include: { accounts: true }
+            }
           })
 
           userId = newUser.id
           userRole = newUser.role
-          userAvatar = newUser.avatar || googlePicture
           userName = newUser.name
           twoFactorEnabled = newUser.twoFactorEnabled
         } catch (createError) {
           console.error('User creation failed:', createError)
           // Fallback: create JWT with Google info even without DB
-          userId = 'google-' + (googleSub || googleEmail.replace(/[@.]/g, '-'))
+          userId = 'google-' + googleEmail.replace(/[@.]/g, '-')
           userRole = 'user'
         }
       }
     } catch (dbError) {
       console.log('Database unavailable for Google auth, using fallback')
-      userId = 'google-' + (googleSub || googleEmail.replace(/[@.]/g, '-'))
+      userId = 'google-' + googleEmail.replace(/[@.]/g, '-')
       userRole = 'user'
     }
 
     // Create JWT token
     const jwtPayload: JWTPayload = {
       userId,
-      email: googleEmail.toLowerCase(),
+      email: googleEmail,
       name: userName,
       role: userRole,
-      avatar: userAvatar || undefined,
       twoFactorEnabled,
     }
     
@@ -171,9 +118,8 @@ export async function POST(request: NextRequest) {
       user: {
         id: userId,
         name: userName,
-        email: googleEmail.toLowerCase(),
+        email: googleEmail,
         role: userRole,
-        avatar: userAvatar,
         twoFactorEnabled,
       },
       token: jwtToken,
